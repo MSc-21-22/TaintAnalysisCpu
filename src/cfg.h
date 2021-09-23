@@ -8,7 +8,9 @@ class Node {
 public:
     std::unordered_set<std::shared_ptr<Node>> predecessors;
     std::unordered_set<std::shared_ptr<Node>> successors;
-    std::shared_ptr<LatticeType> state;
+    LatticeType state;
+
+    virtual void accept(CfgVisitor<LatticeType>& visitor);
 };
 
 template<typename LatticeType>
@@ -17,6 +19,10 @@ public:
     std::string type; // Consider switching to enum
     std::string id;
     std::string expression; // Type should probably be changed
+
+    void accept(CfgVisitor<LatticeType>& visitor){
+        
+    }
 };
 
 template<typename LatticeType>
@@ -45,4 +51,15 @@ template<typename LatticeType>
 class ReturnNode : public Node<LatticeType> {
 public:
     std::string expression;
+};
+
+
+template<typename LatticeType>
+class CfgVisitor {
+public:
+    virtual void visit_initializtion(InitializerNode<LatticeType>& node) = 0;
+    virtual void visit_assignment(AssignmentNode<LatticeType>& node) = 0;
+    virtual void visit_functioncall(FunctionCall<LatticeType>& node) = 0;
+    virtual void visit_functiondef(FunctionDefinition<LatticeType>& node) = 0;
+    virtual void visit_return(ReturnNode<LatticeType>& node) = 0;
 };
