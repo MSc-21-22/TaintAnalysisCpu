@@ -128,6 +128,7 @@ public:
     antlr4::tree::TerminalNode *RPAREN();
     ExpressionMContext *expressionM();
     antlr4::tree::TerminalNode *INTEGER();
+    antlr4::tree::TerminalNode *ID();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

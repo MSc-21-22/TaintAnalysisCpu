@@ -30,6 +30,7 @@ args
 expression
     : LPAREN expression RPAREN expressionM
     | INTEGER expressionM
+    | ID expressionM
     ;
 
 expressionM
