@@ -2,7 +2,7 @@
 #include "cfg.h"
 
 template<typename LaticeType, typename TransferFunction>
-int worklist(std::vector<Node<LaticeType>> nodes, TransferFunction transferFunction){
+LaticeType worklist(std::vector<Node<LaticeType>> nodes, TransferFunction transferFunction){
     auto worklistLatice = std::copy(nodes.begin()->state);
     while (!nodes.empty()){
         auto currentNode = nodes[0];
