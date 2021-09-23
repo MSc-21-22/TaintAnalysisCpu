@@ -1,0 +1,64 @@
+
+// Generated from /home/nhug/dev/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+
+#pragma once
+
+
+#include "antlr4-runtime.h"
+#include "scVisitor.h"
+
+
+/**
+ * This class provides an empty implementation of scVisitor, which can be
+ * extended to create a visitor which only needs to handle a subset of the available methods.
+ */
+class  scBaseVisitor : public scVisitor {
+public:
+
+  virtual antlrcpp::Any visitProg(scParser::ProgContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitFunctionDef(scParser::FunctionDefContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitStatements(scParser::StatementsContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitStatement(scParser::StatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitArgs(scParser::ArgsContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitExpression(scParser::ExpressionContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitExpressionM(scParser::ExpressionMContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitParameters(scParser::ParametersContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitParametersM(scParser::ParametersMContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitParameter(scParser::ParameterContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitType(scParser::TypeContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+
+};
+
