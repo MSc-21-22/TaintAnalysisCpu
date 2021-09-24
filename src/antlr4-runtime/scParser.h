@@ -1,5 +1,5 @@
 
-// Generated from /home/nhug/dev/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from /home/thorulf/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
 
 #pragma once
 
@@ -12,8 +12,9 @@
 class  scParser : public antlr4::Parser {
 public:
   enum {
-    T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, INTEGER = 5, PLUS = 6, MINUS = 7, 
-    DIVISION = 8, ASSIGN = 9, LPAREN = 10, RPAREN = 11, ID = 12
+    T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, T__4 = 5, T__5 = 6, T__6 = 7, 
+    INTEGER = 8, PLUS = 9, MINUS = 10, DIVISION = 11, ASSIGN = 12, LPAREN = 13, 
+    RPAREN = 14, ID = 15, WS = 16
   };
 
   enum {
@@ -48,9 +49,9 @@ public:
   public:
     ProgContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    FunctionDefContext *functionDef();
     antlr4::tree::TerminalNode *EOF();
-    ProgContext *prog();
+    std::vector<FunctionDefContext *> functionDef();
+    FunctionDefContext* functionDef(size_t i);
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -64,8 +65,12 @@ public:
     FunctionDefContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ID();
+    antlr4::tree::TerminalNode *LPAREN();
     ParametersContext *parameters();
+    antlr4::tree::TerminalNode *RPAREN();
+    StatementsContext *statements();
     TypeContext *type();
+    ExpressionContext *expression();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

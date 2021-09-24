@@ -1,13 +1,12 @@
 grammar sc;
 
 prog 
-    : functionDef EOF
-    | functionDef prog
+    : functionDef* EOF
     ;
 
 functionDef 
-    : 'void' ID ( parameters ) { statements }
-    | type ID ( parameters ) { statements ';' 'return' expression; }
+    : 'void' ID LPAREN parameters RPAREN '{' statements '}'
+    | type ID LPAREN parameters RPAREN '{' statements ';' 'return' expression';' '}'
     ;
         
 statements 
@@ -70,3 +69,5 @@ RPAREN             : ')' ;
 
 // Identifiers
 ID                 : [_]*[a-z][A-Za-z0-9_]* ;
+
+WS : (' ' | '\t' | '\n')+ -> channel(HIDDEN);
