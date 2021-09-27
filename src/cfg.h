@@ -69,8 +69,11 @@ public:
             << id << "\n"
             << expression->dotPrint() << "\"]\n";
         for (auto& succ : this->successors){
-            os << this << "->" << succ << "\n" ;
+            os << (long)this << "->" << (long)succ.get() << "\n";
+            succ->dotPrint(os);
         }
+
+
     }
 };
 
@@ -90,7 +93,8 @@ public:
         os << (long)this << "[label = \"" << id << "\n"
               << expression->dotPrint() << "\"]\n";
         for (auto& succ : this->successors){
-            os << this << "->" << succ << "\n" ;
+            os << (long)this << "->" << (long)succ.get() << "\n" ;
+            succ->dotPrint(os);
         }
     }
 };
@@ -109,7 +113,8 @@ public:
         os << (long)this << "[label = \"" << functionId << "\n"
               << arguments << "\n]";
         for (auto& succ : this->successors){
-            os << this << "->" << succ << "\n" ;
+            os << (long)this << "->" << (long)succ.get() << "\n" ;
+            succ->dotPrint(os);
         }
     }   
 };
@@ -137,7 +142,8 @@ public:
         os << (long)this << "[label = \"" << functionId << "\n"
               << returnType << "\"]\n";
         for (auto& succ : this->successors){
-            os << this << "->" << succ << "\n" ;
+            os << (long)this << "->" << (long)succ.get() << "\n" ;
+            succ->dotPrint(os);
         }
     }
 };
@@ -156,7 +162,8 @@ public:
     void dotPrint(std::ostream &os){
         os << (long)this << "[label = \"" << expression->dotPrint() << "\"]\n";
         for (auto& succ : this->successors){
-            os << this << "->" << succ << "\n" ;
+            os << (long)this << "->" << (long)succ.get() << "\n" ;
+            succ->dotPrint(os);
         }
     }
 };
