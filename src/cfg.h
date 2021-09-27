@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "iostream"
 #include "Expression.h"
 
 
@@ -37,6 +38,7 @@ public:
     LatticeType state;
 
     virtual void accept(CfgVisitor<LatticeType>& visitor);
+    virtual void dotPrint(std::ostream &os);
 };
 
 template<typename LatticeType>
@@ -49,6 +51,15 @@ public:
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_initializtion(&this);
     }
+
+    void dotPrint(std::ostream &os){
+        os << this + "[label = \"" + type + "\n"
+            + id + "\n"
+            + expression.dotPrint() + "\"]\n";
+        for (auto& succ : this->successors){
+            os << this + "->" + succ + "\n" ;
+        }
+    }
 };
 
 template<typename LatticeType>
@@ -60,6 +71,14 @@ public:
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_assignment(&this);
     }
+
+    void dotPrint(std::ostream &os){
+        os << this + "[label = \"" + id + "\n"
+              + expression.dotPrint() + "\"]\n";
+        for (auto& succ : this->successors){
+            os << this + "->" + succ + "\n" ;
+        }
+    }
 };
 
 template<typename LatticeType>
@@ -70,6 +89,14 @@ public:
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functioncall(&this);
+    }
+
+    void dotPrint(std::ostream &os){
+        os << this + "[label = \"" + functionId + "\n"
+              + arguments + "\n]";
+        for (auto& succ : this->successors){
+            os << this + "->" + succ + "\n" ;
+        }
     }
 };
 
@@ -83,6 +110,15 @@ public:
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functiondef(&this);
     }
+
+    void dotPrint(std::ostream &os){
+        os << this + "[label = \"" + functionId + "\n"
+              + formalParameters + "\n"
+              + returnType + "\"]\n";
+        for (auto& succ : this->successors){
+            os << this + "->" + succ + "\n" ;
+        }
+    }
 };
 
 template<typename LatticeType>
@@ -92,6 +128,13 @@ public:
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_return(&this);
+    }
+
+    void dotPrint(std::ostream &os){
+        os << this + "[label = \"" + expression.dotPrint() + "\"]\n";
+        for (auto& succ : this->successors){
+            os << this + "->" + succ + "\n" ;
+        }
     }
 };
 
