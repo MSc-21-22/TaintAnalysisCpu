@@ -27,15 +27,19 @@ public:
 
     virtual antlrcpp::Any visitStatement(scParser::StatementContext *context) = 0;
 
+    virtual antlrcpp::Any visitStatementassign(scParser::StatementassignContext *context) = 0;
+
+    virtual antlrcpp::Any visitStatementinit(scParser::StatementinitContext *context) = 0;
+
     virtual antlrcpp::Any visitArgs(scParser::ArgsContext *context) = 0;
 
     virtual antlrcpp::Any visitExpression(scParser::ExpressionContext *context) = 0;
 
     virtual antlrcpp::Any visitExpressionM(scParser::ExpressionMContext *context) = 0;
 
-    virtual antlrcpp::Any visitParameters(scParser::ParametersContext *context) = 0;
+    virtual antlrcpp::Any visitOpt_parameters(scParser::Opt_parametersContext *context) = 0;
 
-    virtual antlrcpp::Any visitParametersM(scParser::ParametersMContext *context) = 0;
+    virtual antlrcpp::Any visitParameters(scParser::ParametersContext *context) = 0;
 
     virtual antlrcpp::Any visitParameter(scParser::ParameterContext *context) = 0;
 

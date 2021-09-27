@@ -19,8 +19,9 @@ public:
 
   enum {
     RuleProg = 0, RuleFunctionDef = 1, RuleStatements = 2, RuleStatement = 3, 
-    RuleArgs = 4, RuleExpression = 5, RuleExpressionM = 6, RuleParameters = 7, 
-    RuleParametersM = 8, RuleParameter = 9, RuleType = 10
+    RuleStatementassign = 4, RuleStatementinit = 5, RuleArgs = 6, RuleExpression = 7, 
+    RuleExpressionM = 8, RuleOpt_parameters = 9, RuleParameters = 10, RuleParameter = 11, 
+    RuleType = 12
   };
 
   scParser(antlr4::TokenStream *input);
@@ -37,11 +38,13 @@ public:
   class FunctionDefContext;
   class StatementsContext;
   class StatementContext;
+  class StatementassignContext;
+  class StatementinitContext;
   class ArgsContext;
   class ExpressionContext;
   class ExpressionMContext;
+  class Opt_parametersContext;
   class ParametersContext;
-  class ParametersMContext;
   class ParameterContext;
   class TypeContext; 
 
@@ -66,7 +69,7 @@ public:
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ID();
     antlr4::tree::TerminalNode *LPAREN();
-    ParametersContext *parameters();
+    Opt_parametersContext *opt_parameters();
     antlr4::tree::TerminalNode *RPAREN();
     StatementsContext *statements();
     TypeContext *type();
@@ -97,9 +100,21 @@ public:
   public:
     StatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    StatementinitContext *statementinit();
+    StatementassignContext *statementassign();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  StatementContext* statement();
+
+  class  StatementassignContext : public antlr4::ParserRuleContext {
+  public:
+    StatementassignContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ID();
-    ArgsContext *args();
-    TypeContext *type();
     antlr4::tree::TerminalNode *ASSIGN();
     ExpressionContext *expression();
 
@@ -108,7 +123,23 @@ public:
    
   };
 
-  StatementContext* statement();
+  StatementassignContext* statementassign();
+
+  class  StatementinitContext : public antlr4::ParserRuleContext {
+  public:
+    StatementinitContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    TypeContext *type();
+    antlr4::tree::TerminalNode *ID();
+    antlr4::tree::TerminalNode *ASSIGN();
+    ExpressionContext *expression();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  StatementinitContext* statementinit();
 
   class  ArgsContext : public antlr4::ParserRuleContext {
   public:
@@ -159,12 +190,25 @@ public:
 
   ExpressionMContext* expressionM();
 
+  class  Opt_parametersContext : public antlr4::ParserRuleContext {
+  public:
+    Opt_parametersContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    ParametersContext *parameters();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Opt_parametersContext* opt_parameters();
+
   class  ParametersContext : public antlr4::ParserRuleContext {
   public:
     ParametersContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     ParameterContext *parameter();
-    ParametersMContext *parametersM();
+    ParametersContext *parameters();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -172,20 +216,6 @@ public:
   };
 
   ParametersContext* parameters();
-
-  class  ParametersMContext : public antlr4::ParserRuleContext {
-  public:
-    ParametersMContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    ParameterContext *parameter();
-    ParametersMContext *parametersM();
-
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
-  };
-
-  ParametersMContext* parametersM();
 
   class  ParameterContext : public antlr4::ParserRuleContext {
   public:

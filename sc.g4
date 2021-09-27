@@ -5,8 +5,8 @@ prog
     ;
 
 functionDef 
-    : 'void' ID LPAREN parameters RPAREN '{' statements '}'
-    | type ID LPAREN parameters RPAREN '{' statements ';' 'return' expression';' '}'
+    : 'void' ID LPAREN opt_parameters RPAREN '{' statements '}'
+    | type ID LPAREN opt_parameters RPAREN '{' statements ';' 'return' expression';' '}'
     ;
         
 statements 
@@ -14,11 +14,17 @@ statements
     | /* e */
     ;
             
-statement   
-    :  ID ( )
-    |  ID ( args )
-    |  type ID '=' expression
-    |  ID '=' expression
+statement
+    :  statementinit
+    |  statementassign
+    ;
+
+statementassign
+    : ID '=' expression
+    ;
+
+statementinit
+    : type ID '=' expression
     ;
             
 args
@@ -37,15 +43,14 @@ expressionM
     | /* e */
     ;
 
-parameters 
-    : parameter
-    | parametersM
+opt_parameters
+    : parameters
     | /* e */
     ;
 
-parametersM
-    : parameter',' parametersM
-    | /* e */
+parameters 
+    : parameter ',' parameters
+    | parameter
     ;
 
 parameter

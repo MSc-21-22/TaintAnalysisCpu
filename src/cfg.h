@@ -1,7 +1,10 @@
+#pragma once
+
 #include <unordered_set>
 #include <memory>
 #include <string>
 #include <vector>
+#include <iostream>
 
 
 
@@ -31,11 +34,11 @@ public:
 template<typename LatticeType>
 class Node {
 public:
-    std::unordered_set<std::shared_ptr<Node>> predecessors;
-    std::unordered_set<std::shared_ptr<Node>> successors;
+    std::unordered_set<std::shared_ptr<Node<LatticeType>>> predecessors;
+    std::unordered_set<std::shared_ptr<Node<LatticeType>>> successors;
     LatticeType state;
 
-    virtual void accept(CfgVisitor<LatticeType>& visitor);
+    virtual void accept(CfgVisitor<LatticeType>& visitor) = 0;
 };
 
 template<typename LatticeType>
@@ -45,8 +48,10 @@ public:
     std::string id;
     std::string expression; // Type should probably be changed
 
+    InitializerNode(std::string type, std::string id, std::string expression) : type(type), id(id), expression(expression){}
+
     void accept(CfgVisitor<LatticeType>& visitor){
-        visitor.visit_initializtion(&this);
+        visitor.visit_initializtion(*this);
     }
 };
 
@@ -56,8 +61,10 @@ public:
     std::string id;
     std::string expression;
 
+    AssignmentNode(std::string id, std::string expression) : id(id), expression(expression){}
+
     void accept(CfgVisitor<LatticeType>& visitor){
-        visitor.visit_assignment(&this);
+        visitor.visit_assignment(*this);
     }
 };
 
@@ -68,19 +75,27 @@ public:
     std::vector<std::string> arguments;
 
     void accept(CfgVisitor<LatticeType>& visitor){
-        visitor.visit_functioncall(&this);
+        visitor.visit_functioncall(*this);
     }
 };
 
 template<typename LatticeType>
 class FunctionDefinition : public Node<LatticeType> {
 public:
-    std::string functionId;
-    std::vector<std::string> formalParameters;
-    std::string returnType;
+    std::string functionId{};
+    std::vector<std::string> formalParameters{};
+    std::string returnType{};
+
+    FunctionDefinition(std::string functionId, std::vector<std::string> parameters) : functionId(functionId), formalParameters(parameters){
+        returnType = "void";
+    }
+
+    FunctionDefinition(std::string functionId, std::vector<std::string> parameters, std::string returnType) : functionId(functionId), formalParameters(parameters), returnType(returnType){
+        std::cout << "WELL DERP" << std::endl;
+    }
 
     void accept(CfgVisitor<LatticeType>& visitor){
-        visitor.visit_functiondef(&this);
+        visitor.visit_functiondef(*this);
     }
 };
 
@@ -89,8 +104,10 @@ class ReturnNode : public Node<LatticeType> {
 public:
     std::string expression;
 
+    ReturnNode(std::string expr) : expression(expr){}
+
     void accept(CfgVisitor<LatticeType>& visitor){
-        visitor.visit_return(&this);
+        visitor.visit_return(*this);
     }
 };
 

@@ -31,6 +31,14 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitStatementassign(scParser::StatementassignContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitStatementinit(scParser::StatementinitContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitArgs(scParser::ArgsContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -43,11 +51,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitParameters(scParser::ParametersContext *ctx) override {
+  virtual antlrcpp::Any visitOpt_parameters(scParser::Opt_parametersContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitParametersM(scParser::ParametersMContext *ctx) override {
+  virtual antlrcpp::Any visitParameters(scParser::ParametersContext *ctx) override {
     return visitChildren(ctx);
   }
 
