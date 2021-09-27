@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "Expression.h"
 
 
 
@@ -43,7 +44,7 @@ class InitializerNode : public Node<LatticeType> {
 public:
     std::string type; // Consider switching to enum
     std::string id;
-    std::string expression; // Type should probably be changed
+    Expression expression; // Type should probably be changed
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_initializtion(&this);
@@ -54,7 +55,7 @@ template<typename LatticeType>
 class AssignmentNode : public Node<LatticeType> {
 public:
     std::string id;
-    std::string expression;
+    Expression expression;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_assignment(&this);
@@ -87,7 +88,7 @@ public:
 template<typename LatticeType>
 class ReturnNode : public Node<LatticeType> {
 public:
-    std::string expression;
+    Expression expression;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_return(&this);
