@@ -4,9 +4,18 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <iostream>
+#include "iostream"
+#include <ostream>
+#include "Expression.h"
 
-
+template<typename T>
+std::ostream& operator<<(std::ostream& stream, const std::vector<T>& vec){
+    stream << " ";
+    for(auto& item : vec){
+        stream << item << " ";
+    }
+    return stream;
+}
 
 template<typename LatticeType>
 class Node;
@@ -38,7 +47,8 @@ public:
     std::unordered_set<std::shared_ptr<Node<LatticeType>>> successors;
     LatticeType state;
 
-    virtual void accept(CfgVisitor<LatticeType>& visitor) = 0;
+    virtual void accept(CfgVisitor<LatticeType>& visitor)=0;
+    virtual void dotPrint(std::ostream &os)=0;
 };
 
 template<typename LatticeType>
@@ -46,12 +56,21 @@ class InitializerNode : public Node<LatticeType> {
 public:
     std::string type; // Consider switching to enum
     std::string id;
-    std::string expression; // Type should probably be changed
+    std::shared_ptr<Expression> expression; // Type should probably be changed
 
-    InitializerNode(std::string type, std::string id, std::string expression) : type(type), id(id), expression(expression){}
+    InitializerNode(std::string type, std::string id, std::shared_ptr<Expression> expression) : type(type), id(id), expression(expression){}
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_initializtion(*this);
+    }
+
+    void dotPrint(std::ostream &os){
+        os << (long)this << "[label = \"" << type << "\n"
+            << id << "\n"
+            << expression->dotPrint() << "\"]\n";
+        for (auto& succ : this->successors){
+            os << this << "->" << succ << "\n" ;
+        }
     }
 };
 
@@ -59,12 +78,20 @@ template<typename LatticeType>
 class AssignmentNode : public Node<LatticeType> {
 public:
     std::string id;
-    std::string expression;
+    std::shared_ptr<Expression> expression;
 
-    AssignmentNode(std::string id, std::string expression) : id(id), expression(expression){}
+    AssignmentNode(std::string id, std::shared_ptr<Expression> expression) : id(id), expression(expression){}
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_assignment(*this);
+    }
+
+    void dotPrint(std::ostream &os){
+        os << (long)this << "[label = \"" << id << "\n"
+              << expression->dotPrint() << "\"]\n";
+        for (auto& succ : this->successors){
+            os << this << "->" << succ << "\n" ;
+        }
     }
 };
 
@@ -77,6 +104,14 @@ public:
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functioncall(*this);
     }
+
+    void dotPrint(std::ostream &os){
+        os << (long)this << "[label = \"" << functionId << "\n"
+              << arguments << "\n]";
+        for (auto& succ : this->successors){
+            os << this << "->" << succ << "\n" ;
+        }
+    }   
 };
 
 template<typename LatticeType>
@@ -97,17 +132,32 @@ public:
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functiondef(*this);
     }
+
+    void dotPrint(std::ostream &os){
+        os << (long)this << "[label = \"" << functionId << "\n"
+              << returnType << "\"]\n";
+        for (auto& succ : this->successors){
+            os << this << "->" << succ << "\n" ;
+        }
+    }
 };
 
 template<typename LatticeType>
 class ReturnNode : public Node<LatticeType> {
 public:
-    std::string expression;
+    std::shared_ptr<Expression> expression;
 
-    ReturnNode(std::string expr) : expression(expr){}
+    ReturnNode(std::shared_ptr<Expression> expr) : expression(expr) {}
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_return(*this);
+    }
+
+    void dotPrint(std::ostream &os){
+        os << (long)this << "[label = \"" << expression->dotPrint() << "\"]\n";
+        for (auto& succ : this->successors){
+            os << this << "->" << succ << "\n" ;
+        }
     }
 };
 

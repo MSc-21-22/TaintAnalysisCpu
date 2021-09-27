@@ -12,13 +12,7 @@ int main(){
     antlr4::ANTLRInputStream stream("void i() {x = 2; y = 3;}");
     auto functions = parse_to_cfg<int>(stream);
 
-    auto node = functions[0];
-    while(true){
-        std::cout << "Node";
-
-        if (node->successors.size() == 0)
-            break;
-    }
+    functions[0]->dotPrint(std::cout);
 
     return 0;
 }

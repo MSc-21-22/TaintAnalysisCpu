@@ -5,6 +5,7 @@
 #include "antlr4-runtime/scParser.h"
 #include "cfg.h"
 #include <vector>
+#include "Expression.h"
 #include <iostream>
 
 template <typename LatticeType>
@@ -42,7 +43,7 @@ public:
         std::cout << "After" << std::endl;
 
         if (ctx->expression() != nullptr){
-            auto node = std::make_shared<ReturnNode<LatticeType>>(ctx->expression()->getText());
+            auto node = std::make_shared<ReturnNode<LatticeType>>(std::make_shared<EmptyExpression>());
             node->predecessors.insert(last);
             last->successors.insert(node);
             last = node;
@@ -53,20 +54,20 @@ public:
 
     virtual antlrcpp::Any visitStatementassign(scParser::StatementassignContext *ctx) override
     {
-        //auto node = std::make_shared<AssignmentNode<LatticeType>>(ctx->ID()->getText(), ctx->expression()->getText());
-        //node->predecessors.insert(last);
-        //last->successors.insert(node);
-        //last = node;
+        auto node = std::make_shared<AssignmentNode<LatticeType>>(ctx->ID()->getText(), std::make_shared<EmptyExpression>());
+        node->predecessors.insert(last);
+        last->successors.insert(node);
+        last = node;
 
         return visitChildren(ctx);
     }
 
     virtual antlrcpp::Any visitStatementinit(scParser::StatementinitContext *ctx) override
     {
-        //auto node = std::make_shared<InitializerNode<LatticeType>>(ctx->type()->getText(), ctx->ID()->getText(), ctx->expression()->getText());
-        //node->predecessors.insert(last);
-        //last->successors.insert(node);
-        //last = node;
+        auto node = std::make_shared<InitializerNode<LatticeType>>(ctx->type()->getText(), ctx->ID()->getText(), std::make_shared<EmptyExpression>());
+        node->predecessors.insert(last);
+        last->successors.insert(node);
+        last = node;
 
         return visitChildren(ctx);
     }
