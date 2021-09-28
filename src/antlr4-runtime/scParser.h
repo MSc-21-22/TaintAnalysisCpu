@@ -1,5 +1,5 @@
 
-// Generated from /home/thorulf/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from /mnt/c/dev/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
 
 #pragma once
 
@@ -20,8 +20,8 @@ public:
   enum {
     RuleProg = 0, RuleFunctionDef = 1, RuleStatements = 2, RuleStatement = 3, 
     RuleStatementassign = 4, RuleStatementinit = 5, RuleArgs = 6, RuleExpression = 7, 
-    RuleExpressionM = 8, RuleOpt_parameters = 9, RuleParameters = 10, RuleParameter = 11, 
-    RuleType = 12
+    RuleExpressionM = 8, RuleFunctionCall = 9, RuleOpt_parameters = 10, 
+    RuleParameters = 11, RuleParameter = 12, RuleType = 13
   };
 
   scParser(antlr4::TokenStream *input);
@@ -43,6 +43,7 @@ public:
   class ArgsContext;
   class ExpressionContext;
   class ExpressionMContext;
+  class FunctionCallContext;
   class Opt_parametersContext;
   class ParametersContext;
   class ParameterContext;
@@ -165,6 +166,7 @@ public:
     ExpressionMContext *expressionM();
     antlr4::tree::TerminalNode *INTEGER();
     antlr4::tree::TerminalNode *ID();
+    FunctionCallContext *functionCall();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -191,6 +193,22 @@ public:
   };
 
   ExpressionMContext* expressionM();
+
+  class  FunctionCallContext : public antlr4::ParserRuleContext {
+  public:
+    FunctionCallContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *ID();
+    antlr4::tree::TerminalNode *LPAREN();
+    antlr4::tree::TerminalNode *RPAREN();
+    ArgsContext *args();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  FunctionCallContext* functionCall();
 
   class  Opt_parametersContext : public antlr4::ParserRuleContext {
   public:

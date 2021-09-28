@@ -1,5 +1,5 @@
 
-// Generated from /home/thorulf/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from /mnt/c/dev/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
 
 #pragma once
 
@@ -36,6 +36,8 @@ public:
     virtual antlrcpp::Any visitExpression(scParser::ExpressionContext *context) = 0;
 
     virtual antlrcpp::Any visitExpressionM(scParser::ExpressionMContext *context) = 0;
+
+    virtual antlrcpp::Any visitFunctionCall(scParser::FunctionCallContext *context) = 0;
 
     virtual antlrcpp::Any visitOpt_parameters(scParser::Opt_parametersContext *context) = 0;
 

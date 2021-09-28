@@ -109,7 +109,9 @@ template<typename LatticeType>
 class FunctionCall : public Node<LatticeType> {
 public:
     std::string functionId;
-    std::vector<std::string> arguments;
+    std::vector<std::shared_ptr<Expression>> arguments;
+
+    FunctionCall(std::string functionId, std::vector<std::shared_ptr<Expression>> arguments) : functionId(functionId), arguments(arguments) {}
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functioncall(*this);

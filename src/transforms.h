@@ -86,6 +86,9 @@ public:
             expression = std::make_shared<VariableExpression>(ctx->ID()->getText());
         }else if(ctx->INTEGER() != nullptr){
             expression = std::make_shared<LiteralExpression>(ctx->INTEGER()->getText());
+        }
+        else if(ctx->functionCall() != nullptr){
+            return ctx->functionCall()->accept(this);
         }else{
             antlrcpp::Any result = ctx->expression()->accept(this);
             std::shared_ptr<Expression> inner = result.as<std::shared_ptr<Expression>>();
@@ -103,6 +106,30 @@ public:
         }
 
         return expression;
+    }
+
+    virtual antlrcpp::Any visitFunctionCall(scParser::FunctionCallContext *ctx) override 
+    {
+        antlrcpp::Any result = ctx->args()->accept(this);
+        auto args = result.as<std::vector<std::shared_ptr<Expression>>>();
+
+        return std::make_shared<FunctionCall<LatticeType>>(ctx->ID()->getText(), args);
+    }
+
+    virtual antlrcpp::Any visitArgs(scParser::ArgsContext *ctx) override
+    {
+        antlrcpp::Any expResult = ctx->expression()->accept(this);
+        auto exp = expResult.as<std::shared_ptr<Expression>>();
+
+        if(ctx->args() != nullptr){
+            antlrcpp::Any argResult = ctx->args()->accept(this);
+            auto args = argResult.as<std::vector<std::shared_ptr<Expression>>>();
+            args.push_back(exp);
+            return args;
+        }else{
+            std::vector<std::shared_ptr<Expression>> args{exp};
+            return args;
+        }
     }
 
     virtual antlrcpp::Any visitExpressionM(scParser::ExpressionMContext *ctx) override
