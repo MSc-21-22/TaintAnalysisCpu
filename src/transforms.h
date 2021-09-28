@@ -20,11 +20,14 @@ public:
     {
         std::vector<std::string> parameters{};
         
-        auto* param = ctx->opt_parameters()->parameters();
-        while(param != nullptr){
-            param = param->parameters();
-            parameters.push_back(param->parameter()->getText());
+        if(ctx->opt_parameters()->parameters() != nullptr){
+            auto* param = ctx->opt_parameters()->parameters();
+            while(param != nullptr){
+                parameters.push_back(param->parameter()->type()->getText() + " " + param->parameter()->ID()->getText());
+                param = param->parameters();
+            }
         }
+
 
         if (ctx->type() != nullptr){
         last = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters, ctx->type()->getText());

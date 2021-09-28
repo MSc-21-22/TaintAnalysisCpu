@@ -9,7 +9,7 @@ int main(){
     std::cout << "Hello, world!" << std::endl;
     std::cout << std::endl;
 
-    antlr4::ANTLRInputStream stream("void i() {x = 2; y = 3;}");
+    antlr4::ANTLRInputStream stream("void i(int j, int z) {x = 2; y = 3;}");
     auto functions = parse_to_cfg<int>(stream);
 
     functions[0]->dotPrint(std::cout);
