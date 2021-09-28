@@ -86,3 +86,20 @@ public:
         return id;
     }
 };
+
+class ParanthesisExpression : public Expression{
+public:
+    std::shared_ptr<Expression> expression;
+
+    ParanthesisExpression(std::shared_ptr<Expression> expression): expression(expression){}
+
+    bool evaluate(std::set<std::string> &state)
+    {
+        return expression->evaluate(state);
+    }
+
+    std::string dotPrint() override
+    {
+        return "("+expression->dotPrint()+")";
+    }
+};

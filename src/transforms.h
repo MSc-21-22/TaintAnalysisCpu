@@ -88,7 +88,8 @@ public:
             expression = std::make_shared<LiteralExpression>(ctx->INTEGER()->getText());
         }else{
             antlrcpp::Any result = ctx->expression()->accept(this);
-            expression = result.as<std::shared_ptr<Expression>>();
+            std::shared_ptr<Expression> inner = result.as<std::shared_ptr<Expression>>();
+            expression = std::make_shared<ParanthesisExpression>(inner);
         }
         
         if (ctx->expressionM() != nullptr && ctx->expressionM()->expression() != nullptr){

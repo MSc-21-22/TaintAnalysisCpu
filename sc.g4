@@ -39,7 +39,7 @@ expression
     ;
 
 expressionM
-    : op=(PLUS | MINUS | DIVISION) expression expressionM
+    : op=(PLUS | MINUS | DIVISION | MULTIPLICATION) expression expressionM
     | /* e */
     ;
 
@@ -68,6 +68,7 @@ INTEGER            : '0'|[1-9][0-9]* ;
 PLUS               : '+' ;
 MINUS              : '-' ;
 DIVISION           : '/' ;
+MULTIPLICATION     : '*' ;
 ASSIGN             : '=' ;
 LPAREN             : '(' ;
 RPAREN             : ')' ;
