@@ -12,9 +12,15 @@ template <typename LatticeType>
 class ScTransformer : public scBaseVisitor
 {
 public:
-    std::vector<std::shared_ptr<Node<LatticeType>>> functionNodes{};
+    std::vector<std::shared_ptr<FunctionDefinition<LatticeType>>> functionNodes{};
+    std::vector<std::shared_ptr<Node<LatticeType>>> nodes{};
 
     std::shared_ptr<Node<LatticeType>> last{};
+
+    void add_node(std::shared_ptr<Node<LatticeType>> node){
+        last = node;
+        nodes.push_back(node);
+    }
 
     antlrcpp::Any visitFunctionDef(scParser::FunctionDefContext *ctx) override
     {
@@ -30,24 +36,32 @@ public:
             }
         }
 
+
+        std::shared_ptr<FunctionDefinition<LatticeType>> functionDef;
         if (ctx->type() != nullptr)
         {
-            last = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters, ctx->type()->getText());
+            functionDef = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters, ctx->type()->getText());
         }
         else
         {
-            last = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters);
+            functionDef = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters);
         }
-        functionNodes.push_back(last);
+        add_node(functionDef);
+        functionNodes.push_back(functionDef);
 
         auto out = visitChildren(ctx);
 
         if (ctx->expression() != nullptr)
         {
-            auto node = std::make_shared<ReturnNode<LatticeType>>(std::make_shared<EmptyExpression>());
+            antlrcpp::Any result = ctx->expression()->accept(this);
+            std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
+
+            auto node = std::make_shared<ReturnNode<LatticeType>>(expression, functionDef->functionId);
             node->predecessors.insert(last);
             last->successors.insert(node);
-            last = node;
+            add_node(node);
+
+            last = nullptr;
         }
 
         return out;
@@ -61,7 +75,7 @@ public:
         auto node = std::make_shared<AssignmentNode<LatticeType>>(ctx->ID()->getText(), expression);
         node->predecessors.insert(last);
         last->successors.insert(node);
-        last = node;
+        add_node(node);
 
         return nullptr;
     }
@@ -74,7 +88,7 @@ public:
         auto node = std::make_shared<InitializerNode<LatticeType>>(ctx->type()->getText(), ctx->ID()->getText(), expression);
         node->predecessors.insert(last);
         last->successors.insert(node);
-        last = node;
+        add_node(node);
 
         return nullptr;
     }
@@ -129,6 +143,21 @@ public:
 };
 
 template <typename LatticeType>
+std::vector<std::shared_ptr<FunctionDefinition<LatticeType>>> parse_to_cfg_function_defs(antlr4::ANTLRInputStream &stream)
+{
+    scLexer lexer(&stream);
+    antlr4::CommonTokenStream tokens(&lexer);
+    scParser parser(&tokens);
+
+    parser.setErrorHandler(std::make_shared<antlr4::BailErrorStrategy>());
+
+    ScTransformer<LatticeType> transformer;
+    parser.prog()->accept(&transformer);
+
+    return transformer.functionNodes;
+}
+
+template <typename LatticeType>
 std::vector<std::shared_ptr<Node<LatticeType>>> parse_to_cfg(antlr4::ANTLRInputStream &stream)
 {
     scLexer lexer(&stream);
@@ -137,8 +166,8 @@ std::vector<std::shared_ptr<Node<LatticeType>>> parse_to_cfg(antlr4::ANTLRInputS
 
     parser.setErrorHandler(std::make_shared<antlr4::BailErrorStrategy>());
 
-    ScTransformer<int> transformer;
+    ScTransformer<LatticeType> transformer;
     parser.prog()->accept(&transformer);
 
-    return transformer.functionNodes;
+    return transformer.nodes;
 }
