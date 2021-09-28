@@ -697,12 +697,13 @@ scParser::ExpressionMContext* scParser::expressionM() {
     case 1: {
       enterOuterAlt(_localctx, 1);
       setState(96);
+      dynamic_cast<ExpressionMContext *>(_localctx)->op = _input->LT(1);
       _la = _input->LA(1);
       if (!((((_la & ~ 0x3fULL) == 0) &&
         ((1ULL << _la) & ((1ULL << scParser::PLUS)
         | (1ULL << scParser::MINUS)
         | (1ULL << scParser::DIVISION))) != 0))) {
-      _errHandler->recoverInline(this);
+        dynamic_cast<ExpressionMContext *>(_localctx)->op = _errHandler->recoverInline(this);
       }
       else {
         _errHandler->reportMatch(this);

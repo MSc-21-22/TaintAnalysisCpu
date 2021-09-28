@@ -29,11 +29,14 @@ public:
     }
 };
 
-class BinaryOperatorExpression : Expression
+class BinaryOperatorExpression : public Expression
 {
 public:
-    Expression *lhs;
-    Expression *rhs;
+    std::string op;
+    std::shared_ptr<Expression> lhs;
+    std::shared_ptr<Expression> rhs;
+
+    BinaryOperatorExpression(std::shared_ptr<Expression> lhs, std::string op, std::shared_ptr<Expression> rhs): lhs(lhs), op(op), rhs(rhs){}
 
     bool evaluate(std::set<std::string> &state)
     {
@@ -43,13 +46,17 @@ public:
     std::string dotPrint() override
     {
         std::string out;
-        out.append(lhs->dotPrint()).append(" -op- ").append(rhs->dotPrint());
+        out.append(lhs->dotPrint()).append(" "+ op +" ").append(rhs->dotPrint());
         return out;
     }
 };
 
-class LiteralExpression : Expression
+class LiteralExpression : public Expression
 {
+public:
+    std::string literal;
+
+    LiteralExpression(std::string literal): literal(literal){}
 
     bool evaluate(std::set<std::string> &state)
     {
@@ -58,14 +65,16 @@ class LiteralExpression : Expression
 
     std::string dotPrint() override
     {
-        return "Literal";
+        return literal;
     }
 };
 
-class VariableExpression : Expression
+class VariableExpression : public Expression
 {
 public:
     std::string id;
+
+    VariableExpression(std::string id): id(id){}
 
     bool evaluate(std::set<std::string> &state)
     {

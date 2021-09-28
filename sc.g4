@@ -39,7 +39,7 @@ expression
     ;
 
 expressionM
-    : (PLUS | MINUS | DIVISION) expression expressionM
+    : op=(PLUS | MINUS | DIVISION) expression expressionM
     | /* e */
     ;
 
