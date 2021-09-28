@@ -19,28 +19,21 @@ public:
     antlrcpp::Any visitFunctionDef(scParser::FunctionDefContext *ctx) override
     {
         std::vector<std::string> parameters{};
-        std::cout << "Function " << ctx->ID()->getText() << std::endl;
         
         auto* param = ctx->opt_parameters()->parameters();
-        std::cout << (param == nullptr) << std::endl;
         while(param != nullptr){
             param = param->parameters();
             parameters.push_back(param->parameter()->getText());
         }
-
-        std::cout << "Function push" << std::endl;
 
         if (ctx->type() != nullptr){
         last = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters, ctx->type()->getText());
         }else{
         last = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters);
         }
-        std::cout << "Function created" << std::endl;
         functionNodes.push_back(last);
 
-        std::cout << "Children " << std::endl;
         auto out = visitChildren(ctx);
-        std::cout << "After" << std::endl;
 
         if (ctx->expression() != nullptr){
             auto node = std::make_shared<ReturnNode<LatticeType>>(std::make_shared<EmptyExpression>());

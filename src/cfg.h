@@ -10,10 +10,16 @@
 
 template<typename T>
 std::ostream& operator<<(std::ostream& stream, const std::vector<T>& vec){
-    stream << " ";
-    for(auto& item : vec){
-        stream << item << " ";
+    auto it = vec.begin();
+    while(it != vec.end()){
+        stream << *it;
+
+        it++;
+        if (it != vec.end()){
+            stream << ", ";
+        }
     }
+
     return stream;
 }
 
@@ -65,8 +71,8 @@ public:
     }
 
     void dotPrint(std::ostream &os){
-        os << (long)this << "[label = \"" << type << "\n"
-            << id << "\n"
+        os << (long)this << "[label = \"" << type << " "
+            << id << " = "
             << expression->dotPrint() << "\"]\n";
         for (auto& succ : this->successors){
             os << (long)this << "->" << (long)succ.get() << "\n";
@@ -90,7 +96,7 @@ public:
     }
 
     void dotPrint(std::ostream &os){
-        os << (long)this << "[label = \"" << id << "\n"
+        os << (long)this << "[label = \"" << id << " = "
               << expression->dotPrint() << "\"]\n";
         for (auto& succ : this->successors){
             os << (long)this << "->" << (long)succ.get() << "\n" ;
@@ -110,8 +116,7 @@ public:
     }
 
     void dotPrint(std::ostream &os){
-        os << (long)this << "[label = \"" << functionId << "\n"
-              << arguments << "\n]";
+        os << (long)this << "[label = \"" << functionId << arguments << "\n]";
         for (auto& succ : this->successors){
             os << (long)this << "->" << (long)succ.get() << "\n" ;
             succ->dotPrint(os);
@@ -130,17 +135,14 @@ public:
         returnType = "void";
     }
 
-    FunctionDefinition(std::string functionId, std::vector<std::string> parameters, std::string returnType) : functionId(functionId), formalParameters(parameters), returnType(returnType){
-        std::cout << "WELL DERP" << std::endl;
-    }
+    FunctionDefinition(std::string functionId, std::vector<std::string> parameters, std::string returnType) : functionId(functionId), formalParameters(parameters), returnType(returnType){}
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functiondef(*this);
     }
 
     void dotPrint(std::ostream &os){
-        os << (long)this << "[label = \"" << functionId << "\n"
-              << returnType << "\"]\n";
+        os << (long)this << "[label = \"" << returnType << " " << functionId << "(" << formalParameters << ")" << "\"]\n";
         for (auto& succ : this->successors){
             os << (long)this << "->" << (long)succ.get() << "\n" ;
             succ->dotPrint(os);
