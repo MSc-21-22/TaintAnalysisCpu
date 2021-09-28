@@ -54,7 +54,6 @@ public:
     LatticeType state;
 
     virtual void accept(CfgVisitor<LatticeType>& visitor)=0;
-    virtual void dotPrint(std::ostream &os)=0;
 };
 
 template<typename LatticeType>
@@ -69,18 +68,6 @@ public:
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_initializtion(*this);
     }
-
-    void dotPrint(std::ostream &os){
-        os << (unsigned long long int)this << "[label = \"" << type << " "
-            << id << " = "
-            << expression->dotPrint() << "\"]\n";
-        for (auto& succ : this->successors){
-            os << (unsigned long long int)this << "->" << (unsigned long long int)succ.get() << "\n";
-            succ->dotPrint(os);
-        }
-
-
-    }
 };
 
 template<typename LatticeType>
@@ -93,15 +80,6 @@ public:
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_assignment(*this);
-    }
-
-    void dotPrint(std::ostream &os){
-        os << (unsigned long long int)this << "[label = \"" << id << " = "
-              << expression->dotPrint() << "\"]\n";
-        for (auto& succ : this->successors){
-            os << (unsigned long long int)this << "->" << (unsigned long long int)succ.get() << "\n" ;
-            succ->dotPrint(os);
-        }
     }
 };
 
@@ -117,15 +95,7 @@ public:
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functioncall(*this);
-    }
-
-    void dotPrint(std::ostream &os){
-        os << (unsigned long long int)this << "[label = \"" << functionId << arguments << "\n]";
-        for (auto& succ : this->successors){
-            os << (unsigned long long int)this << "->" << (unsigned long long int)succ.get() << "\n" ;
-            succ->dotPrint(os);
-        }
-    }   
+    } 
 };
 
 template<typename LatticeType>
@@ -144,14 +114,6 @@ public:
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functiondef(*this);
     }
-
-    void dotPrint(std::ostream &os){
-        os << (unsigned long long int)this << "[label = \"" << returnType << " " << functionId << "(" << formalParameters << ")" << "\"]\n";
-        for (auto& succ : this->successors){
-            os << (unsigned long long int)this << "->" << (unsigned long long int)succ.get() << "\n" ;
-            succ->dotPrint(os);
-        }
-    }
 };
 
 template<typename LatticeType>
@@ -164,14 +126,6 @@ public:
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_return(*this);
-    }
-
-    void dotPrint(std::ostream &os){
-        os << (unsigned long long int)this << "[label = \"" << expression->dotPrint() << "\"]\n";
-        for (auto& succ : this->successors){
-            os << (unsigned long long int)this << "->" << (unsigned long long int)succ.get() << "\n" ;
-            succ->dotPrint(os);
-        }
     }
 };
 

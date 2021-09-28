@@ -6,6 +6,7 @@
 #include "transforms.h"
 #include "worklist.h"
 #include "taint_analysis.h"
+#include "digraph.h"
 
 int main(){
     std::cout << "Hello, world!" << std::endl << std::endl;
@@ -26,6 +27,9 @@ int main(){
         }
         std::cout << std::endl;
     }
+
+    print_digraph<std::set<std::string>>(nodes, std::cout);
+
 
     return 0;
 }
