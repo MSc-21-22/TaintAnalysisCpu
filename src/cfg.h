@@ -156,8 +156,9 @@ template<typename LatticeType>
 class ReturnNode : public Node<LatticeType> {
 public:
     std::shared_ptr<Expression> expression;
+    std::string functionId;
 
-    ReturnNode(std::shared_ptr<Expression> expr) : expression(expr) {}
+    ReturnNode(std::shared_ptr<Expression> expr, std::string functionId) : expression(expr), functionId(functionId) {}
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_return(*this);
