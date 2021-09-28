@@ -111,7 +111,9 @@ public:
     std::string functionId;
     std::vector<std::shared_ptr<Expression>> arguments;
 
-    FunctionCall(std::string functionId, std::vector<std::shared_ptr<Expression>> arguments) : functionId(functionId), arguments(arguments) {}
+    FunctionCall(std::string functionId, std::vector<std::shared_ptr<Expression>> arguments) : functionId(functionId), arguments(arguments) {
+
+    }
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functioncall(*this);

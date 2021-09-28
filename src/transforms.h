@@ -126,8 +126,22 @@ public:
     {
         antlrcpp::Any result = ctx->args()->accept(this);
         auto args = result.as<std::vector<std::shared_ptr<Expression>>>();
+        auto id = ctx->ID()->getText();
+        std::shared_ptr<FunctionDefinition<LatticeType>> successor{};
 
-        return std::make_shared<FunctionCall<LatticeType>>(ctx->ID()->getText(), args);
+        for (std::shared_ptr<FunctionDefinition<LatticeType>> functionNode : functionNodes){
+            if(functionNode->functionId == id) {
+                successor = functionNode;
+            }
+        }
+
+        auto node = std::make_shared<FunctionCall<LatticeType>>(id, args);
+        node->predecessors.insert(last);
+        last->successors.insert(node);
+        node->successors.insert(successor);
+        add_node(node);
+        
+        return nullptr;
     }
 
     virtual antlrcpp::Any visitArgs(scParser::ArgsContext *ctx) override
