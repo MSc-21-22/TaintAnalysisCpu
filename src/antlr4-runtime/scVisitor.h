@@ -31,6 +31,8 @@ public:
 
     virtual antlrcpp::Any visitStatementinit(scParser::StatementinitContext *context) = 0;
 
+    virtual antlrcpp::Any visitWhileloop(scParser::WhileloopContext *context) = 0;
+
     virtual antlrcpp::Any visitArgs(scParser::ArgsContext *context) = 0;
 
     virtual antlrcpp::Any visitExpression(scParser::ExpressionContext *context) = 0;

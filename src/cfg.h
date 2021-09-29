@@ -8,21 +8,6 @@
 #include <ostream>
 #include "Expression.h"
 
-template<typename T>
-std::ostream& operator<<(std::ostream& stream, const std::vector<T>& vec){
-    auto it = vec.begin();
-    while(it != vec.end()){
-        stream << *it;
-
-        it++;
-        if (it != vec.end()){
-            stream << ", ";
-        }
-    }
-
-    return stream;
-}
-
 template<typename LatticeType>
 class Node;
 template<typename LatticeType>
@@ -35,6 +20,10 @@ template<typename LatticeType>
 class FunctionDefinition;
 template<typename LatticeType>
 class ReturnNode;
+template<typename LatticeType>
+class WhileLoop;
+template<typename LatticeType>
+class EmptyReturnNode;
 
 template<typename LatticeType>
 class CfgVisitor {
@@ -44,6 +33,8 @@ public:
     virtual void visit_functioncall(FunctionCall<LatticeType>& node) = 0;
     virtual void visit_functiondef(FunctionDefinition<LatticeType>& node) = 0;
     virtual void visit_return(ReturnNode<LatticeType>& node) = 0;
+    virtual void visit_whileloop(WhileLoop<LatticeType>& node) = 0;
+    virtual void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) = 0;
 };
 
 template<typename LatticeType>
@@ -61,7 +52,7 @@ class InitializerNode : public Node<LatticeType> {
 public:
     std::string type; // Consider switching to enum
     std::string id;
-    std::shared_ptr<Expression> expression; // Type should probably be changed
+    std::shared_ptr<Expression> expression;
 
     InitializerNode(std::string type, std::string id, std::shared_ptr<Expression> expression) : type(type), id(id), expression(expression){}
 
@@ -104,6 +95,7 @@ public:
     std::string functionId{};
     std::vector<std::string> formalParameters{};
     std::string returnType{};
+    std::vector<std::shared_ptr<Node<LatticeType>>> returns;
 
     FunctionDefinition(std::string functionId, std::vector<std::string> parameters) : functionId(functionId), formalParameters(parameters){
         returnType = "void";
@@ -113,6 +105,18 @@ public:
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functiondef(*this);
+    }
+};
+
+template<typename LatticeType>
+class WhileLoop : public Node<LatticeType> {
+public:
+    std::shared_ptr<Expression> condition;
+
+    WhileLoop(std::shared_ptr<Expression> condition) : condition(condition) {}
+
+    void accept(CfgVisitor<LatticeType>& visitor){
+        visitor.visit_whileloop(*this);
     }
 };
 
@@ -129,4 +133,16 @@ public:
     }
 };
 
+
+template<typename LatticeType>
+class EmptyReturnNode : public Node<LatticeType> {
+public:
+    std::string functionId;
+
+    EmptyReturnNode(std::string functionId) : functionId(functionId) {}
+
+    void accept(CfgVisitor<LatticeType>& visitor){
+        visitor.visit_emptyReturn(*this);
+    }
+};
 

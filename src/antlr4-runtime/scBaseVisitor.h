@@ -39,6 +39,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitWhileloop(scParser::WhileloopContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitArgs(scParser::ArgsContext *ctx) override {
     return visitChildren(ctx);
   }
