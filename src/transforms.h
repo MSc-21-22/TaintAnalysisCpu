@@ -110,7 +110,6 @@ public:
         for (auto& s : ctx->statements()){
             last={node};
             antlrcpp::Any statement = s->accept(this);
-            std::cout << "for\n";
             endif.insert(endif.end(), last.begin(), last.end());
         }
         last=endif;
