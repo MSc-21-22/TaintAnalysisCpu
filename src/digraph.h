@@ -5,42 +5,44 @@ template <typename LatticeType>
 class DigraphPrinter : public CfgVisitor<LatticeType>
 {
 public:
-    std::ostream& os;
+    std::ostream &os;
 
-    DigraphPrinter(std::ostream& os) : os(os){}
+    DigraphPrinter(std::ostream &os) : os(os) {}
 
     void visit_initializtion(InitializerNode<LatticeType> &node) override
     {
-        os << (unsigned long long int)&node << "[label = \"" << node.type << " "
-           << node.id << " = "
-           << node.expression->dotPrint() << "\"]\n";
+        os << (unsigned long long int)&node << "[label = \"" << node.type << " " 
+            << node.id << " = " << node.expression->dotPrint() << "\"]\n";
     }
     void visit_assignment(AssignmentNode<LatticeType> &node) override
     {
-        os << (unsigned long long int)&node << "[label = \"" << node.id << " = "
-           << node.expression->dotPrint() << "\"]\n";
+        os << (unsigned long long int)&node << "[label = \"" << node.id << " = " 
+            << node.expression->dotPrint() << "\"]\n";
     }
     void visit_functioncall(FunctionCall<LatticeType> &node) override
     {
-        os << (unsigned long long int)&node << "[label = \"" << node.functionId << node.arguments << "\n]";
+        os << (unsigned long long int)&node << "[label = \"" << node.functionId 
+            << node.arguments << "\n]";
     }
     void visit_functiondef(FunctionDefinition<LatticeType> &node) override
     {
-        os << (unsigned long long int)&node << "[label = \"" << node.returnType << " " << node.functionId << "(" << node.formalParameters << ")"
-           << "\"]\n";
+        os << (unsigned long long int)&node << "[label = \"" << node.returnType 
+            << " " << node.functionId << "(" << node.formalParameters << ")" << "\"]\n";
     }
     void visit_return(ReturnNode<LatticeType> &node) override
     {
-        os << (unsigned long long int)&node << "[label = \"" << "return " << node.expression->dotPrint() << "\"]\n";
+        os << (unsigned long long int)&node << "[label = \"" << "return " 
+            << node.expression->dotPrint() << "\"]\n";
     }
 };
 
-
-template<typename LatticeType>
-void print_digraph(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, std::ostream& stream){
+template <typename LatticeType>
+void print_digraph(std::vector<std::shared_ptr<Node<LatticeType>>> &nodes, std::ostream &stream)
+{
     DigraphPrinter<LatticeType> printer(stream);
 
-    for(std::shared_ptr<Node<LatticeType>>& node : nodes){
+    for (std::shared_ptr<Node<LatticeType>> &node : nodes)
+    {
         node->accept(printer);
 
         for (auto &succ : node->successors)

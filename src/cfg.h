@@ -61,7 +61,7 @@ class InitializerNode : public Node<LatticeType> {
 public:
     std::string type; // Consider switching to enum
     std::string id;
-    std::shared_ptr<Expression> expression; // Type should probably be changed
+    std::shared_ptr<Expression> expression;
 
     InitializerNode(std::string type, std::string id, std::shared_ptr<Expression> expression) : type(type), id(id), expression(expression){}
 
