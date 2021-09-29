@@ -1,5 +1,5 @@
 
-// Generated from /mnt/c/dev/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from /home/thorulf/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
 
 #pragma once
 
@@ -36,6 +36,10 @@ public:
   }
 
   virtual antlrcpp::Any visitStatementinit(scParser::StatementinitContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitWhileloop(scParser::WhileloopContext *ctx) override {
     return visitChildren(ctx);
   }
 

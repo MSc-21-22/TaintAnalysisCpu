@@ -1,5 +1,5 @@
 
-// Generated from /mnt/c/dev/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from /home/thorulf/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
 
 #pragma once
 
@@ -13,15 +13,15 @@ class  scParser : public antlr4::Parser {
 public:
   enum {
     T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, T__4 = 5, T__5 = 6, T__6 = 7, 
-    INTEGER = 8, PLUS = 9, MINUS = 10, DIVISION = 11, MULTIPLICATION = 12, 
-    ASSIGN = 13, LPAREN = 14, RPAREN = 15, ID = 16, WS = 17
+    T__7 = 8, INTEGER = 9, PLUS = 10, MINUS = 11, DIVISION = 12, MULTIPLICATION = 13, 
+    ASSIGN = 14, LPAREN = 15, RPAREN = 16, ID = 17, WS = 18
   };
 
   enum {
     RuleProg = 0, RuleFunctionDef = 1, RuleStatements = 2, RuleStatement = 3, 
-    RuleStatementassign = 4, RuleStatementinit = 5, RuleArgs = 6, RuleExpression = 7, 
-    RuleExpressionM = 8, RuleFunctionCall = 9, RuleOpt_parameters = 10, 
-    RuleParameters = 11, RuleParameter = 12, RuleType = 13
+    RuleStatementassign = 4, RuleStatementinit = 5, RuleWhileloop = 6, RuleArgs = 7, 
+    RuleExpression = 8, RuleExpressionM = 9, RuleFunctionCall = 10, RuleOpt_parameters = 11, 
+    RuleParameters = 12, RuleParameter = 13, RuleType = 14
   };
 
   scParser(antlr4::TokenStream *input);
@@ -40,6 +40,7 @@ public:
   class StatementContext;
   class StatementassignContext;
   class StatementinitContext;
+  class WhileloopContext;
   class ArgsContext;
   class ExpressionContext;
   class ExpressionMContext;
@@ -89,6 +90,7 @@ public:
     virtual size_t getRuleIndex() const override;
     StatementContext *statement();
     StatementsContext *statements();
+    WhileloopContext *whileloop();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -141,6 +143,22 @@ public:
   };
 
   StatementinitContext* statementinit();
+
+  class  WhileloopContext : public antlr4::ParserRuleContext {
+  public:
+    WhileloopContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *LPAREN();
+    ExpressionContext *expression();
+    antlr4::tree::TerminalNode *RPAREN();
+    StatementsContext *statements();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  WhileloopContext* whileloop();
 
   class  ArgsContext : public antlr4::ParserRuleContext {
   public:

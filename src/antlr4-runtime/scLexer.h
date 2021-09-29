@@ -1,5 +1,5 @@
 
-// Generated from /mnt/c/dev/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from /home/thorulf/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
 
 #pragma once
 
@@ -13,8 +13,8 @@ class  scLexer : public antlr4::Lexer {
 public:
   enum {
     T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, T__4 = 5, T__5 = 6, T__6 = 7, 
-    INTEGER = 8, PLUS = 9, MINUS = 10, DIVISION = 11, MULTIPLICATION = 12, 
-    ASSIGN = 13, LPAREN = 14, RPAREN = 15, ID = 16, WS = 17
+    T__7 = 8, INTEGER = 9, PLUS = 10, MINUS = 11, DIVISION = 12, MULTIPLICATION = 13, 
+    ASSIGN = 14, LPAREN = 15, RPAREN = 16, ID = 17, WS = 18
   };
 
   scLexer(antlr4::CharStream *input);

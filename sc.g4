@@ -11,6 +11,7 @@ functionDef
         
 statements 
     : statement';' statements
+    | whileloop statements
     | /* e */
     ;
             
@@ -27,6 +28,10 @@ statementinit
     : type ID '=' expression
     ;
             
+whileloop
+    : 'while' LPAREN expression RPAREN '{' statements '}'
+    ;
+
 args
     : expression',' args
     | expression
