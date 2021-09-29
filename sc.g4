@@ -12,6 +12,7 @@ functionDef
 statements 
     : statement';' statements
     | whileloop statements
+    | statementif statements
     | /* e */
     ;
             
@@ -30,6 +31,10 @@ statementinit
             
 whileloop
     : 'while' LPAREN expression RPAREN '{' statements '}'
+    ;
+
+statementif
+    :  'if' LPAREN expression RPAREN '{' statements '}' 'else' '{' statements '}'  
     ;
 
 args

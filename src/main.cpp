@@ -31,5 +31,12 @@ int main(){
     print_digraph<std::set<std::string>>(nodes, std::cout);
 
 
+    antlr4::ANTLRInputStream procIF("void i(int j) {if(1){int x=2; y=3+x;}else{int x=3;} int z=y+x;}");
+    std::cout << "test\n";
+    auto test = parse_to_cfg<std::set<std::string>>(procIF);
+    
+    print_digraph<std::set<std::string>>(test, std::cout);
+
+
     return 0;
 }

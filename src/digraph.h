@@ -54,6 +54,12 @@ public:
         os << (unsigned long long int)&node << "[label = \"" << "while(" 
             << node.condition->dotPrint() << ")" << "\"]\n";
     }
+
+    void visit_if(IfNode<LatticeType> &node) override
+    {
+        os << (unsigned long long int)&node << "[label = \"" << "if(" 
+            << node.expression->dotPrint() << ")" << "\"]\n";
+    }
 };
 
 template <typename LatticeType>
