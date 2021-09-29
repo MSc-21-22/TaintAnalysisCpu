@@ -11,7 +11,7 @@
 int main(){
     std::cout << "Hello, world!" << std::endl << std::endl;
 
-    antlr4::ANTLRInputStream stream("void i(int j) {x = 2*(5-2); y = 3+j;}");
+    antlr4::ANTLRInputStream stream("void i(int j) {x = 2*(5-2); y = 3+j;} void f(){i(2);}");
     auto nodes = parse_to_cfg<std::set<std::string>>(stream);
     nodes.front()->state.insert("j");
 

@@ -103,6 +103,7 @@ public:
     virtual size_t getRuleIndex() const override;
     StatementinitContext *statementinit();
     StatementassignContext *statementassign();
+    FunctionCallContext *functionCall();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
