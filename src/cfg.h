@@ -8,21 +8,6 @@
 #include <ostream>
 #include "Expression.h"
 
-template<typename T>
-std::ostream& operator<<(std::ostream& stream, const std::vector<T>& vec){
-    auto it = vec.begin();
-    while(it != vec.end()){
-        stream << *it;
-
-        it++;
-        if (it != vec.end()){
-            stream << ", ";
-        }
-    }
-
-    return stream;
-}
-
 template<typename LatticeType>
 class Node;
 template<typename LatticeType>
@@ -61,7 +46,7 @@ class InitializerNode : public Node<LatticeType> {
 public:
     std::string type; // Consider switching to enum
     std::string id;
-    std::shared_ptr<Expression> expression; // Type should probably be changed
+    std::shared_ptr<Expression> expression;
 
     InitializerNode(std::string type, std::string id, std::shared_ptr<Expression> expression) : type(type), id(id), expression(expression){}
 
