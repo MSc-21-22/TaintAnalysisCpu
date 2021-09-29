@@ -85,13 +85,6 @@ public:
         visitor.visit_if(*this);
     }
 
-    void dotPrint(std::ostream &os){
-        os << (unsigned long long int)this << "[label = \" " << expression->dotPrint() << "\"]\n";
-        for (auto& succ : this->successors){
-            os <<(unsigned long long int)this << "->" << (unsigned long long int)succ.get() << "\n";
-            succ->dotPrint(os);
-        }
-    }
 };
 
 template<typename LatticeType>
