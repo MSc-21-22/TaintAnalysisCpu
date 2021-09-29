@@ -20,6 +20,8 @@ template<typename LatticeType>
 class FunctionDefinition;
 template<typename LatticeType>
 class ReturnNode;
+template<typename LatticeType>
+class WhileLoop;
 
 template<typename LatticeType>
 class CfgVisitor {
@@ -29,6 +31,7 @@ public:
     virtual void visit_functioncall(FunctionCall<LatticeType>& node) = 0;
     virtual void visit_functiondef(FunctionDefinition<LatticeType>& node) = 0;
     virtual void visit_return(ReturnNode<LatticeType>& node) = 0;
+    virtual void visit_whileloop(WhileLoop<LatticeType>& node) = 0;
 };
 
 template<typename LatticeType>
@@ -96,6 +99,18 @@ public:
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functiondef(*this);
+    }
+};
+
+template<typename LatticeType>
+class WhileLoop : public Node<LatticeType> {
+public:
+    std::shared_ptr<Expression> condition;
+
+    WhileLoop(std::shared_ptr<Expression> condition) : condition(condition) {}
+
+    void accept(CfgVisitor<LatticeType>& visitor){
+        visitor.visit_whileloop(*this);
     }
 };
 

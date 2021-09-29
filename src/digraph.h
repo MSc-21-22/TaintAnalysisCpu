@@ -49,6 +49,11 @@ public:
         os << (unsigned long long int)&node << "[label = \"" << "return " 
             << node.expression->dotPrint() << "\"]\n";
     }
+    void visit_whileloop(WhileLoop<LatticeType> &node) override
+    {
+        os << (unsigned long long int)&node << "[label = \"" << "while(" 
+            << node.condition->dotPrint() << ")" << "\"]\n";
+    }
 };
 
 template <typename LatticeType>

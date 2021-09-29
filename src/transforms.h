@@ -15,10 +15,17 @@ public:
     std::vector<std::shared_ptr<FunctionDefinition<LatticeType>>> functionNodes{};
     std::vector<std::shared_ptr<Node<LatticeType>>> nodes{};
 
-    std::shared_ptr<Node<LatticeType>> last{};
+    std::vector<std::shared_ptr<Node<LatticeType>>> last{};
+
+    void link_to_lasts(std::shared_ptr<Node<LatticeType>> node){
+        for(auto& other : last){
+            node->predecessors.insert(other);
+            other->successors.insert(node);
+        }
+    }
 
     void add_node(std::shared_ptr<Node<LatticeType>> node){
-        last = node;
+        last = {node};
         nodes.push_back(node);
     }
 
@@ -57,11 +64,10 @@ public:
             std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
 
             auto node = std::make_shared<ReturnNode<LatticeType>>(expression, functionDef->functionId);
-            node->predecessors.insert(last);
-            last->successors.insert(node);
+            link_to_lasts(node);
             add_node(node);
 
-            last = nullptr;
+            last = {};
         }
 
         return out;
@@ -73,8 +79,7 @@ public:
         std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
         
         auto node = std::make_shared<AssignmentNode<LatticeType>>(ctx->ID()->getText(), expression);
-        node->predecessors.insert(last);
-        last->successors.insert(node);
+        link_to_lasts(node);
         add_node(node);
 
         return nullptr;
@@ -86,8 +91,7 @@ public:
         std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
 
         auto node = std::make_shared<InitializerNode<LatticeType>>(ctx->type()->getText(), ctx->ID()->getText(), expression);
-        node->predecessors.insert(last);
-        last->successors.insert(node);
+        link_to_lasts(node);
         add_node(node);
 
         return nullptr;
@@ -144,6 +148,21 @@ public:
             std::vector<std::shared_ptr<Expression>> args{exp};
             return args;
         }
+    }
+
+    virtual antlrcpp::Any visitWhileloop(scParser::WhileloopContext *ctx) override {
+        antlrcpp::Any result = ctx->expression()->accept(this);
+        std::shared_ptr<Expression> conditional = result.as<std::shared_ptr<Expression>>();
+
+        auto node = std::make_shared<WhileLoop<LatticeType>>(conditional);
+        link_to_lasts(node);
+        add_node(node);
+
+        ctx->statements()->accept(this);
+        link_to_lasts(node);
+        last = {node};
+
+        return nullptr;
     }
 
     virtual antlrcpp::Any visitExpressionM(scParser::ExpressionMContext *ctx) override
