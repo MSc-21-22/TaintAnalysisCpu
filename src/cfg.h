@@ -8,21 +8,6 @@
 #include <ostream>
 #include "Expression.h"
 
-template<typename T>
-std::ostream& operator<<(std::ostream& stream, const std::vector<T>& vec){
-    auto it = vec.begin();
-    while(it != vec.end()){
-        stream << *it;
-
-        it++;
-        if (it != vec.end()){
-            stream << ", ";
-        }
-    }
-
-    return stream;
-}
-
 template<typename LatticeType>
 class Node;
 template<typename LatticeType>
