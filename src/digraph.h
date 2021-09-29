@@ -14,44 +14,24 @@ public:
         os << (unsigned long long int)&node << "[label = \"" << node.type << " "
            << node.id << " = "
            << node.expression->dotPrint() << "\"]\n";
-        for (auto &succ : node.successors)
-        {
-            os << (unsigned long long int)&node << "->" << (unsigned long long int)succ.get() << "\n";
-        }
     }
     void visit_assignment(AssignmentNode<LatticeType> &node) override
     {
         os << (unsigned long long int)&node << "[label = \"" << node.id << " = "
            << node.expression->dotPrint() << "\"]\n";
-        for (auto &succ : node.successors)
-        {
-            os << (unsigned long long int)&node << "->" << (unsigned long long int)succ.get() << "\n";
-        }
     }
     void visit_functioncall(FunctionCall<LatticeType> &node) override
     {
         os << (unsigned long long int)&node << "[label = \"" << node.functionId << node.arguments << "\n]";
-        for (auto &succ : node.successors)
-        {
-            os << (unsigned long long int)&node << "->" << (unsigned long long int)succ.get() << "\n";
-        }
     }
     void visit_functiondef(FunctionDefinition<LatticeType> &node) override
     {
         os << (unsigned long long int)&node << "[label = \"" << node.returnType << " " << node.functionId << "(" << node.formalParameters << ")"
            << "\"]\n";
-        for (auto &succ : node.successors)
-        {
-            os << (unsigned long long int)&node << "->" << (unsigned long long int)succ.get() << "\n";
-        }
     }
     void visit_return(ReturnNode<LatticeType> &node) override
     {
         os << (unsigned long long int)&node << "[label = \"" << "return " << node.expression->dotPrint() << "\"]\n";
-        for (auto &succ : node.successors)
-        {
-            os << (unsigned long long int)&node << "->" << (unsigned long long int)succ.get() << "\n";
-        }
     }
 };
 
@@ -62,5 +42,10 @@ void print_digraph(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, std::
 
     for(std::shared_ptr<Node<LatticeType>>& node : nodes){
         node->accept(printer);
+
+        for (auto &succ : node->successors)
+        {
+            stream << (unsigned long long int)&node << "->" << (unsigned long long int)succ.get() << "\n";
+        }
     }
 }
