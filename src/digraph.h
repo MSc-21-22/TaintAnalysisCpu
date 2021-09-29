@@ -62,7 +62,7 @@ void print_digraph(std::vector<std::shared_ptr<Node<LatticeType>>> &nodes, std::
 
         for (auto &succ : node->successors)
         {
-            stream << (unsigned long long int)&node << "->" << (unsigned long long int)succ.get() << "\n";
+            stream << (unsigned long long int)node.get() << "->" << (unsigned long long int)succ.get() << "\n";
         }
     }
 }
