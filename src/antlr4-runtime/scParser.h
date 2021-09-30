@@ -1,5 +1,5 @@
 
-// Generated from /home/zcortezz/Uni/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from /home/thorulf/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
 
 #pragma once
 
@@ -108,6 +108,7 @@ public:
     virtual size_t getRuleIndex() const override;
     StatementinitContext *statementinit();
     StatementassignContext *statementassign();
+    FunctionCallContext *functionCall();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

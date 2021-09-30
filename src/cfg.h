@@ -24,6 +24,8 @@ template<typename LatticeType>
 class ReturnNode;
 template<typename LatticeType>
 class WhileLoop;
+template<typename LatticeType>
+class EmptyReturnNode;
 
 template<typename LatticeType>
 class CfgVisitor {
@@ -35,6 +37,7 @@ public:
     virtual void visit_functiondef(FunctionDefinition<LatticeType>& node) = 0;
     virtual void visit_return(ReturnNode<LatticeType>& node) = 0;
     virtual void visit_whileloop(WhileLoop<LatticeType>& node) = 0;
+    virtual void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) = 0;
 };
 
 template<typename LatticeType>
@@ -93,7 +96,9 @@ public:
     std::string functionId;
     std::vector<std::shared_ptr<Expression>> arguments;
 
-    FunctionCall(std::string functionId, std::vector<std::shared_ptr<Expression>> arguments) : functionId(functionId), arguments(arguments) {}
+    FunctionCall(std::string functionId, std::vector<std::shared_ptr<Expression>> arguments) : functionId(functionId), arguments(arguments) {
+
+    }
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functioncall(*this);
@@ -106,6 +111,7 @@ public:
     std::string functionId{};
     std::vector<std::string> formalParameters{};
     std::string returnType{};
+    std::vector<std::shared_ptr<Node<LatticeType>>> returns;
 
     FunctionDefinition(std::string functionId, std::vector<std::string> parameters) : functionId(functionId), formalParameters(parameters){
         returnType = "void";
@@ -143,4 +149,16 @@ public:
     }
 };
 
+
+template<typename LatticeType>
+class EmptyReturnNode : public Node<LatticeType> {
+public:
+    std::string functionId;
+
+    EmptyReturnNode(std::string functionId) : functionId(functionId) {}
+
+    void accept(CfgVisitor<LatticeType>& visitor){
+        visitor.visit_emptyReturn(*this);
+    }
+};
 

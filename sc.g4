@@ -19,6 +19,7 @@ statements
 statement
     :  statementinit
     |  statementassign
+    |  functionCall
     ;
 
 statementassign
