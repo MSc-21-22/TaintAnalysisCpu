@@ -133,9 +133,6 @@ public:
             expression = std::make_shared<VariableExpression>(ctx->ID()->getText());
         }else if(ctx->INTEGER() != nullptr){
             expression = std::make_shared<LiteralExpression>(ctx->INTEGER()->getText());
-        }
-        else if(ctx->functionCall() != nullptr){
-            return ctx->functionCall()->accept(this);
         }else{
             antlrcpp::Any result = ctx->expression()->accept(this);
             std::shared_ptr<Expression> inner = result.as<std::shared_ptr<Expression>>();
@@ -153,6 +150,15 @@ public:
         }
 
         return expression;
+    }
+
+    virtual antlrcpp::Any visitFunctionCallAssign(scParser::FunctionCallAssignContext *ctx) override {
+        antlrcpp::Any result = ctx->functionCall()->accept(this);
+        auto node = result.as<std::shared_ptr<FunctionCall<LatticeType>>>();
+        node->type = ctx->type()->getText();
+        node->variableId = ctx->ID()->getText();
+
+        return nullptr;
     }
 
     virtual antlrcpp::Any visitFunctionCall(scParser::FunctionCallContext *ctx) override 
@@ -175,7 +181,7 @@ public:
         last = successor->returns;
         
         
-        return nullptr;
+        return node;
     }
 
     virtual antlrcpp::Any visitArgs(scParser::ArgsContext *ctx) override

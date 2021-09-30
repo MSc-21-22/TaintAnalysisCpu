@@ -19,7 +19,7 @@ statements
 statement
     :  statementinit
     |  statementassign
-    |  functionCall
+    |  functionCallAssign
     ;
 
 statementassign
@@ -47,12 +47,15 @@ expression
     : LPAREN expression RPAREN expressionM
     | INTEGER expressionM
     | ID expressionM
-    | functionCall expressionM
     ;
 
 expressionM
     : op=(PLUS | MINUS | DIVISION | MULTIPLICATION) expression expressionM
     | /* e */
+    ;
+
+functionCallAssign
+    : type ID '=' functionCall
     ;
 
 functionCall

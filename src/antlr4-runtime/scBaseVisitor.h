@@ -59,6 +59,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitFunctionCallAssign(scParser::FunctionCallAssignContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitFunctionCall(scParser::FunctionCallContext *ctx) override {
     return visitChildren(ctx);
   }

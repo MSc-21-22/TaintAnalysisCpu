@@ -36,7 +36,7 @@ public:
     }
     void visit_functioncall(FunctionCall<LatticeType> &node) override
     {
-        os << (unsigned long long int)&node << "[label = \"" << node.functionId << "(" << node.arguments << ")\"]\n";;
+        os << (unsigned long long int)&node << "[label = \"" << node.type << " " << node.variableId << " = " << node.functionId << "(" << node.arguments << ")\"]\n";;
     }
     void visit_functiondef(FunctionDefinition<LatticeType> &node) override
     {
