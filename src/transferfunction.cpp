@@ -38,6 +38,10 @@ void TaintAnalyzer::visit_assignment(AssignmentNode<std::set<std::string>> &node
     }
 }
 
+void TaintAnalyzer::visit_if(IfNode<std::set<std::string>> &node){
+    join(node);
+}
+
 void TaintAnalyzer::visit_functioncall(FunctionCall<std::set<std::string>> &node)
 {
     join(node);

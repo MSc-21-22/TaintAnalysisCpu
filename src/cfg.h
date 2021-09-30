@@ -15,6 +15,8 @@ class InitializerNode;
 template<typename LatticeType>
 class AssignmentNode;
 template<typename LatticeType>
+class IfNode;
+template<typename LatticeType>
 class FunctionCall;
 template<typename LatticeType>
 class FunctionDefinition;
@@ -30,6 +32,7 @@ class CfgVisitor {
 public:
     virtual void visit_initializtion(InitializerNode<LatticeType>& node) = 0;
     virtual void visit_assignment(AssignmentNode<LatticeType>& node) = 0;
+    virtual void visit_if(IfNode<LatticeType>& node) = 0;
     virtual void visit_functioncall(FunctionCall<LatticeType>& node) = 0;
     virtual void visit_functiondef(FunctionDefinition<LatticeType>& node) = 0;
     virtual void visit_return(ReturnNode<LatticeType>& node) = 0;
@@ -72,6 +75,19 @@ public:
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_assignment(*this);
     }
+};
+
+template<typename LatticeType>
+class IfNode : public Node<LatticeType>{
+public:
+    std::shared_ptr<Expression> expression;
+
+    IfNode(std::shared_ptr<Expression> expression) : expression(expression){}
+
+    void accept(CfgVisitor<LatticeType>& visitor){
+        visitor.visit_if(*this);
+    }
+
 };
 
 template<typename LatticeType>

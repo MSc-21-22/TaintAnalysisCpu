@@ -107,6 +107,25 @@ public:
         return nullptr;
     }
 
+    virtual antlrcpp::Any visitStatementif(scParser::StatementifContext *ctx) override
+    {
+        antlrcpp::Any result = ctx->expression()->accept(this);
+        std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
+
+        auto node = std::make_shared<IfNode<LatticeType>>(expression);
+        link_to_lasts(node);
+        add_node(node);
+
+        std::vector<std::shared_ptr<Node<LatticeType>>> endif;
+        for (auto& s : ctx->statements()){
+            last={node};
+            antlrcpp::Any statement = s->accept(this);
+            endif.insert(endif.end(), last.begin(), last.end());
+        }
+        last=endif;
+        return nullptr;
+    }
+
     virtual antlrcpp::Any visitExpression(scParser::ExpressionContext *ctx) override
     {
         std::shared_ptr<Expression> expression;
