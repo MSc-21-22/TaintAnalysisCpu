@@ -8,6 +8,15 @@
 #include "taint_analysis.h"
 #include "digraph.h"
 
+
+void print_result(std::set<std::string>& result, std::ostream& stream){
+    stream << "\\n{ ";
+    for (auto& x : result){
+        stream << x << " ";
+    }
+    stream << "}";
+}
+
 int main(){
     std::cout << "Hello, world!" << std::endl << std::endl;
 
@@ -28,13 +37,7 @@ int main(){
         std::cout << std::endl;
     }
 
-    print_digraph<std::set<std::string>>(nodes, std::cout);
-
-
-    antlr4::ANTLRInputStream procIF("void i(int j) {if(1){int x=2; y=3+x;}else{int x=3;} int z=y+x;}");
-    auto test = parse_to_cfg<std::set<std::string>>(procIF);
-    
-    print_digraph<std::set<std::string>>(test, std::cout);
+    print_digraph_with_result<std::set<std::string>>(nodes, std::cout, print_result);
 
 
     return 0;

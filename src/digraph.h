@@ -26,43 +26,36 @@ public:
 
     void visit_initializtion(InitializerNode<LatticeType> &node) override
     {
-        os << (unsigned long long int)&node << "[label = \"" << node.type << " " 
-            << node.id << " = " << node.expression->dotPrint() << "\"]\n";
+        os << node.type << " " << node.id << " = " << node.expression->dotPrint();
     }
     void visit_assignment(AssignmentNode<LatticeType> &node) override
     {
-        os << (unsigned long long int)&node << "[label = \"" << node.id << " = " 
-            << node.expression->dotPrint() << "\"]\n";
+        os << node.id << " = " << node.expression->dotPrint();
     }
     void visit_functioncall(FunctionCall<LatticeType> &node) override
     {
-        os << (unsigned long long int)&node << "[label = \"" << node.functionId << "(" << node.arguments << ")\"]\n";;
+        os << node.functionId << "(" << node.arguments << ")";
     }
     void visit_functiondef(FunctionDefinition<LatticeType> &node) override
     {
-        os << (unsigned long long int)&node << "[label = \"" << node.returnType 
-            << " " << node.functionId << "(" << node.formalParameters << ")" << "\"]\n";
+        os << node.returnType << " " << node.functionId << "(" << node.formalParameters << ")";
     }
     void visit_return(ReturnNode<LatticeType> &node) override
     {
-        os << (unsigned long long int)&node << "[label = \"" << "return " 
-            << node.expression->dotPrint() << "\"]\n";
+        os << "return " << node.expression->dotPrint();
     }
     void visit_emptyReturn(EmptyReturnNode<LatticeType> &node) override
     {
-        os << (unsigned long long int)&node << "[label = \"" << "return " 
-            << "\"]\n";
+        os << "return";
     }
     void visit_whileloop(WhileLoop<LatticeType> &node) override
     {
-        os << (unsigned long long int)&node << "[label = \"" << "while(" 
-            << node.condition->dotPrint() << ")" << "\"]\n";
+        os << "while(" << node.condition->dotPrint() << ")";
     }
 
     void visit_if(IfNode<LatticeType> &node) override
     {
-        os << (unsigned long long int)&node << "[label = \"" << "if(" 
-            << node.expression->dotPrint() << ")" << "\"]\n";
+        os << "if(" << node.expression->dotPrint() << ")";
     }
 };
 
@@ -73,7 +66,29 @@ void print_digraph(std::vector<std::shared_ptr<Node<LatticeType>>> &nodes, std::
 
     for (std::shared_ptr<Node<LatticeType>> &node : nodes)
     {
+        stream << (unsigned long long int)&node << "[label = \"";
         node->accept(printer);
+        stream << "\"]\n";
+
+        for (auto &succ : node->successors)
+        {
+            stream << (unsigned long long int)node.get() << "->" << (unsigned long long int)succ.get() << "\n";
+        }
+    }
+}
+
+
+template <typename LatticeType, typename PrintLambda>
+void print_digraph_with_result(std::vector<std::shared_ptr<Node<LatticeType>>> &nodes, std::ostream &stream, PrintLambda lattice_printer)
+{
+    DigraphPrinter<LatticeType> printer(stream);
+
+    for (std::shared_ptr<Node<LatticeType>> &node : nodes)
+    {
+        stream << (unsigned long long int)node.get() << "[label = \"";
+        node->accept(printer);
+        lattice_printer(node->state, stream);
+        stream << "\"]\n";
 
         for (auto &succ : node->successors)
         {
