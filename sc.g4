@@ -6,7 +6,7 @@ prog
 
 functionDef 
     : 'void' ID LPAREN opt_parameters RPAREN '{' statements '}'
-    | type ID LPAREN opt_parameters RPAREN '{' statements ';' 'return' expression';' '}'
+    | type ID LPAREN opt_parameters RPAREN '{' statements 'return' expression';' '}'
     ;
         
 statements 
