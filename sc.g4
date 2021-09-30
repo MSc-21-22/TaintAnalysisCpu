@@ -19,7 +19,7 @@ statements
 statement
     :  statementinit
     |  statementassign
-    |  functionCallAssign
+    |  functionCallInit
     ;
 
 statementassign
@@ -54,7 +54,7 @@ expressionM
     | /* e */
     ;
 
-functionCallAssign
+functionCallInit
     : type ID '=' functionCall
     ;
 

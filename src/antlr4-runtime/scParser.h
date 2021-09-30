@@ -21,7 +21,7 @@ public:
   enum {
     RuleProg = 0, RuleFunctionDef = 1, RuleStatements = 2, RuleStatement = 3, 
     RuleStatementassign = 4, RuleStatementinit = 5, RuleWhileloop = 6, RuleStatementif = 7, 
-    RuleArgs = 8, RuleExpression = 9, RuleExpressionM = 10, RuleFunctionCallAssign = 11, 
+    RuleArgs = 8, RuleExpression = 9, RuleExpressionM = 10, RuleFunctionCallInit = 11, 
     RuleFunctionCall = 12, RuleOpt_parameters = 13, RuleParameters = 14, 
     RuleParameter = 15, RuleType = 16
   };
@@ -47,7 +47,7 @@ public:
   class ArgsContext;
   class ExpressionContext;
   class ExpressionMContext;
-  class FunctionCallAssignContext;
+  class FunctionCallInitContext;
   class FunctionCallContext;
   class Opt_parametersContext;
   class ParametersContext;
@@ -110,7 +110,7 @@ public:
     virtual size_t getRuleIndex() const override;
     StatementinitContext *statementinit();
     StatementassignContext *statementassign();
-    FunctionCallAssignContext *functionCallAssign();
+    FunctionCallInitContext *functionCallInit();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -234,9 +234,9 @@ public:
 
   ExpressionMContext* expressionM();
 
-  class  FunctionCallAssignContext : public antlr4::ParserRuleContext {
+  class  FunctionCallInitContext : public antlr4::ParserRuleContext {
   public:
-    FunctionCallAssignContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    FunctionCallInitContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     TypeContext *type();
     antlr4::tree::TerminalNode *ID();
@@ -248,7 +248,7 @@ public:
    
   };
 
-  FunctionCallAssignContext* functionCallAssign();
+  FunctionCallInitContext* functionCallInit();
 
   class  FunctionCallContext : public antlr4::ParserRuleContext {
   public:

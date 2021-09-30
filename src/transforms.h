@@ -152,7 +152,7 @@ public:
         return expression;
     }
 
-    virtual antlrcpp::Any visitFunctionCallAssign(scParser::FunctionCallAssignContext *ctx) override {
+    virtual antlrcpp::Any visitFunctionCallInit(scParser::FunctionCallInitContext *ctx) override {
         antlrcpp::Any result = ctx->functionCall()->accept(this);
         auto node = result.as<std::shared_ptr<FunctionCall<LatticeType>>>();
         node->type = ctx->type()->getText();

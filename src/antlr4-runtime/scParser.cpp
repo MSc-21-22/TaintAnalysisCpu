@@ -330,8 +330,8 @@ scParser::StatementassignContext* scParser::StatementContext::statementassign() 
   return getRuleContext<scParser::StatementassignContext>(0);
 }
 
-scParser::FunctionCallAssignContext* scParser::StatementContext::functionCallAssign() {
-  return getRuleContext<scParser::FunctionCallAssignContext>(0);
+scParser::FunctionCallInitContext* scParser::StatementContext::functionCallInit() {
+  return getRuleContext<scParser::FunctionCallInitContext>(0);
 }
 
 
@@ -375,7 +375,7 @@ scParser::StatementContext* scParser::statement() {
     case 3: {
       enterOuterAlt(_localctx, 3);
       setState(81);
-      functionCallAssign();
+      functionCallInit();
       break;
     }
 
@@ -924,44 +924,44 @@ scParser::ExpressionMContext* scParser::expressionM() {
   return _localctx;
 }
 
-//----------------- FunctionCallAssignContext ------------------------------------------------------------------
+//----------------- FunctionCallInitContext ------------------------------------------------------------------
 
-scParser::FunctionCallAssignContext::FunctionCallAssignContext(ParserRuleContext *parent, size_t invokingState)
+scParser::FunctionCallInitContext::FunctionCallInitContext(ParserRuleContext *parent, size_t invokingState)
   : ParserRuleContext(parent, invokingState) {
 }
 
-scParser::TypeContext* scParser::FunctionCallAssignContext::type() {
+scParser::TypeContext* scParser::FunctionCallInitContext::type() {
   return getRuleContext<scParser::TypeContext>(0);
 }
 
-tree::TerminalNode* scParser::FunctionCallAssignContext::ID() {
+tree::TerminalNode* scParser::FunctionCallInitContext::ID() {
   return getToken(scParser::ID, 0);
 }
 
-tree::TerminalNode* scParser::FunctionCallAssignContext::ASSIGN() {
+tree::TerminalNode* scParser::FunctionCallInitContext::ASSIGN() {
   return getToken(scParser::ASSIGN, 0);
 }
 
-scParser::FunctionCallContext* scParser::FunctionCallAssignContext::functionCall() {
+scParser::FunctionCallContext* scParser::FunctionCallInitContext::functionCall() {
   return getRuleContext<scParser::FunctionCallContext>(0);
 }
 
 
-size_t scParser::FunctionCallAssignContext::getRuleIndex() const {
-  return scParser::RuleFunctionCallAssign;
+size_t scParser::FunctionCallInitContext::getRuleIndex() const {
+  return scParser::RuleFunctionCallInit;
 }
 
 
-antlrcpp::Any scParser::FunctionCallAssignContext::accept(tree::ParseTreeVisitor *visitor) {
+antlrcpp::Any scParser::FunctionCallInitContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
-    return parserVisitor->visitFunctionCallAssign(this);
+    return parserVisitor->visitFunctionCallInit(this);
   else
     return visitor->visitChildren(this);
 }
 
-scParser::FunctionCallAssignContext* scParser::functionCallAssign() {
-  FunctionCallAssignContext *_localctx = _tracker.createInstance<FunctionCallAssignContext>(_ctx, getState());
-  enterRule(_localctx, 22, scParser::RuleFunctionCallAssign);
+scParser::FunctionCallInitContext* scParser::functionCallInit() {
+  FunctionCallInitContext *_localctx = _tracker.createInstance<FunctionCallInitContext>(_ctx, getState());
+  enterRule(_localctx, 22, scParser::RuleFunctionCallInit);
 
   auto onExit = finally([=] {
     exitRule();
@@ -1300,7 +1300,7 @@ std::vector<uint16_t> scParser::_serializedATN;
 
 std::vector<std::string> scParser::_ruleNames = {
   "prog", "functionDef", "statements", "statement", "statementassign", "statementinit", 
-  "whileloop", "statementif", "args", "expression", "expressionM", "functionCallAssign", 
+  "whileloop", "statementif", "args", "expression", "expressionM", "functionCallInit", 
   "functionCall", "opt_parameters", "parameters", "parameter", "type"
 };
 

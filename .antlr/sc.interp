@@ -56,7 +56,7 @@ statementif
 args
 expression
 expressionM
-functionCallAssign
+functionCallInit
 functionCall
 opt_parameters
 parameters
