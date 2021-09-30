@@ -48,15 +48,25 @@ public:
         if (ctx->type() != nullptr)
         {
             functionDef = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters, ctx->type()->getText());
+            add_node(functionDef);
+            functionNodes.push_back(functionDef);
+
+            auto out = visitChildren(ctx);
+            functionDef->returns = last;
         }
         else
         {
             functionDef = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters);
-        }
-        add_node(functionDef);
-        functionNodes.push_back(functionDef);
+            add_node(functionDef);
+            functionNodes.push_back(functionDef);
 
-        auto out = visitChildren(ctx);
+            auto out = visitChildren(ctx);
+            auto returnNode = std::make_shared<EmptyReturnNode<LatticeType>>(ctx->ID()->getText());
+            link_to_lasts(returnNode);
+            add_node(returnNode);
+            functionDef->returns = last;
+        }
+
 
         if (ctx->expression() != nullptr)
         {
@@ -70,7 +80,7 @@ public:
             last = {};
         }
 
-        return out;
+        return nullptr;
     }
 
     virtual antlrcpp::Any visitStatementassign(scParser::StatementassignContext *ctx) override
@@ -130,8 +140,23 @@ public:
     {
         antlrcpp::Any result = ctx->args()->accept(this);
         auto args = result.as<std::vector<std::shared_ptr<Expression>>>();
+        auto id = ctx->ID()->getText();
+        std::shared_ptr<FunctionDefinition<LatticeType>> successor{};
 
-        return std::make_shared<FunctionCall<LatticeType>>(ctx->ID()->getText(), args);
+        for (std::shared_ptr<FunctionDefinition<LatticeType>> functionNode : functionNodes){
+            if(functionNode->functionId == id) {
+                successor = functionNode;
+            }
+        }
+
+        auto node = std::make_shared<FunctionCall<LatticeType>>(id, args);
+        link_to_lasts(node);
+        add_node(node);
+        link_to_lasts(successor);
+        last = successor->returns;
+        
+        
+        return nullptr;
     }
 
     virtual antlrcpp::Any visitArgs(scParser::ArgsContext *ctx) override

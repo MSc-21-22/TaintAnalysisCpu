@@ -70,6 +70,13 @@ void TaintAnalyzer::visit_return(ReturnNode<std::set<std::string>> &node)
     }
 }
 
+void TaintAnalyzer::visit_emptyReturn(EmptyReturnNode<std::set<std::string>> &node)
+{
+    join(node);
+
+    // Thorulf will do this later
+}
+
 void TaintAnalyzer::visit_whileloop(WhileLoop<std::set<std::string>> &node){
     join(node);
 }
