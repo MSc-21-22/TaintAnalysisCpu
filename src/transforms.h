@@ -52,7 +52,6 @@ public:
             functionNodes.push_back(functionDef);
 
             auto out = visitChildren(ctx);
-            functionDef->returns = last;
         }
         else
         {
@@ -76,6 +75,7 @@ public:
             auto node = std::make_shared<ReturnNode<LatticeType>>(expression, functionDef->functionId);
             link_to_lasts(node);
             add_node(node);
+            functionDef->returns = last;
 
             last = {};
         }
