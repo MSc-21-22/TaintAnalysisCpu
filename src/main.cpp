@@ -12,7 +12,9 @@
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
     for (auto& x : result){
-        stream << x << " ";
+        if (x != "£return"){
+            stream << x << " ";
+        }
     }
     stream << "}";
 }
@@ -22,7 +24,7 @@ int main(){
 
     antlr4::ANTLRInputStream stream("int f(int n){a=n+2; return a;} void i(int j) {x = 2*(5-2); while(x) { y = 3+j; x=x-1; int fr = f(j);} i = y;}");
     auto nodes = parse_to_cfg<std::set<std::string>>(stream);
-    nodes.front()->state.insert("j");
+    nodes.front()->state.insert("n");
 
 
     TaintAnalyzer analyzer;

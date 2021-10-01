@@ -58,7 +58,7 @@ void TaintAnalyzer::visit_functiondef(FunctionDefinition<std::set<std::string>> 
 
 
         for(int i = 0; i < call->arguments.size(); ++i){
-            bool isTainted = call->arguments[i]->evaluate(node.state);
+            bool isTainted = call->arguments[i]->evaluate(pred->state);
             if(isTainted){
                 auto parameter = node.formalParameters[i];
                 node.state.insert(parameter);
@@ -70,13 +70,20 @@ void TaintAnalyzer::visit_functiondef(FunctionDefinition<std::set<std::string>> 
 void TaintAnalyzer::visit_return(ReturnNode<std::set<std::string>> &node)
 {
     join(node);
+
+    if (evaluateExpression(node.expression, node.state))
+    {
+        node.state = {"£return"};
+    }
+    else
+    {
+        node.state = {};
+    }
 }
 
 void TaintAnalyzer::visit_emptyReturn(EmptyReturnNode<std::set<std::string>> &node)
 {
-    join(node);
-
-    // Thorulf will do this later
+    return;
 }
 
 void TaintAnalyzer::visit_whileloop(WhileLoop<std::set<std::string>> &node){

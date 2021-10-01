@@ -158,6 +158,11 @@ public:
         node->type = ctx->type()->getText();
         node->variableId = ctx->ID()->getText();
 
+        auto expr = std::make_shared<VariableExpression>("£return");
+        auto assign = std::make_shared<AssignmentNode<LatticeType>>(node->variableId, expr);
+        link_to_lasts(assign);
+        add_node(assign);
+
         return nullptr;
     }
 
