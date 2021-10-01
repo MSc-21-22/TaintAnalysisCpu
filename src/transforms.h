@@ -38,7 +38,7 @@ public:
             auto *param = ctx->opt_parameters()->parameters();
             while (param != nullptr)
             {
-                parameters.push_back(param->parameter()->type()->getText() + " " + param->parameter()->ID()->getText());
+                parameters.push_back("" + param->parameter()->ID()->getText());
                 param = param->parameters();
             }
         }

@@ -20,7 +20,7 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
 int main(){
     std::cout << "Hello, world!" << std::endl << std::endl;
 
-    antlr4::ANTLRInputStream stream("int f(int n){a=n+2; return a;} void i(int j) {x = 2*(5-2); while(x) { y = 3+j; x=x-1; int fr = f(20);} i = y;}");
+    antlr4::ANTLRInputStream stream("int f(int n){a=n+2; return a;} void i(int j) {x = 2*(5-2); while(x) { y = 3+j; x=x-1; int fr = f(j);} i = y;}");
     auto nodes = parse_to_cfg<std::set<std::string>>(stream);
     nodes.front()->state.insert("j");
 
