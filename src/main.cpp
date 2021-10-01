@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
     if(argc == 2){
         antlr4::ANTLRFileStream csfile;
         csfile.loadFromFile(argv[1]);
-        antlr4::ANTLRInputStream prog(csfile.toString());
+        antlr4::ANTLRInputStream prog(csfile);
         auto program = parse_to_cfg<std::set<std::string>>(prog);
         print_digraph_with_result(program, std::cout, print_result);
     }
