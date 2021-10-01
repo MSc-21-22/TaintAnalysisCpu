@@ -93,6 +93,8 @@ public:
 template<typename LatticeType>
 class FunctionCall : public Node<LatticeType> {
 public:
+    std::string type;
+    std::string variableId;
     std::string functionId;
     std::vector<std::shared_ptr<Expression>> arguments;
 

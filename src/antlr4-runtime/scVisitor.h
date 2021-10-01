@@ -41,6 +41,8 @@ public:
 
     virtual antlrcpp::Any visitExpressionM(scParser::ExpressionMContext *context) = 0;
 
+    virtual antlrcpp::Any visitFunctionCallInit(scParser::FunctionCallInitContext *context) = 0;
+
     virtual antlrcpp::Any visitFunctionCall(scParser::FunctionCallContext *context) = 0;
 
     virtual antlrcpp::Any visitOpt_parameters(scParser::Opt_parametersContext *context) = 0;
