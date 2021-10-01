@@ -66,7 +66,7 @@ void print_digraph(std::vector<std::shared_ptr<Node<LatticeType>>> &nodes, std::
 
     for (std::shared_ptr<Node<LatticeType>> &node : nodes)
     {
-        stream << (unsigned long long int)&node << "[label = \"";
+        stream << (unsigned long long int)node.get() << "[label = \"";
         node->accept(printer);
         stream << "\"]\n";
 
