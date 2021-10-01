@@ -22,10 +22,8 @@ int main(int argc, char *argv[]){
     if(argc == 2){
         antlr4::ANTLRFileStream csfile;
         csfile.loadFromFile(argv[1]);
-        std::cout << csfile.toString() << std::endl;
         antlr4::ANTLRInputStream prog(csfile.toString());
         auto program = parse_to_cfg<std::set<std::string>>(prog);
-        std::cout << "B\n";
         print_digraph_with_result(program, std::cout, print_result);
     }
 
