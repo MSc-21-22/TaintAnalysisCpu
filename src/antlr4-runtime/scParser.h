@@ -21,8 +21,9 @@ public:
   enum {
     RuleProg = 0, RuleFunctionDef = 1, RuleStatements = 2, RuleStatement = 3, 
     RuleStatementassign = 4, RuleStatementinit = 5, RuleWhileloop = 6, RuleStatementif = 7, 
-    RuleArgs = 8, RuleExpression = 9, RuleExpressionM = 10, RuleFunctionCall = 11, 
-    RuleOpt_parameters = 12, RuleParameters = 13, RuleParameter = 14, RuleType = 15
+    RuleArgs = 8, RuleExpression = 9, RuleExpressionM = 10, RuleFunctionCallInit = 11, 
+    RuleFunctionCall = 12, RuleOpt_parameters = 13, RuleParameters = 14, 
+    RuleParameter = 15, RuleType = 16
   };
 
   scParser(antlr4::TokenStream *input);
@@ -46,6 +47,7 @@ public:
   class ArgsContext;
   class ExpressionContext;
   class ExpressionMContext;
+  class FunctionCallInitContext;
   class FunctionCallContext;
   class Opt_parametersContext;
   class ParametersContext;
@@ -108,7 +110,7 @@ public:
     virtual size_t getRuleIndex() const override;
     StatementinitContext *statementinit();
     StatementassignContext *statementassign();
-    FunctionCallContext *functionCall();
+    FunctionCallInitContext *functionCallInit();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -205,7 +207,6 @@ public:
     ExpressionMContext *expressionM();
     antlr4::tree::TerminalNode *INTEGER();
     antlr4::tree::TerminalNode *ID();
-    FunctionCallContext *functionCall();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -232,6 +233,22 @@ public:
   };
 
   ExpressionMContext* expressionM();
+
+  class  FunctionCallInitContext : public antlr4::ParserRuleContext {
+  public:
+    FunctionCallInitContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    TypeContext *type();
+    antlr4::tree::TerminalNode *ID();
+    antlr4::tree::TerminalNode *ASSIGN();
+    FunctionCallContext *functionCall();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  FunctionCallInitContext* functionCallInit();
 
   class  FunctionCallContext : public antlr4::ParserRuleContext {
   public:
