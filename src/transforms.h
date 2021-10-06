@@ -13,6 +13,7 @@ class ScTransformer : public scBaseVisitor
 {
 public:
     std::vector<std::shared_ptr<FunctionDefinition<LatticeType>>> functionNodes{};
+    std::vector<std::shared_ptr<FunctionEntryNode<LatticeType>>> entryNodes{};
     std::vector<std::shared_ptr<Node<LatticeType>>> nodes{};
 
     std::vector<std::shared_ptr<Node<LatticeType>>> last{};
@@ -236,10 +237,30 @@ public:
             return std::make_shared<BinaryOperatorExpression>(nullptr, op, rhs);
         }
     }
+
+    void add_entry_exit_nodes(){
+        for(auto& node : functionNodes){
+            auto entry_node = std::make_shared<FunctionEntryNode<LatticeType>>(node);
+            entry_node->successors.insert(node);
+            node->predecessors.insert(entry_node);
+            
+            auto exit_node = std::make_shared<FunctionExitNode<LatticeType>>(entry_node);
+            for(auto& return_node : node->returns){
+                exit_node->predecessors.insert(return_node);
+                return_node->successors.insert(exit_node);
+            }
+
+
+            nodes.push_back(entry_node);
+            nodes.push_back(exit_node);
+
+            entryNodes.push_back(entry_node);
+        }
+    }
 };
 
 template <typename LatticeType>
-std::vector<std::shared_ptr<FunctionDefinition<LatticeType>>> parse_to_cfg_function_defs(antlr4::ANTLRInputStream &stream)
+ScTransformer<LatticeType> parse_to_cfg_transformer(antlr4::ANTLRInputStream &stream)
 {
     scLexer lexer(&stream);
     antlr4::CommonTokenStream tokens(&lexer);
@@ -249,8 +270,9 @@ std::vector<std::shared_ptr<FunctionDefinition<LatticeType>>> parse_to_cfg_funct
 
     ScTransformer<LatticeType> transformer;
     parser.prog()->accept(&transformer);
+    transformer.add_entry_exit_nodes();
 
-    return transformer.functionNodes;
+    return transformer;
 }
 
 template <typename LatticeType>
@@ -264,6 +286,7 @@ std::vector<std::shared_ptr<Node<LatticeType>>> parse_to_cfg(antlr4::ANTLRInputS
 
     ScTransformer<LatticeType> transformer;
     parser.prog()->accept(&transformer);
+    transformer.add_entry_exit_nodes();
 
     return transformer.nodes;
 }
