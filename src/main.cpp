@@ -23,9 +23,10 @@ int main(int argc, char *argv[]){
         antlr4::ANTLRFileStream csfile;
         csfile.loadFromFile(argv[1]);
         antlr4::ANTLRInputStream prog(csfile);
-        auto program = parse_to_cfg<std::set<std::string>>(prog);
-        print_digraph_with_result(program, std::cout, print_result);
-        print_digraph_subgraph(parse_to_cfg_function_defs <std::set<std::string>>(prog), std::cout);
+        //auto program = parse_to_cfg<std::set<std::string>>(prog);
+        //print_digraph_with_result(program, std::cout, print_result);
+        auto functions = parse_to_cfg_function_defs <std::set<std::string>>(prog);
+        print_digraph_subgraph(functions, std::cout);
     }
 
     antlr4::ANTLRInputStream stream("int f(int n){a=n+2; return a;} void i(int j) {x = 2*(5-2); while(x) { y = 3+j; x=x-1; int fr = f(20);} i = y;}");

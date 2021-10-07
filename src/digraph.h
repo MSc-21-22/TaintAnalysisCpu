@@ -22,6 +22,8 @@ class DigraphPrinter : public CfgVisitor<LatticeType>
 public:
     std::ostream &os;
 
+    std::set<unsigned long long int> visitedNodes = {};
+
     DigraphPrinter(std::ostream &os) : os(os) {}
 
     void visit_initializtion(InitializerNode<LatticeType> &node) override
@@ -104,22 +106,44 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Expression>& ar
 }
 
 template <typename LatticeType>
-void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionDefinition<LatticeType>>> functiondefs, std::ostream &stream){
+void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionDefinition<LatticeType>>> &functiondefs, std::ostream &stream){
     DigraphPrinter<LatticeType> printer(stream);
     std::cout << functiondefs.size();
     for (std::shared_ptr<FunctionDefinition<LatticeType>> function : functiondefs)
     {
-        stream << "subgraph " << (unsigned long long int)function.get() << "_graph{\n";
+        stream << "subgraph graph" << (unsigned long long int)function.get() << "{\n";
         stream << (unsigned long long int)function.get() << "[label = \"";
         function->accept(printer);
         stream << "\"]\n";
-
+        printer.visitedNodes.insert((unsigned long long int)function.get());
         for (auto& succ : function->successors)
         {
             stream << (unsigned long long int)function.get() << "->" << (unsigned long long int)succ.get() << "\n";
+            print_digraph_subgraph_content(succ, stream, printer);
         }
+
+        stream << "}\n";
         
 
     }
-    
+}
+
+template <typename LatticeType>
+void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &node, std::ostream &stream, DigraphPrinter<LatticeType> printer){
+    if (printer.visitedNodes.find((unsigned long long int)node.get()) == printer.visitedNodes.end())
+    {
+        stream << (unsigned long long int)node.get() << "[label = \"";
+        node->accept(printer);
+        stream << "\"]\n";
+        printer.visitedNodes.insert((unsigned long long int)node.get());
+        for (auto& succ : node->successors)
+        {
+            stream << (unsigned long long int)node.get() << "->" << (unsigned long long int)succ.get() << "\n";
+            
+            if(printer.visitedNodes.find((unsigned long long int)succ.get()) == printer.visitedNodes.end())
+            {
+                print_digraph_subgraph_content(succ, stream, printer);
+            }
+        }
+    }
 }
