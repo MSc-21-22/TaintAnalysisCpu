@@ -85,6 +85,7 @@ void print_digraph_with_result(std::vector<std::shared_ptr<Node<LatticeType>>> &
 
     for (std::shared_ptr<Node<LatticeType>> &node : nodes)
     {
+
         stream << (unsigned long long int)node.get() << "[label = \"";
         node->accept(printer);
         lattice_printer(node->state, stream);
@@ -100,4 +101,25 @@ void print_digraph_with_result(std::vector<std::shared_ptr<Node<LatticeType>>> &
 std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Expression>& arg){
     os << arg->dotPrint();
     return os;
+}
+
+template <typename LatticeType>
+void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionDefinition<LatticeType>>> functiondefs, std::ostream &stream){
+    DigraphPrinter<LatticeType> printer(stream);
+    std::cout << functiondefs.size();
+    for (std::shared_ptr<FunctionDefinition<LatticeType>> function : functiondefs)
+    {
+        stream << "subgraph " << (unsigned long long int)function.get() << "_graph{\n";
+        stream << (unsigned long long int)function.get() << "[label = \"";
+        function->accept(printer);
+        stream << "\"]\n";
+
+        for (auto& succ : function->successors)
+        {
+            stream << (unsigned long long int)function.get() << "->" << (unsigned long long int)succ.get() << "\n";
+        }
+        
+
+    }
+    
 }
