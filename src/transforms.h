@@ -38,7 +38,7 @@ public:
             auto *param = ctx->opt_parameters()->parameters();
             while (param != nullptr)
             {
-                parameters.push_back(param->parameter()->type()->getText() + " " + param->parameter()->ID()->getText());
+                parameters.push_back(param->parameter()->ID()->getText());
                 param = param->parameters();
             }
         }
@@ -157,6 +157,12 @@ public:
         auto node = result.as<std::shared_ptr<FunctionCall<LatticeType>>>();
         node->type = ctx->type()->getText();
         node->variableId = ctx->ID()->getText();
+
+        auto expr = std::make_shared<VariableExpression>("£return");
+        last.push_back(node);
+        auto assign = std::make_shared<AssignmentNode<LatticeType>>(node->variableId, expr);
+        link_to_lasts(assign);
+        add_node(assign);
 
         return nullptr;
     }
