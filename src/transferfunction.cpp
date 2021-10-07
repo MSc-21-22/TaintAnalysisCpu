@@ -49,7 +49,22 @@ void TaintAnalyzer::visit_functioncall(FunctionCall<std::set<std::string>> &node
 
 void TaintAnalyzer::visit_functiondef(FunctionDefinition<std::set<std::string>> &node)
 {
-    join(node);
+    for(auto& pred : node.predecessors){
+        auto call = std::static_pointer_cast<FunctionCall<std::set<std::string>>>(pred);
+        
+        if (call->arguments.size() != node.formalParameters.size()){
+            throw "Function call " + call->functionId + " didnt match the number of arguments";
+        }
+
+
+        for(int i = 0; i < call->arguments.size(); ++i){
+            bool isTainted = call->arguments[i]->evaluate(pred->state);
+            if(isTainted){
+                auto parameter = node.formalParameters[i];
+                node.state.insert(parameter);
+            }
+        }
+    }
 }
 
 void TaintAnalyzer::visit_return(ReturnNode<std::set<std::string>> &node)
@@ -58,27 +73,17 @@ void TaintAnalyzer::visit_return(ReturnNode<std::set<std::string>> &node)
 
     if (evaluateExpression(node.expression, node.state))
     {
-        auto pred = *node.predecessors.begin();
-        while (true)
-        {
-            auto functionDef = std::dynamic_pointer_cast<FunctionDefinition<std::set<std::string>>>(pred);
-            if (functionDef == nullptr && pred->predecessors.size() != 0)
-            {
-                pred = *pred->predecessors.begin();
-            }
-            else
-            {
-                taintedReturns.insert(functionDef->functionId);
-            }
-        }
+        node.state = {"£return"};
+    }
+    else
+    {
+        node.state = {};
     }
 }
 
 void TaintAnalyzer::visit_emptyReturn(EmptyReturnNode<std::set<std::string>> &node)
 {
-    join(node);
-
-    // Thorulf will do this later
+    
 }
 
 void TaintAnalyzer::visit_whileloop(WhileLoop<std::set<std::string>> &node){
