@@ -111,7 +111,7 @@ void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionDefinition<Latti
     std::cout << functiondefs.size();
     for (std::shared_ptr<FunctionDefinition<LatticeType>> function : functiondefs)
     {
-        stream << "subgraph graph" << (unsigned long long int)function.get() << "{\n";
+        stream << "subgraph cluster_" << (unsigned long long int)function.get() << "{\n";
         stream << (unsigned long long int)function.get() << "[label = \"";
         function->accept(printer);
         stream << "\"]\n";
@@ -129,7 +129,7 @@ void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionDefinition<Latti
 }
 
 template <typename LatticeType>
-void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &node, std::ostream &stream, DigraphPrinter<LatticeType> printer){
+void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &node, std::ostream &stream, DigraphPrinter<LatticeType> &printer){
     if (printer.visitedNodes.find((unsigned long long int)node.get()) == printer.visitedNodes.end())
     {
         stream << (unsigned long long int)node.get() << "[label = \"";
