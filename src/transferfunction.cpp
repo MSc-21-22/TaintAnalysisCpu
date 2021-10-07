@@ -83,7 +83,7 @@ void TaintAnalyzer::visit_return(ReturnNode<std::set<std::string>> &node)
 
 void TaintAnalyzer::visit_emptyReturn(EmptyReturnNode<std::set<std::string>> &node)
 {
-    return;
+    
 }
 
 void TaintAnalyzer::visit_whileloop(WhileLoop<std::set<std::string>> &node){
