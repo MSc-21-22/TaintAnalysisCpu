@@ -17,8 +17,6 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
 }
 
 int main(int argc, char *argv[]){
-    std::cout << "Hello, world!" << std::endl << std::endl;
-
     if(argc == 2){
         antlr4::ANTLRFileStream csfile;
         csfile.loadFromFile(argv[1]);
