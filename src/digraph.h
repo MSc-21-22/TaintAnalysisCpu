@@ -151,6 +151,12 @@ void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &no
             if(dynamic_cast<FunctionExitNode<LatticeType>*>(succ.get()))
             {
                 returnpath.append(std::to_string((unsigned long long int)succ.get())+"[label = \" exit\"]\n");
+                for (auto exitsucc : succ->successors)
+                {
+                    returnpath.append(std::to_string((unsigned long long int)succ.get())+"->");
+                    returnpath.append(std::to_string((unsigned long long int)exitsucc.get())+"\n");
+                }
+                
             }
         }
     }
@@ -163,6 +169,11 @@ void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &no
             if(dynamic_cast<FunctionExitNode<LatticeType>*>(succ.get()))
             {
                 returnpath.append(std::to_string((unsigned long long int)succ.get())+"[label = \" exit\"]\n");
+                for (auto exitsucc : succ->successors)
+                {
+                    returnpath.append(std::to_string((unsigned long long int)succ.get())+"->");
+                    returnpath.append(std::to_string((unsigned long long int)exitsucc.get())+"\n");
+                }
             }
         } 
     }
@@ -170,11 +181,18 @@ void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &no
     {
         for (auto& succ : node->successors)
         {
-            stream << (unsigned long long int)node.get() << "->" << (unsigned long long int)succ.get() << "\n";
-            
-            if(printer.visitedNodes.find((unsigned long long int)succ.get()) == printer.visitedNodes.end())
+            if (dynamic_cast<FunctionEntryNode<LatticeType>*>(succ.get()))
             {
-                print_digraph_subgraph_content(succ, stream, printer, returnpath);
+                returnpath.append(std::to_string((unsigned long long int)node.get())+"->"+std::to_string((unsigned long long int)succ.get())+"\n");
+            }
+            else
+            {
+                stream << (unsigned long long int)node.get() << "->" << (unsigned long long int)succ.get() << "\n";
+                
+                if(printer.visitedNodes.find((unsigned long long int)succ.get()) == printer.visitedNodes.end())
+                {
+                    print_digraph_subgraph_content(succ, stream, printer, returnpath);
+                }
             }
         }
     }

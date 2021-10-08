@@ -64,7 +64,7 @@ public:
             auto returnNode = std::make_shared<EmptyReturnNode<LatticeType>>(ctx->ID()->getText());
             link_to_lasts(returnNode);
             add_node(returnNode);
-            functionDef->returns = last;
+            functionDef->returns = {returnNode};
         }
 
 
@@ -178,6 +178,7 @@ public:
         for (std::shared_ptr<FunctionDefinition<LatticeType>> functionNode : functionNodes){
             if(functionNode->functionId == id) {
                 successor = functionNode;
+                break;
             }
         }
 
@@ -247,13 +248,11 @@ public:
     void add_entry_exit_nodes(){
         for(auto& node : functionNodes){
             auto entry_node = std::make_shared<FunctionEntryNode<LatticeType>>(node);
-            entry_node->successors.insert(node);
-            node->predecessors.insert(entry_node);
+            make_predecessor(node, entry_node);
             
             auto exit_node = std::make_shared<FunctionExitNode<LatticeType>>(entry_node);
             for(auto& return_node : node->returns){
-                exit_node->predecessors.insert(return_node);
-                return_node->successors.insert(exit_node);
+                make_successor(return_node, exit_node);
             }
 
 
@@ -262,6 +261,26 @@ public:
 
             entryNodes.push_back(entry_node);
         }
+    }
+
+    void make_predecessor(std::shared_ptr<Node<LatticeType>> node, std::shared_ptr<Node<LatticeType>> pred){
+        for(auto& old_pred : node->predecessors){
+            old_pred->successors.erase(node);
+            old_pred->successors.insert(pred);
+        }
+        pred->predecessors = node->predecessors;
+        node->predecessors = {pred};
+        pred->successors.insert(node);
+    }
+
+    void make_successor(std::shared_ptr<Node<LatticeType>> node, std::shared_ptr<Node<LatticeType>> succ){
+        for(auto& old_succ : node->successors){
+            old_succ->predecessors.erase(node);
+            old_succ->predecessors.insert(succ);
+        }
+        succ->successors = node->successors;
+        node->successors = {succ};
+        succ->predecessors.insert(node);
     }
 };
 

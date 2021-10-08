@@ -1,7 +1,7 @@
 # Compilation
 First install the required dependencies to compile antlr4
 
-    sudo apt-get install pkg-config uuid-dev
+    sudo apt-get install pkg-config uuid-dev cmake build-essential
 
 The use cmake to compile antlr and the project
 

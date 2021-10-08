@@ -7,20 +7,14 @@ int f(int n){
     return a;
 }
 
-void i(int j){
+void main(int j){
     x = 2*(5-2);
     while(x){
         y = 3+j;
         x=x-1;
         int a = f(20);
     }
-    i = y;
+    t = x+a;
 }
 
-void k(int j){
-    x = 2*(5-2);
-    int a = f(x);    
-    i = y;
-    m = a;
-}
 
