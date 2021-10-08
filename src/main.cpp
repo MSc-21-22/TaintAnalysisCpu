@@ -11,7 +11,7 @@
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
     for (auto& x : result){
-        if (x != "£return" && x!="£"){
+        if (x!="£"){
             stream << x << " ";
         }
     }

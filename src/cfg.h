@@ -30,6 +30,8 @@ template<typename LatticeType>
 class FunctionEntryNode;
 template<typename LatticeType>
 class FunctionExitNode;
+template<typename LatticeType>
+class AssignReturnNode;
 
 template<typename LatticeType>
 class CfgVisitor {
@@ -44,6 +46,7 @@ public:
     virtual void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) = 0;
     virtual void visit_functionEntry(FunctionEntryNode<LatticeType>& node) = 0;
     virtual void visit_functionExit(FunctionExitNode<LatticeType>& node) = 0;
+    virtual void visit_assignReturn(AssignReturnNode<LatticeType>& node) = 0;
 };
 
 template<typename LatticeType>
@@ -192,6 +195,19 @@ public:
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functionExit(*this);
+    }
+};
+
+
+template<typename LatticeType>
+class AssignReturnNode : public Node<LatticeType> {
+public:
+    std::string id;
+
+    AssignReturnNode(std::string id) : id(id) {}
+
+    void accept(CfgVisitor<LatticeType>& visitor){
+        visitor.visit_assignReturn(*this);
     }
 };
 
