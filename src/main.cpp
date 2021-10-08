@@ -11,14 +11,14 @@
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
     for (auto& x : result){
-        stream << x << " ";
+        if (x != "£return" && x!="£"){
+            stream << x << " ";
+        }
     }
     stream << "}";
 }
 
 int main(int argc, char *argv[]){
-    std::cout << "Hello, world!" << std::endl << std::endl;
-
     if(argc == 2){
         antlr4::ANTLRFileStream csfile;
         csfile.loadFromFile(argv[1]);
@@ -29,9 +29,12 @@ int main(int argc, char *argv[]){
         print_digraph_subgraph(functions, std::cout);
     }
 
-    antlr4::ANTLRInputStream stream("int f(int n){a=n+2; return a;} void i(int j) {x = 2*(5-2); while(x) { y = 3+j; x=x-1; int fr = f(20);} i = y;}");
+    antlr4::ANTLRInputStream stream("int f(int n){a=n+2; return a;} void i(int j) {j=£; x = 2*(5-2); while(x) { y = 3+j; x=x-1; int fr = f(j);} i = y;}");
     auto nodes = parse_to_cfg<std::set<std::string>>(stream);
-    nodes.front()->state.insert("j");
+    for (auto& node : nodes){
+        node->state.insert("£");
+    }
+
 
 
     TaintAnalyzer analyzer;
