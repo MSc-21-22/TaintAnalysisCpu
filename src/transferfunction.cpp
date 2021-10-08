@@ -90,6 +90,14 @@ void TaintAnalyzer::visit_whileloop(WhileLoop<std::set<std::string>> &node){
     join(node);
 }
 
+
+void TaintAnalyzer::visit_functionEntry(FunctionEntryNode<std::set<std::string>>& node){
+    join(node);
+}
+void TaintAnalyzer::visit_functionExit(FunctionExitNode<std::set<std::string>>& node){
+    join(node);
+}
+
 bool evaluateExpression(std::shared_ptr<Expression> expression, std::set<std::string> &state)
 {
     return expression->evaluate(state);
