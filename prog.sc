@@ -6,6 +6,7 @@ int f(int n){
     }
     return a;
 }
+
 void i(int j){
     x = 2*(5-2);
     while(x){
@@ -15,3 +16,11 @@ void i(int j){
     }
     i = y;
 }
+
+void k(int j){
+    x = 2*(5-2);
+    int a = f(x);    
+    i = y;
+    m = a;
+}
+

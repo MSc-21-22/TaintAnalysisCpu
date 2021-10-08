@@ -114,25 +114,24 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Expression>& ar
 }
 
 template <typename LatticeType>
-void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionDefinition<LatticeType>>> &functiondefs, std::ostream &stream){
+void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionEntryNode<LatticeType>>> &entryNodes, std::ostream &stream){
     DigraphPrinter<LatticeType> printer(stream);
-    for (auto& function : functiondefs)
+    for (auto& entryNode : entryNodes)
     {
-        stream << "subgraph cluster_" << (unsigned long long int)function.get() << "{\n";
-        stream << (unsigned long long int)function.get() << "[label = \"";
-        function->accept(printer);
+        stream << (unsigned long long int)entryNode.get() << "[label = \"";
+        entryNode->accept(printer);
         stream << "\"]\n";
         std::string returnpath = "";
-        printer.visitedNodes.insert((unsigned long long int)function.get());
-        for (auto& succ : function->successors)
+        printer.visitedNodes.insert((unsigned long long int)entryNode.get());
+        for (auto& succ : entryNode->successors)
         {
-            stream << (unsigned long long int)function.get() << "->" << (unsigned long long int)succ.get() << "\n";
+            stream << (unsigned long long int)entryNode.get() << "->" << (unsigned long long int)succ.get() << "\n";
+            stream << "subgraph cluster_" << (unsigned long long int)entryNode.get() << "{\n";
             print_digraph_subgraph_content(succ, stream, printer, returnpath);
+            stream << "}\n";
+            stream << returnpath;
+            returnpath = "";
         }
-
-        stream << "}\n";
-        stream << returnpath;
-        
 
     }
 }
@@ -149,8 +148,11 @@ void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &no
         {
             returnpath.append(std::to_string((unsigned long long int)node.get())+"->");
             returnpath.append(std::to_string((unsigned long long int)succ.get())+"\n");
+            if(dynamic_cast<FunctionExitNode<LatticeType>*>(succ.get()))
+            {
+                returnpath.append(std::to_string((unsigned long long int)succ.get())+"[label = \" exit\"]\n");
+            }
         }
-        
     }
     else if (dynamic_cast<EmptyReturnNode<LatticeType>*>(node.get()))
     {
@@ -158,6 +160,10 @@ void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &no
         {
             returnpath.append(std::to_string((unsigned long long int)node.get())+"->");
             returnpath.append(std::to_string((unsigned long long int)succ.get())+"\n");
+            if(dynamic_cast<FunctionExitNode<LatticeType>*>(succ.get()))
+            {
+                returnpath.append(std::to_string((unsigned long long int)succ.get())+"[label = \" exit\"]\n");
+            }
         } 
     }
     else
