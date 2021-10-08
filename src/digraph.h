@@ -57,6 +57,14 @@ public:
     {
         os << "if(" << node.expression->dotPrint() << ")";
     }
+
+    void visit_functionEntry(FunctionEntryNode<LatticeType> &node) override {
+        os << "Entry";
+    }
+
+    void visit_functionExit(FunctionExitNode<LatticeType> &node) override {
+        os << "Exit";
+    }
 };
 
 template <typename LatticeType>

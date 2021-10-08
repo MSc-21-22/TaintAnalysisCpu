@@ -14,4 +14,6 @@ public:
     void visit_return(ReturnNode<std::set<std::string>>& node);
     void visit_whileloop(WhileLoop<std::set<std::string>>& node);
     void visit_emptyReturn(EmptyReturnNode<std::set<std::string>>& node);
+    void visit_functionEntry(FunctionEntryNode<std::set<std::string>>& node);
+    void visit_functionExit(FunctionExitNode<std::set<std::string>>& node);
 };

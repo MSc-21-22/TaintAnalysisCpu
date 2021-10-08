@@ -26,6 +26,10 @@ template<typename LatticeType>
 class WhileLoop;
 template<typename LatticeType>
 class EmptyReturnNode;
+template<typename LatticeType>
+class FunctionEntryNode;
+template<typename LatticeType>
+class FunctionExitNode;
 
 template<typename LatticeType>
 class CfgVisitor {
@@ -38,6 +42,8 @@ public:
     virtual void visit_return(ReturnNode<LatticeType>& node) = 0;
     virtual void visit_whileloop(WhileLoop<LatticeType>& node) = 0;
     virtual void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) = 0;
+    virtual void visit_functionEntry(FunctionEntryNode<LatticeType>& node) = 0;
+    virtual void visit_functionExit(FunctionExitNode<LatticeType>& node) = 0;
 };
 
 template<typename LatticeType>
@@ -161,6 +167,31 @@ public:
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_emptyReturn(*this);
+    }
+};
+
+template<typename LatticeType>
+class FunctionEntryNode : public Node<LatticeType> {
+public:
+    std::shared_ptr<FunctionDefinition<LatticeType>> function;
+    std::shared_ptr<FunctionExitNode<LatticeType>> exit;
+
+    FunctionEntryNode(std::shared_ptr<FunctionDefinition<LatticeType>> function) : function(function) {}
+
+    void accept(CfgVisitor<LatticeType>& visitor){
+        visitor.visit_functionEntry(*this);
+    }
+};
+
+template<typename LatticeType>
+class FunctionExitNode : public Node<LatticeType> {
+public:
+    std::shared_ptr<FunctionEntryNode<LatticeType>> entry;
+
+    FunctionExitNode(std::shared_ptr<FunctionEntryNode<LatticeType>> entry) : entry(entry) {}
+
+    void accept(CfgVisitor<LatticeType>& visitor){
+        visitor.visit_functionExit(*this);
     }
 };
 
