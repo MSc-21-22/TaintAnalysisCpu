@@ -80,16 +80,11 @@ void TaintAnalyzer::visit_functionEntry(FunctionEntryNode<std::set<std::string>>
     if (node.successors.size() == 0)
         return;
 
-    std::cout << "Yo"<< std::endl;
     auto def = std::static_pointer_cast<FunctionDefinition<std::set<std::string>>>(*(node.successors.begin()));
-    std::cout << "Ya"<< std::endl;
 
 
     for(auto& pred : node.predecessors){
-    std::cout << "Bo"<< std::endl;
-
         auto call = std::static_pointer_cast<FunctionCall<std::set<std::string>>>(pred);
-    std::cout << "Ba"<< std::endl;
 
         
         if (call->arguments.size() != def->formalParameters.size()){
