@@ -8,6 +8,7 @@
 #include "Expression.h"
 #include <iostream>
 #include <map>
+#include "cfg_clone.h"
 
 template <typename LatticeType>
 class ScTransformer : public scBaseVisitor
@@ -20,7 +21,6 @@ public:
 
 private:
     std::vector<std::shared_ptr<Node<LatticeType>>> last{};
-    std::shared_ptr<FunctionEntryNode<LatticeType>> lastFunction;
 
     void link_to_lasts(std::shared_ptr<Node<LatticeType>> node){
         for(auto& other : last){
@@ -32,9 +32,6 @@ private:
     void add_node(std::shared_ptr<Node<LatticeType>> node){
         last = {node};
         nodes.push_back(node);
-
-        if (lastFunction != nullptr)
-            lastFunction->nodes.push_back(node);
     }
 
 public:
@@ -60,11 +57,10 @@ public:
         if (ctx->type() != nullptr)
         {
             functionDef = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters, ctx->type()->getText());
-            entry = std::make_shared<FunctionEntryNode<LatticeType>>(functionDef);
+            entry = std::make_shared<FunctionEntryNode<LatticeType>>();
             entryNodes.push_back(entry);
             functions[functionDef->functionId] = entry;
             add_node(entry);
-            lastFunction = entry;
             link_to_lasts(functionDef);
             add_node(functionDef);
             functionNodes.push_back(functionDef);
@@ -74,8 +70,7 @@ public:
         else
         {
             functionDef = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters);
-            entry = std::make_shared<FunctionEntryNode<LatticeType>>(functionDef);
-            lastFunction = entry;
+            entry = std::make_shared<FunctionEntryNode<LatticeType>>();
             entryNodes.push_back(entry);
             functions[functionDef->functionId] = entry;
             add_node(entry);
@@ -199,12 +194,15 @@ public:
         antlrcpp::Any result = ctx->args()->accept(this);
         auto args = result.as<std::vector<std::shared_ptr<Expression>>>();
         auto id = ctx->ID()->getText();
-        std::shared_ptr<FunctionEntryNode<LatticeType>> successor = functions[id];
+        std::shared_ptr<FunctionEntryNode<LatticeType>> functionEntry = std::static_pointer_cast<FunctionEntryNode<LatticeType>>(functions[id]);
+        auto successor = clone_entry(functionEntry, &nodes);
+
 
         auto node = std::make_shared<FunctionCall<LatticeType>>(id, args);
         link_to_lasts(node);
         add_node(node);
         link_to_lasts(successor);
+
         last = {successor->exit};
         
         return node;

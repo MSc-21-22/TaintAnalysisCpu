@@ -64,6 +64,7 @@ public:
     std::shared_ptr<Expression> expression;
 
     InitializerNode(std::string type, std::string id, std::shared_ptr<Expression> expression) : type(type), id(id), expression(expression){}
+    InitializerNode() = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_initializtion(*this);
@@ -77,6 +78,7 @@ public:
     std::shared_ptr<Expression> expression;
 
     AssignmentNode(std::string id, std::shared_ptr<Expression> expression) : id(id), expression(expression){}
+    AssignmentNode() = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_assignment(*this);
@@ -89,11 +91,11 @@ public:
     std::shared_ptr<Expression> expression;
 
     IfNode(std::shared_ptr<Expression> expression) : expression(expression){}
+    IfNode() = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_if(*this);
     }
-
 };
 
 template<typename LatticeType>
@@ -107,10 +109,11 @@ public:
     FunctionCall(std::string functionId, std::vector<std::shared_ptr<Expression>> arguments) : functionId(functionId), arguments(arguments) {
 
     }
+    FunctionCall() = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functioncall(*this);
-    } 
+    }
 };
 
 template<typename LatticeType>
@@ -126,6 +129,7 @@ public:
     }
 
     FunctionDefinition(std::string functionId, std::vector<std::string> parameters, std::string returnType) : functionId(functionId), formalParameters(parameters), returnType(returnType){}
+    FunctionDefinition() = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functiondef(*this);
@@ -138,6 +142,7 @@ public:
     std::shared_ptr<Expression> condition;
 
     WhileLoop(std::shared_ptr<Expression> condition) : condition(condition) {}
+    WhileLoop() = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_whileloop(*this);
@@ -151,6 +156,7 @@ public:
     std::string functionId;
 
     ReturnNode(std::shared_ptr<Expression> expr, std::string functionId) : expression(expr), functionId(functionId) {}
+    ReturnNode() = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_return(*this);
@@ -164,6 +170,7 @@ public:
     std::string functionId;
 
     EmptyReturnNode(std::string functionId) : functionId(functionId) {}
+    EmptyReturnNode() = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_emptyReturn(*this);
@@ -173,11 +180,9 @@ public:
 template<typename LatticeType>
 class FunctionEntryNode : public Node<LatticeType> {
 public:
-    std::shared_ptr<FunctionDefinition<LatticeType>> function;
     std::shared_ptr<FunctionExitNode<LatticeType>> exit;
-    std::vector<std::shared_ptr<Node<LatticeType>>> nodes{};
 
-    FunctionEntryNode(std::shared_ptr<FunctionDefinition<LatticeType>> function) : function(function) {
+    FunctionEntryNode() {
         exit = std::make_shared<FunctionExitNode<LatticeType>>();
     }
 
@@ -189,6 +194,7 @@ public:
 template<typename LatticeType>
 class FunctionExitNode : public Node<LatticeType> {
 public:
+    FunctionExitNode() = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functionExit(*this);

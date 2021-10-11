@@ -20,6 +20,7 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
 
 int main(int argc, char *argv[]){
     if(argc == 2){
+        std::cout << "1" << std::endl;
         antlr4::ANTLRFileStream csfile;
         csfile.loadFromFile(argv[1]);
         antlr4::ANTLRInputStream prog(csfile);
@@ -27,9 +28,11 @@ int main(int argc, char *argv[]){
         for (auto& node : nodes){
             node->state.insert("£");
         }
+        std::cout << "2" << std::endl;
 
         TaintAnalyzer analyzer;
         worklist(nodes, analyzer);
+        std::cout << "3" << std::endl;
 
         print_digraph_with_result<std::set<std::string>>(nodes, std::cout, print_result);
 
