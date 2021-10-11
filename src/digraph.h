@@ -113,8 +113,8 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Expression>& ar
     return os;
 }
 
-template <typename LatticeType>
-void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionEntryNode<LatticeType>>> &entryNodes, std::ostream &stream){
+template <typename LatticeType, typename PrintLambda>
+void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionEntryNode<LatticeType>>> &entryNodes, std::ostream &stream, PrintLambda lattice_printer){
     DigraphPrinter<LatticeType> printer(stream);
     for (auto& entryNode : entryNodes)
     {
@@ -127,7 +127,7 @@ void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionEntryNode<Lattic
         {
             stream << (unsigned long long int)entryNode.get() << "->" << (unsigned long long int)succ.get() << "\n";
             stream << "subgraph cluster_" << (unsigned long long int)entryNode.get() << "{\n";
-            print_digraph_subgraph_content(succ, stream, printer, returnpath);
+            print_digraph_subgraph_content(succ, stream, printer, returnpath, lattice_printer);
             stream << "}\n";
             stream << returnpath;
             returnpath = "";
@@ -136,10 +136,11 @@ void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionEntryNode<Lattic
     }
 }
 
-template <typename LatticeType>
-void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &node, std::ostream &stream, DigraphPrinter<LatticeType> &printer, std::string &returnpath){
+template <typename LatticeType, typename PrintLambda>
+void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &node, std::ostream &stream, DigraphPrinter<LatticeType> &printer, std::string &returnpath, PrintLambda lattice_printer){
     stream << (unsigned long long int)node.get() << "[label = \"";
     node->accept(printer);
+    lattice_printer(node->state, stream);
     stream << "\"]\n";
     printer.visitedNodes.insert((unsigned long long int)node.get());
     if (dynamic_cast<ReturnNode<LatticeType>*>(node.get()))
@@ -191,7 +192,7 @@ void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &no
                 
                 if(printer.visitedNodes.find((unsigned long long int)succ.get()) == printer.visitedNodes.end())
                 {
-                    print_digraph_subgraph_content(succ, stream, printer, returnpath);
+                    print_digraph_subgraph_content(succ, stream, printer, returnpath, lattice_printer);
                 }
             }
         }

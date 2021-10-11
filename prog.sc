@@ -8,13 +8,11 @@ int f(int n){
 }
 
 void main(int j){
-    x = 2*(5-2);
+    x = £;
     while(x){
         y = 3+j;
         x=x-1;
-        int a = f(20);
+        int a = f(x);
     }
     t = x+a;
 }
-
-
