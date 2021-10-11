@@ -175,8 +175,11 @@ class FunctionEntryNode : public Node<LatticeType> {
 public:
     std::shared_ptr<FunctionDefinition<LatticeType>> function;
     std::shared_ptr<FunctionExitNode<LatticeType>> exit;
+    std::vector<std::shared_ptr<Node<LatticeType>>> nodes{};
 
-    FunctionEntryNode(std::shared_ptr<FunctionDefinition<LatticeType>> function) : function(function) {}
+    FunctionEntryNode(std::shared_ptr<FunctionDefinition<LatticeType>> function) : function(function) {
+        exit = std::make_shared<FunctionExitNode<LatticeType>>();
+    }
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functionEntry(*this);
@@ -186,9 +189,6 @@ public:
 template<typename LatticeType>
 class FunctionExitNode : public Node<LatticeType> {
 public:
-    std::shared_ptr<FunctionEntryNode<LatticeType>> entry;
-
-    FunctionExitNode(std::shared_ptr<FunctionEntryNode<LatticeType>> entry) : entry(entry) {}
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functionExit(*this);

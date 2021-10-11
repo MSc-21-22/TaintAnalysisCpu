@@ -81,6 +81,7 @@ void TaintAnalyzer::visit_functionEntry(FunctionEntryNode<std::set<std::string>>
 
     for(auto& pred : node.predecessors){
         auto call = std::static_pointer_cast<FunctionCall<std::set<std::string>>>(pred);
+
         
         if (call->arguments.size() != def->formalParameters.size()){
             throw "Function call " + call->functionId + " didnt match the number of arguments";
