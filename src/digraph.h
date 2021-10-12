@@ -155,7 +155,7 @@ void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &no
             returnpath.append(std::to_string((unsigned long long int)succ.get())+"\n");
             if(dynamic_cast<FunctionExitNode<LatticeType>*>(succ.get()))
             {
-                returnpath.append(std::to_string((unsigned long long int)succ.get())+"[label = \" exit\"]\n");
+                returnpath.append(std::to_string((unsigned long long int)succ.get())+"[label = \" Exit\"]\n");
                 for (auto exitsucc : succ->successors)
                 {
                     returnpath.append(std::to_string((unsigned long long int)succ.get())+"->");
@@ -173,7 +173,7 @@ void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &no
             returnpath.append(std::to_string((unsigned long long int)succ.get())+"\n");
             if(dynamic_cast<FunctionExitNode<LatticeType>*>(succ.get()))
             {
-                returnpath.append(std::to_string((unsigned long long int)succ.get())+"[label = \" exit\"]\n");
+                returnpath.append(std::to_string((unsigned long long int)succ.get())+"[label = \" Exit\"]\n");
                 for (auto exitsucc : succ->successors)
                 {
                     returnpath.append(std::to_string((unsigned long long int)succ.get())+"->");

@@ -196,6 +196,7 @@ public:
         auto id = ctx->ID()->getText();
         std::shared_ptr<FunctionEntryNode<LatticeType>> functionEntry = std::static_pointer_cast<FunctionEntryNode<LatticeType>>(functions[id]);
         auto successor = clone_entry(functionEntry, &nodes);
+        entryNodes.push_back(successor);
 
 
         auto node = std::make_shared<FunctionCall<LatticeType>>(id, args);
