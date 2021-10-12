@@ -16,4 +16,5 @@ public:
     void visit_emptyReturn(EmptyReturnNode<std::set<std::string>>& node);
     void visit_functionEntry(FunctionEntryNode<std::set<std::string>>& node);
     void visit_functionExit(FunctionExitNode<std::set<std::string>>& node);
+    void visit_assignReturn(AssignReturnNode<std::set<std::string>>& node);
 };

@@ -7,15 +7,19 @@
 #include <vector>
 #include "Expression.h"
 #include <iostream>
+#include <map>
+#include "cfg_clone.h"
 
 template <typename LatticeType>
 class ScTransformer : public scBaseVisitor
 {
 public:
     std::vector<std::shared_ptr<FunctionDefinition<LatticeType>>> functionNodes{};
+    std::map<std::string, std::shared_ptr<FunctionEntryNode<LatticeType>>> functions{};
     std::vector<std::shared_ptr<FunctionEntryNode<LatticeType>>> entryNodes{};
     std::vector<std::shared_ptr<Node<LatticeType>>> nodes{};
 
+private:
     std::vector<std::shared_ptr<Node<LatticeType>>> last{};
 
     void link_to_lasts(std::shared_ptr<Node<LatticeType>> node){
@@ -29,6 +33,21 @@ public:
         last = {node};
         nodes.push_back(node);
     }
+
+    std::shared_ptr<FunctionEntryNode<LatticeType>> create_entry_node(std::shared_ptr<FunctionDefinition<LatticeType>> functionDef){
+        auto entry = std::make_shared<FunctionEntryNode<LatticeType>>();
+        entryNodes.push_back(entry);
+        functions[functionDef->functionId] = entry;
+        add_node(entry);
+        link_to_lasts(functionDef);
+        add_node(functionDef);
+        functionNodes.push_back(functionDef);
+
+        return entry;
+    }
+
+public:
+
 
     antlrcpp::Any visitFunctionDef(scParser::FunctionDefContext *ctx) override
     {
@@ -46,24 +65,25 @@ public:
 
 
         std::shared_ptr<FunctionDefinition<LatticeType>> functionDef;
+        std::shared_ptr<FunctionEntryNode<LatticeType>> entry;
         if (ctx->type() != nullptr)
         {
             functionDef = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters, ctx->type()->getText());
-            add_node(functionDef);
-            functionNodes.push_back(functionDef);
+            entry = create_entry_node(functionDef);
 
             auto out = visitChildren(ctx);
         }
         else
         {
             functionDef = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters);
-            add_node(functionDef);
-            functionNodes.push_back(functionDef);
+            entry = create_entry_node(functionDef);
 
             auto out = visitChildren(ctx);
             auto returnNode = std::make_shared<EmptyReturnNode<LatticeType>>(ctx->ID()->getText());
             link_to_lasts(returnNode);
             add_node(returnNode);
+            link_to_lasts(entry->exit);
+            add_node(entry->exit);
             functionDef->returns = {returnNode};
         }
 
@@ -76,11 +96,12 @@ public:
             auto node = std::make_shared<ReturnNode<LatticeType>>(expression, functionDef->functionId);
             link_to_lasts(node);
             add_node(node);
-            functionDef->returns = last;
+            link_to_lasts(entry->exit);
+            add_node(entry->exit);
 
+            functionDef->returns = {node};
             last = {};
         }
-
         return nullptr;
     }
 
@@ -161,7 +182,7 @@ public:
 
         auto expr = std::make_shared<VariableExpression>("£return");
         last.push_back(node);
-        auto assign = std::make_shared<AssignmentNode<LatticeType>>(node->variableId, expr);
+        auto assign = std::make_shared<AssignReturnNode<LatticeType>>(node->variableId);
         link_to_lasts(assign);
         add_node(assign);
 
@@ -173,21 +194,16 @@ public:
         antlrcpp::Any result = ctx->args()->accept(this);
         auto args = result.as<std::vector<std::shared_ptr<Expression>>>();
         auto id = ctx->ID()->getText();
-        std::shared_ptr<FunctionDefinition<LatticeType>> successor{};
+        std::shared_ptr<FunctionEntryNode<LatticeType>> functionEntry = std::static_pointer_cast<FunctionEntryNode<LatticeType>>(functions[id]);
+        auto successor = clone_entry(functionEntry, &nodes);
 
-        for (std::shared_ptr<FunctionDefinition<LatticeType>> functionNode : functionNodes){
-            if(functionNode->functionId == id) {
-                successor = functionNode;
-                break;
-            }
-        }
 
         auto node = std::make_shared<FunctionCall<LatticeType>>(id, args);
         link_to_lasts(node);
         add_node(node);
         link_to_lasts(successor);
-        last = successor->returns;
-        
+
+        last = {successor->exit};
         
         return node;
     }
@@ -244,44 +260,6 @@ public:
             return std::make_shared<BinaryOperatorExpression>(nullptr, op, rhs);
         }
     }
-
-    void add_entry_exit_nodes(){
-        for(auto& node : functionNodes){
-            auto entry_node = std::make_shared<FunctionEntryNode<LatticeType>>(node);
-            make_predecessor(node, entry_node);
-            
-            auto exit_node = std::make_shared<FunctionExitNode<LatticeType>>(entry_node);
-            for(auto& return_node : node->returns){
-                make_successor(return_node, exit_node);
-            }
-
-
-            nodes.push_back(entry_node);
-            nodes.push_back(exit_node);
-
-            entryNodes.push_back(entry_node);
-        }
-    }
-
-    void make_predecessor(std::shared_ptr<Node<LatticeType>> node, std::shared_ptr<Node<LatticeType>> pred){
-        for(auto& old_pred : node->predecessors){
-            old_pred->successors.erase(node);
-            old_pred->successors.insert(pred);
-        }
-        pred->predecessors = node->predecessors;
-        node->predecessors = {pred};
-        pred->successors.insert(node);
-    }
-
-    void make_successor(std::shared_ptr<Node<LatticeType>> node, std::shared_ptr<Node<LatticeType>> succ){
-        for(auto& old_succ : node->successors){
-            old_succ->predecessors.erase(node);
-            old_succ->predecessors.insert(succ);
-        }
-        succ->successors = node->successors;
-        node->successors = {succ};
-        succ->predecessors.insert(node);
-    }
 };
 
 template <typename LatticeType>
@@ -295,7 +273,6 @@ ScTransformer<LatticeType> parse_to_cfg_transformer(antlr4::ANTLRInputStream &st
 
     ScTransformer<LatticeType> transformer;
     parser.prog()->accept(&transformer);
-    transformer.add_entry_exit_nodes();
 
     return transformer;
 }
@@ -311,7 +288,6 @@ std::vector<std::shared_ptr<Node<LatticeType>>> parse_to_cfg(antlr4::ANTLRInputS
 
     ScTransformer<LatticeType> transformer;
     parser.prog()->accept(&transformer);
-    transformer.add_entry_exit_nodes();
 
     return transformer.nodes;
 }
