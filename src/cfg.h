@@ -211,6 +211,7 @@ public:
     std::string id;
 
     AssignReturnNode(std::string id) : id(id) {}
+    AssignReturnNode() = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_assignReturn(*this);
