@@ -67,6 +67,10 @@ public:
     void visit_functionExit(FunctionExitNode<LatticeType> &node) override {
         os << "Exit";
     }
+    
+    void visit_assignReturn(AssignReturnNode<LatticeType>& node) override {
+        os << node.id << " = £return";
+    }
 };
 
 template <typename LatticeType>
