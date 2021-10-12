@@ -34,6 +34,18 @@ private:
         nodes.push_back(node);
     }
 
+    std::shared_ptr<FunctionEntryNode<LatticeType>> create_entry_node(std::shared_ptr<FunctionDefinition<LatticeType>> functionDef){
+        auto entry = std::make_shared<FunctionEntryNode<LatticeType>>();
+        entryNodes.push_back(entry);
+        functions[functionDef->functionId] = entry;
+        add_node(entry);
+        link_to_lasts(functionDef);
+        add_node(functionDef);
+        functionNodes.push_back(functionDef);
+
+        return entry;
+    }
+
 public:
 
 
@@ -57,26 +69,14 @@ public:
         if (ctx->type() != nullptr)
         {
             functionDef = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters, ctx->type()->getText());
-            entry = std::make_shared<FunctionEntryNode<LatticeType>>();
-            entryNodes.push_back(entry);
-            functions[functionDef->functionId] = entry;
-            add_node(entry);
-            link_to_lasts(functionDef);
-            add_node(functionDef);
-            functionNodes.push_back(functionDef);
+            entry = create_entry_node(functionDef);
 
             auto out = visitChildren(ctx);
         }
         else
         {
             functionDef = std::make_shared<FunctionDefinition<LatticeType>>(ctx->ID()->getText(), parameters);
-            entry = std::make_shared<FunctionEntryNode<LatticeType>>();
-            entryNodes.push_back(entry);
-            functions[functionDef->functionId] = entry;
-            add_node(entry);
-            link_to_lasts(functionDef);
-            add_node(functionDef);
-            functionNodes.push_back(functionDef);
+            entry = create_entry_node(functionDef);
 
             auto out = visitChildren(ctx);
             auto returnNode = std::make_shared<EmptyReturnNode<LatticeType>>(ctx->ID()->getText());
