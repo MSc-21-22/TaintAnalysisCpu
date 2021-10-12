@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
         worklist(program.nodes, analyzer);
 
         //print_digraph_with_result<std::set<std::string>>(program.nodes, std::cout, print_result);
-        print_digraph_subgraph(program.entryNodes, std::cout, print_result);
+        print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
 
     }
 

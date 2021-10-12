@@ -118,29 +118,41 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Expression>& ar
 }
 
 template <typename LatticeType, typename PrintLambda>
-void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionEntryNode<LatticeType>>> &entryNodes, std::ostream &stream, PrintLambda lattice_printer){
+void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionEntryNode<LatticeType>>> &entryNodes, std::ostream &stream, PrintLambda lattice_printer, std::string analyzeFunction)
+{
     DigraphPrinter<LatticeType> printer(stream);
+    std::vector<std::shared_ptr<Node<LatticeType>>> nodesToPrint = {};
+
     for (auto& entryNode : entryNodes)
     {
         for (auto& succ : entryNode->successors)
         {
             if(auto funcDef = dynamic_cast<FunctionDefinition<LatticeType>*>(succ.get()))
             {
-                if((funcDef->returnType.compare("void") == 0) || !entryNode->predecessors.empty())
+                if(funcDef->functionId.compare(analyzeFunction) == 0)
                 {
-                    stream << (unsigned long long int)entryNode.get() << "[label = \"";
-                    entryNode->accept(printer);
-                    stream << "\"]\n";
-                    std::string returnpath = "";
-                    printer.visitedNodes.insert((unsigned long long int)entryNode.get());
-                    stream << (unsigned long long int)entryNode.get() << "->" << (unsigned long long int)succ.get() << "\n";
-                    stream << "subgraph cluster_" << (unsigned long long int)entryNode.get() << "{\n";
-                    print_digraph_subgraph_content(succ, stream, printer, returnpath, lattice_printer);
-                    stream << "}\n";
-                    stream << returnpath;
+                    nodesToPrint.push_back(entryNode);
+                    std::set<unsigned long long int> checked = {};
+                    findFunctionEntries(succ, nodesToPrint, checked);
                 }
             }
         }   
+    }
+    for (auto& node : nodesToPrint)
+    {
+        for (auto& succ : node->successors)
+        {
+            stream << (unsigned long long int)node.get() << "[label = \"";
+            node->accept(printer);
+            stream << "\"]\n";
+            std::string returnpath = "";
+            printer.visitedNodes.insert((unsigned long long int)node.get());
+            stream << (unsigned long long int)node.get() << "->" << (unsigned long long int)succ.get() << "\n";
+            stream << "subgraph cluster_" << (unsigned long long int)node.get() << "{\n";
+            print_digraph_subgraph_content(succ, stream, printer, returnpath, lattice_printer);
+            stream << "}\n";
+            stream << returnpath;     
+        }
     } 
 }
 
@@ -203,6 +215,23 @@ void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &no
                     print_digraph_subgraph_content(succ, stream, printer, returnpath, lattice_printer);
                 }
             }
+        }
+    }
+}
+
+template<typename LatticeType>
+void findFunctionEntries(std::shared_ptr<Node<LatticeType>> const &node, std::vector<std::shared_ptr<Node<LatticeType>>> &nodesToPrint, std::set<unsigned long long int> &checked)
+{
+    for (auto& succ : node->successors)
+    {
+         if(checked.find((unsigned long long int)succ.get()) == checked.end())
+         {
+            if (dynamic_cast<FunctionEntryNode<LatticeType>*>(succ.get()))
+            {
+                nodesToPrint.push_back(succ);
+            }
+            checked.insert((unsigned long long int)succ.get());
+            findFunctionEntries(succ, nodesToPrint, checked);
         }
     }
 }
