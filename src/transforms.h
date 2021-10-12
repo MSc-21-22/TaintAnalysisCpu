@@ -161,7 +161,7 @@ public:
 
         auto expr = std::make_shared<VariableExpression>("£return");
         last.push_back(node);
-        auto assign = std::make_shared<AssignmentNode<LatticeType>>(node->variableId, expr);
+        auto assign = std::make_shared<AssignReturnNode<LatticeType>>(node->variableId);
         link_to_lasts(assign);
         add_node(assign);
 

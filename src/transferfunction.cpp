@@ -100,6 +100,18 @@ void TaintAnalyzer::visit_functionExit(FunctionExitNode<std::set<std::string>>& 
     join(node);
 }
 
+
+void TaintAnalyzer::visit_assignReturn(AssignReturnNode<std::set<std::string>>& node){
+    join(node);
+    if (node.state.find("£return") != node.state.end()){
+        node.state.insert(node.id);
+    }else{
+        node.state.erase(node.id);
+    }
+
+    node.state.erase("£return");
+}
+
 bool evaluateExpression(std::shared_ptr<Expression> expression, std::set<std::string> &state)
 {
     return expression->evaluate(state);
