@@ -92,6 +92,9 @@ public:
     void visit_functionExit(FunctionExitNode<LatticeType>& node){
         clone_node<FunctionExitNode<LatticeType>>(node);
     }
+    void visit_assignReturn(AssignReturnNode<LatticeType>& node) {
+        clone_node<AssignReturnNode<LatticeType>>(node);
+    }
 };
 
 template<typename LatticeType>
