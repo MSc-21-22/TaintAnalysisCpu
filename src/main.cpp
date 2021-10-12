@@ -32,6 +32,7 @@ int main(int argc, char *argv[]){
         worklist(nodes, analyzer);
 
         print_digraph_with_result<std::set<std::string>>(nodes, std::cout, print_result);
+
     }
 
     //antlr4::ANTLRInputStream stream("int f(int n){a=n+2; return a;} void i(int j) {j=£; x = 2*(5-2); while(x) { y = 3+j; x=x-1; int fr = f(j);} i = y;}");
