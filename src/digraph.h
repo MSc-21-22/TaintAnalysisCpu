@@ -163,7 +163,7 @@ void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &no
     lattice_printer(node->state, stream);
     stream << "\"]\n";
     printer.visitedNodes.insert((unsigned long long int)node.get());
-    if (dynamic_cast<ReturnNode<LatticeType>*>(node.get()))
+    if (dynamic_cast<ReturnNode<LatticeType>*>(node.get()) || dynamic_cast<EmptyReturnNode<LatticeType>*>(node.get()))
     {
         for (auto& succ : node->successors)
         {
@@ -178,21 +178,6 @@ void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &no
                 
             }
         }
-    }
-    else if (dynamic_cast<EmptyReturnNode<LatticeType>*>(node.get()))
-    {
-       for (auto& succ : node->successors)
-        {
-            returnpath.append(connectNodes(node, succ));
-            if(dynamic_cast<FunctionExitNode<LatticeType>*>(succ.get()))
-            {
-                returnpath.append(std::to_string((unsigned long long int)succ.get())+"[label = \" Exit\"]\n");
-                for (auto exitsucc : succ->successors)
-                {
-                    returnpath.append(connectNodes(node, succ));
-                }
-            }
-        } 
     }
     else
     {
