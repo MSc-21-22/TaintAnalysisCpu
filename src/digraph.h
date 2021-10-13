@@ -129,7 +129,7 @@ void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionEntryNode<Lattic
         {
             if(auto funcDef = dynamic_cast<FunctionDefinition<LatticeType>*>(succ.get()))
             {
-                if(funcDef->functionId.compare(analyzeFunction) == 0)
+                if(funcDef->functionId == analyzeFunction)
                 {
                     nodesToPrint.push_back(entryNode);
                     std::set<unsigned long long int> checked = {};
