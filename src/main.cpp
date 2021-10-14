@@ -40,15 +40,17 @@ int main(int argc, char *argv[]){
         antlr4::ANTLRFileStream csfile;
         csfile.loadFromFile(argv[1]);
         antlr4::ANTLRInputStream prog(csfile);
-        auto nodes = parse_to_cfg<std::set<std::string>>(prog);
-        for (auto& node : nodes){
+        auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+        
+        for (auto& node : program.nodes){
             node->state.insert("£");
         }
 
         TaintAnalyzer analyzer;
-        worklist(nodes, analyzer);
+        worklist(program.nodes, analyzer);
 
-        print_digraph_with_result<std::set<std::string>>(nodes, std::cout, print_result);
+        //print_digraph_with_result<std::set<std::string>>(program.nodes, std::cout, print_result);
+        print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
 
     }
 
