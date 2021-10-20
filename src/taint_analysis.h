@@ -2,6 +2,10 @@
 #include "cfg.h"
 #include <set>
 #include <string>
+#include <algorithm>
+
+std::set<std::string> least_upper_bound(const std::set<std::string>& left, const std::set<std::string>& right);
+
 
 class TaintAnalyzer : public CfgVisitor<std::set<std::string>> {
 public:
