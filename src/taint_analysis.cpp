@@ -2,17 +2,28 @@
 
 bool evaluateExpression(std::shared_ptr<Expression>, std::set<std::string> &);
 
-void join(Node<std::set<std::string>> &node)
-{
-    for (auto &pred : node.predecessors)
+std::set<std::string> least_upper_bound(const std::set<std::string>& left, const std::set<std::string>& right){
+    std::set<std::string> out;
+    std::set_union(left.begin(), left.end(), right.begin(), right.end(), std::inserter(out, out.begin()));
+    return out;
+}
+
+std::set<std::string> join(const Node<std::set<std::string>> &node)
+{   
+    auto it = node.predecessors.begin();
+    auto state = (*it)->state;
+    it++;
+    while(it != node.predecessors.end())
     {
-        node.state.insert(pred->state.begin(), pred->state.end());
+        state = least_upper_bound((*it)->state, state);
+        it++;
     }
+    return state;
 }
 
 void TaintAnalyzer::visit_initializtion(InitializerNode<std::set<std::string>> &node)
 {
-    join(node);
+    node.state = join(node);
 
     if (evaluateExpression(node.expression, node.state))
     {
@@ -26,7 +37,7 @@ void TaintAnalyzer::visit_initializtion(InitializerNode<std::set<std::string>> &
 
 void TaintAnalyzer::visit_assignment(AssignmentNode<std::set<std::string>> &node)
 {
-    join(node);
+    node.state = join(node);
 
     if (evaluateExpression(node.expression, node.state))
     {
@@ -39,22 +50,22 @@ void TaintAnalyzer::visit_assignment(AssignmentNode<std::set<std::string>> &node
 }
 
 void TaintAnalyzer::visit_if(IfNode<std::set<std::string>> &node){
-    join(node);
+    node.state = join(node);
 }
 
 void TaintAnalyzer::visit_functioncall(FunctionCall<std::set<std::string>> &node)
 {
-    join(node);
+    node.state = join(node);
 }
 
 void TaintAnalyzer::visit_functiondef(FunctionDefinition<std::set<std::string>> &node)
 {
-    join(node);
+    node.state = join(node);
 }
 
 void TaintAnalyzer::visit_return(ReturnNode<std::set<std::string>> &node)
 {
-    join(node);
+    node.state = join(node);
 
     if (evaluateExpression(node.expression, node.state))
     {
@@ -72,7 +83,7 @@ void TaintAnalyzer::visit_emptyReturn(EmptyReturnNode<std::set<std::string>> &no
 }
 
 void TaintAnalyzer::visit_whileloop(WhileLoop<std::set<std::string>> &node){
-    join(node);
+    node.state = join(node);
 }
 
 
@@ -102,12 +113,12 @@ void TaintAnalyzer::visit_functionEntry(FunctionEntryNode<std::set<std::string>>
     }
 }
 void TaintAnalyzer::visit_functionExit(FunctionExitNode<std::set<std::string>>& node){
-    join(node);
+    node.state = join(node);
 }
 
 
 void TaintAnalyzer::visit_assignReturn(AssignReturnNode<std::set<std::string>>& node){
-    join(node);
+    node.state = join(node);
     if (node.state.find("£return") != node.state.end()){
         node.state.insert(node.id);
     }else{
