@@ -9,6 +9,7 @@
 #include "digraph.h"
 #include "kernel.h"
 #include "var_visitor.h"
+#include "transforms_matrix.h"
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -35,6 +36,10 @@ void gpu_analysis(ScTransformer<std::set<std::string>> program){
     }
     for(std::string var: varAnalyzer.variables){
         std::cout << var << std::endl;
+    }
+    MatrixTransforms<std::set<std::string>> matrixTransformer{varAnalyzer.variables};
+    for(auto& node : program.nodes){
+        (*node).accept(matrixTransformer);
     }
 }
 
