@@ -17,13 +17,14 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
         int rowSize;
 
         MatrixTransforms(std::set<std::string> progVariables){
-            rowSize = progVariables.size();
+            rowSize = progVariables.size() + 1;
             size = rowSize * rowSize;
             int i = 0;
             std::set<std::string>::iterator it;
             for (it=progVariables.begin(); it!=progVariables.end(); it++){
                 variables[*it] = i++;
             }
+            variables["€"] = i;
         }
 
         std::shared_ptr<int[]> unit_matrix(){
@@ -48,6 +49,7 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
                     matrix.get()[rowSize*variables[expr_var]+id_index] = 1;
                 }
             }     
+            
 
             matrices.push_back(matrix);
         }
