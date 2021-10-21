@@ -8,6 +8,7 @@
 #include "taint_analysis.h"
 #include "digraph.h"
 #include "kernel.h"
+#include "var_visitor.h"
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -17,6 +18,24 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
         }
     }
     stream << "}";
+}
+
+void cpu_analysis(ScTransformer<std::set<std::string>> program){
+    TaintAnalyzer analyzer;
+    worklist(program.nodes, analyzer);
+
+    //print_digraph_with_result<std::set<std::string>>(program.nodes, std::cout, print_result);
+    print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+}
+
+void gpu_analysis(ScTransformer<std::set<std::string>> program){
+    VarVisitor<std::set<std::string>> varAnalyzer;
+    for(auto& node : program.nodes){
+        (*node).accept(varAnalyzer);
+    }
+    for(std::string var: varAnalyzer.variables){
+        std::cout << var << std::endl;
+    }
 }
 
 int main(int argc, char *argv[]){
@@ -46,11 +65,8 @@ int main(int argc, char *argv[]){
             node->state.insert("£");
         }
 
-        TaintAnalyzer analyzer;
-        worklist(program.nodes, analyzer);
-
-        //print_digraph_with_result<std::set<std::string>>(program.nodes, std::cout, print_result);
-        print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+        // cpu_analysis(program);
+        gpu_analysis(program);
 
     }
 
