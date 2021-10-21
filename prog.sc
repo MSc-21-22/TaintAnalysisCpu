@@ -2,7 +2,7 @@ int f(int n){
     if(5){
         a=n+2;
     }else{
-        a=5;
+        a=5 * £;
     }
     return a;
 }
