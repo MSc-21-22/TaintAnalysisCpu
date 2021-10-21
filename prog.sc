@@ -8,9 +8,9 @@ int f(int n){
 }
 void main(int j){
     j = £;
-    x = 2*(5-2);
+    int x = 2*(5-2);
     while(x){
-        y = 3+j;
+        int y = 3+j;
         x=x-1;
         int a = f(j);
     }
