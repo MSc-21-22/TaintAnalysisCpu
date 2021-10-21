@@ -8,6 +8,7 @@ class Expression
 {
 public:
     virtual bool evaluate(std::set<std::string> &state) = 0;
+    virtual std::set<std::string> get_variables() = 0;
     virtual std::string dotPrint() = 0;
 };
 
@@ -19,6 +20,10 @@ public:
     bool evaluate(std::set<std::string> &state)
     {
         return true;
+    }
+
+    std::set<std::string> get_variables(){
+        return {};
     }
 
     std::string dotPrint() override
@@ -43,6 +48,15 @@ public:
         return lhs->evaluate(state) || rhs->evaluate(state);
     }
 
+    std::set<std::string> get_variables(){
+        std::set<std::string> out;
+        auto left = lhs->get_variables();
+        auto right = rhs->get_variables();
+        std::set_union(left.begin(), left.end(), right.begin(), right.end(), std::inserter(out, out.begin()));
+
+        return out;
+    }
+
     std::string dotPrint() override
     {
         std::string out;
@@ -61,6 +75,10 @@ public:
     bool evaluate(std::set<std::string> &state)
     {
         return false;
+    }
+    
+    std::set<std::string> get_variables(){
+        return {};
     }
 
     std::string dotPrint() override
@@ -81,6 +99,10 @@ public:
         return state.find(id) != state.end();
     }
 
+    std::set<std::string> get_variables(){
+        return {id};
+    }
+
     std::string dotPrint() override
     {
         return id;
@@ -96,6 +118,10 @@ public:
     bool evaluate(std::set<std::string> &state)
     {
         return expression->evaluate(state);
+    }
+
+    std::set<std::string> get_variables(){
+        return expression->get_variables();
     }
 
     std::string dotPrint() override
