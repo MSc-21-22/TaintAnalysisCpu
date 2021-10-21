@@ -26,6 +26,7 @@ KernelResult add_with_cuda(int* out, const int *a, const int *b, int width, int 
 // Helper function for using CUDA to add vectors in parallel.
 cudaError_t addWithCuda(int *c, const int *a, const int *b, int width, int height)
 {
+    dim3 dims(width, height);
     int *dev_a = 0;
     int *dev_b = 0;
     int *dev_c = 0;
@@ -72,7 +73,6 @@ cudaError_t addWithCuda(int *c, const int *a, const int *b, int width, int heigh
     }
 
     // Launch a kernel on the GPU with one thread for each element.
-    dim3 dims(width, height);
     addKernel<<<1, dims>>>(dev_c, dev_a, dev_b, width);
 
     // Check for any errors launching the kernel
