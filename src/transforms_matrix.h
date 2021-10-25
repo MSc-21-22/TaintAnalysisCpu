@@ -70,7 +70,7 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
 
             for(std::string expr_var : expr_vars){
                 if (variables.count(expr_var)){
-                    matrix.get()[rowSize*variables[expr_var]+id_index] = 1;
+                    matrix.get()[rowSize*id_index+variables[expr_var]] = 1;
                 }
             }     
             
