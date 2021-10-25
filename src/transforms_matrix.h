@@ -24,7 +24,7 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
             for (it=progVariables.begin(); it!=progVariables.end(); it++){
                 variables[*it] = i++;
             }
-            variables["€"] = i;
+            variables["£"] = i;
         }
 
         std::shared_ptr<int[]> unit_matrix(){
@@ -46,7 +46,7 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
 
             for(std::string expr_var : expr_vars){
                 if (variables.count(expr_var)){
-                    matrix.get()[rowSize*variables[expr_var]+id_index] = 1;
+                    matrix.get()[rowSize*id_index+variables[expr_var]] = 1;
                 }
             }     
             
