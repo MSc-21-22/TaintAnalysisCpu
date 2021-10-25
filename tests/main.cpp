@@ -27,13 +27,15 @@ SCENARIO("matrix transform initilization") {
       MatrixTransforms<int> matrixTransformer({"a","b"});
       node.accept(matrixTransformer);
 
-      int correct_matrix[] = {0,1,1,
-          0,1,0,
-          0,0,1};
-      THEN("correct matrix should be: 011 010, 001") {
+      int correct_matrix[] = {
+          0,1,1,0,
+          0,1,0,0,
+          0,0,1,0,
+          0,0,0,1};
+      THEN("correct matrix should be: 0110 0100 0010 0001") {
         auto matrix = matrixTransformer.matrices[0].get();
-        CHECK_MESSAGE(std::memcmp(matrix,correct_matrix,9) == 0,
-                      convert_to_string(matrix, 3));
+        CHECK_MESSAGE(std::memcmp(matrix,correct_matrix,16) == 0,
+                      convert_to_string(matrix, 4));
       }
     }
   }
@@ -50,13 +52,14 @@ SCENARIO("matrix transform assignment") {
       node.accept(matrixTransformer);
 
       int correct_matrix[] = 
-          {0,0,1,
-           0,1,0,
-           0,0,1};
-      THEN("correct matrix should be: 001 010, 001") {
+          {0,0,1,0,
+           0,1,0,0,
+           0,0,1,0,
+           0,0,0,1};
+      THEN("correct matrix should be: 0010 01000 0010 0001") {
         auto matrix = matrixTransformer.matrices[0].get();
-        CHECK_MESSAGE(std::memcmp(matrix,correct_matrix,9) == 0,
-                      convert_to_string(matrix, 3));
+        CHECK_MESSAGE(std::memcmp(matrix,correct_matrix,16) == 0,
+                      convert_to_string(matrix, 4));
       }
     }
   }
