@@ -116,6 +116,9 @@ void MultiTaintAnalyzer::visit_assignReturn(AssignReturnNode<SourcedTaintState>&
 void print_taint_source(SourcedTaintState& result, std::ostream& stream){
     stream << "\\n{ ";
     for (auto& variable_pair : result){
+        if(variable_pair.second.size() == 0)
+            continue;
+
         std::cout << variable_pair.first << ":[";
         for(auto& source : variable_pair.second){
             std::cout << source << ", ";
