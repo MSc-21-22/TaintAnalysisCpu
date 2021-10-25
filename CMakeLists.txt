@@ -28,9 +28,12 @@ endif()
 include_directories(src/
     src/antlr4-runtime
     ${ANTLR4_INCLUDE_DIRS}
-    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    tests/)
 add_executable(analyzer src/main.cpp  src/antlr4-runtime/scBaseVisitor.cpp src/antlr4-runtime/scLexer.cpp src/antlr4-runtime/scParser.cpp src/antlr4-runtime/scVisitor.cpp 
             src/taint_analysis.cpp src/kernel.cu)
 add_dependencies(analyzer antlr4_static)
 target_link_libraries(analyzer antlr4_static)
 #target_compile_features(particles PUBLIC cxx_std_14)
+
+add_executable(test tests/main.cpp)
