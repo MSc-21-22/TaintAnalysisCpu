@@ -72,10 +72,21 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
         }
 
         void visit_functioncall(FunctionCall<LatticeType>& node){}
-        void visit_if(IfNode<LatticeType>& node){}
+
+        void visit_if(IfNode<LatticeType>& node){
+            matrices.push_back(Matrix(rowSize));
+        }
+
         void visit_return(ReturnNode<LatticeType>& node){}
-        void visit_whileloop(WhileLoop<LatticeType>& node){}
-        void visit_emptyReturn(EmptyReturnNode<LatticeType>& node){}
+
+        void visit_whileloop(WhileLoop<LatticeType>& node){
+            matrices.push_back(Matrix(rowSize));
+        }
+
+        void visit_emptyReturn(EmptyReturnNode<LatticeType>& node){
+            matrices.push_back(Matrix(rowSize));
+        }
+
         void visit_functionEntry(FunctionEntryNode<LatticeType>& node){}
         void visit_functionExit(FunctionExitNode<LatticeType>& node) {}
 };
