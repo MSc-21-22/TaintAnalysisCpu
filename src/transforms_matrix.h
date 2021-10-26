@@ -8,6 +8,9 @@
 #include "cfg.h"
 #include "matrix.h"
 
+#define RETURN_VAR "£return"
+#define TAINT_VAR "£"
+
 template <typename LatticeType>
 class MatrixTransforms : public CfgVisitor<LatticeType>
 {
@@ -25,8 +28,8 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
             for (it=progVariables.begin(); it!=progVariables.end(); it++){
                 variables[*it] = i++;
             }
-            variables["£return"] = i++;
-            variables["£"] = i++;
+            variables[RETURN_VAR] = i++;
+            variables[TAINT_VAR] = i++;
         }
 
 
