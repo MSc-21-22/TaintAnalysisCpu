@@ -10,17 +10,16 @@ class Matrix{
         int rowSize;
 
         Matrix(int rowSize): rowSize(rowSize){
-            matrix = unit_matrix();
+            std::shared_ptr<int[]> new_matrix(new int[rowSize * rowSize]);
+            matrix = new_matrix;
         }
 
-        std::shared_ptr<int[]> unit_matrix(){
+        void to_unit_matrix(){
             int size = rowSize*rowSize;
-            std::shared_ptr<int[]> matrix(new int[size]);
             std::fill(matrix.get(), matrix.get() + size, 0);
             for(int i = 0; i < rowSize; i++){
                 matrix.get()[rowSize*i+i] = 1;
             }
-            return matrix;
         }
 
         int& operator()(int row, int column){
@@ -38,3 +37,16 @@ class Matrix{
             return res;
         }
 };
+
+Matrix unit_matrix(int row_size) {
+    Matrix matrix(row_size);
+    matrix.to_unit_matrix();
+    return matrix;
+}
+
+Matrix empty_matrix(int row_size) {
+    Matrix matrix(row_size);
+    //Set taint constant to 1
+    matrix(row_size, row_size) = 1;
+    return matrix;
+}
