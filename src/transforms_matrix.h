@@ -55,6 +55,13 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
         }
         
         void visit_assignReturn(AssignReturnNode<LatticeType>& node){
+            Matrix matrix = unit_matrix(rowSize);
+            int id_index = variables[node.id];
+
+            matrix(id_index,id_index) = 0;
+            matrix(id_index, variables[RETURN_VAR]) = 1;
+            
+            matrices.push_back(matrix);
         }
 
         void visit_assignment(AssignmentNode<LatticeType>& node){
@@ -74,7 +81,9 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
             matrices.push_back(matrix);
         }
 
-        void visit_functioncall(FunctionCall<LatticeType>& node){}
+        void visit_functioncall(FunctionCall<LatticeType>& node){
+            matrices.push_back(unit_matrix(rowSize));
+        }
 
         void visit_if(IfNode<LatticeType>& node){
             matrices.push_back(unit_matrix(rowSize));
