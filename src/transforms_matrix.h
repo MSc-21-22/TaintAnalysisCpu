@@ -6,20 +6,21 @@
 #include <algorithm>
 #include <map>
 #include "cfg.h"
+#include "matrix.h"
 
 template <typename LatticeType>
 class MatrixTransforms : public CfgVisitor<LatticeType>
 {
     public:
         std::map<std::string, int> variables{};
-        std::vector<std::shared_ptr<int[]>> matrices;
+        std::vector<Matrix> matrices{};
         int size;
         int rowSize;
 
         MatrixTransforms(std::set<std::string> progVariables){
             progVariables.insert("£");
             progVariables.insert("£return");
-            rowSize = progVariables.size() + 1;
+            rowSize = progVariables.size();
             size = rowSize * rowSize;
             int i = 0;
             std::set<std::string>::iterator it;
@@ -28,26 +29,17 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
             }
         }
 
-        std::shared_ptr<int[]> unit_matrix(){
-            std::shared_ptr<int[]> matrix(new int[size]);
-            std::fill(matrix.get(), matrix.get() + size, 0);
-            for(int i = 0; i < variables.size(); i++){
-                matrix.get()[rowSize*i+i] = 1;
-            }
-            return matrix;
-        }
-
 
         void visit_initializtion(InitializerNode<LatticeType>& node){
-            std::shared_ptr<int[]> matrix = unit_matrix();
+            Matrix matrix(rowSize);
             std::set<std::string> expr_vars = node.expression->get_variables();
             int id_index = variables[node.id];
 
-            matrix.get()[rowSize*id_index+id_index] = 0;
+            matrix(id_index,id_index) = 0;
 
             for(std::string expr_var : expr_vars){
                 if (variables.count(expr_var)){
-                    matrix.get()[rowSize*id_index+variables[expr_var]] = 1;
+                    matrix(id_index, variables[expr_var]) = 1;
                 }
             }     
             
@@ -63,15 +55,15 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
         }
 
         void visit_assignment(AssignmentNode<LatticeType>& node){
-            std::shared_ptr<int[]> matrix = unit_matrix();
+            Matrix matrix(rowSize);
             std::set<std::string> expr_vars = node.expression->get_variables();
             int id_index = variables[node.id];
 
-            matrix.get()[rowSize*id_index+id_index] = 0;
+            matrix(id_index,id_index) = 0;
 
             for(std::string expr_var : expr_vars){
                 if (variables.count(expr_var)){
-                    matrix.get()[rowSize*id_index+variables[expr_var]] = 1;
+                    matrix(id_index, variables[expr_var]) = 1;
                 }
             }     
             
