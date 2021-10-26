@@ -74,3 +74,23 @@ TEST_CASE("matrix transform function entry"){
     CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,16) == 0,
                   matrix.to_string());
 }
+
+
+TEST_CASE("matrix transform return") {
+
+    auto a = std::make_shared<VariableExpression>("a");
+    ReturnNode<int> node(a, "f");
+
+    MatrixTransforms<int> matrixTransformer({"a","b"});
+    node.accept(matrixTransformer);
+
+    int correct_matrix[] = 
+        {0,0,0,0,
+         0,0,0,0,
+         1,0,0,0,
+         0,0,0,1};
+
+      Matrix matrix = matrixTransformer.matrices[0];
+      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,16) == 0,
+                    matrix.to_string());
+} 

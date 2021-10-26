@@ -80,7 +80,17 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
             matrices.push_back(unit_matrix(rowSize));
         }
 
-        void visit_return(ReturnNode<LatticeType>& node){}
+        void visit_return(ReturnNode<LatticeType>& node){
+            Matrix matrix = empty_matrix(rowSize);
+            std::set<std::string> expr_vars = node.expression->get_variables();
+
+            for(std::string expr_var : expr_vars){
+                if (variables.count(expr_var)){
+                    matrix(variables[RETURN_VAR], variables[expr_var]) = 1;
+                }
+            } 
+            matrices.push_back(matrix);
+        }
 
         void visit_whileloop(WhileLoop<LatticeType>& node){
             matrices.push_back(unit_matrix(rowSize));
@@ -119,5 +129,7 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
             matrices.push_back(matrix);
         }
 
-        void visit_functionExit(FunctionExitNode<LatticeType>& node) {}
+        void visit_functionExit(FunctionExitNode<LatticeType>& node) {
+            matrices.push_back(unit_matrix(rowSize));
+        }
 };
