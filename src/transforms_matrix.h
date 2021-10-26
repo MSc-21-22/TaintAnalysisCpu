@@ -142,3 +142,22 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
             matrices.push_back(unit_matrix(rowSize));
         }
 };
+
+template<typename LatticeType>
+Matrix get_successor_matrix(std::vector<std::shared_ptr<Node<LatticeType>>> nodes){
+    Matrix matrix = Matrix(nodes.size());
+    std::map<std::shared_ptr<Node<LatticeType>>, int> node_map{};
+
+    int i = 0;
+    for(auto node : nodes){
+        node_map[node] = i++;
+    }
+
+    for(auto node : nodes){
+        int node_index = node_map[node];
+        for (auto succ_node : node->successors){
+            matrix(node_index, node_map[succ_node]) = 1;
+        }
+    }
+    return matrix;
+}

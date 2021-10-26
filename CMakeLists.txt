@@ -36,4 +36,4 @@ add_dependencies(analyzer antlr4_static)
 target_link_libraries(analyzer antlr4_static)
 #target_compile_features(particles PUBLIC cxx_std_14)
 
-add_executable(test tests/main.cpp)
+add_executable(test tests/test_transforms_matrix.cpp)

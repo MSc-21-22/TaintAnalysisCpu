@@ -112,3 +112,25 @@ TEST_CASE("matrix transform return") {
       CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,16) == 0,
                     matrix.to_string());
 } 
+
+
+TEST_CASE("Create successor node matrix"){
+    auto node1 = std::make_shared<FunctionExitNode<int>>();
+    auto node2 = std::make_shared<FunctionExitNode<int>>();
+    auto node3 = std::make_shared<FunctionExitNode<int>>();
+
+    node1->successors.insert({node2,node3});
+    node2->successors.insert(node3);
+    node2->predecessors.insert(node1);
+    node3->predecessors.insert({node1,node2});
+    
+    std::vector<std::shared_ptr<Node<int>>> vec{node1,node2,node3};
+    auto matrix = get_successor_matrix(vec);
+
+    int correct_matrix[] = {
+        0,1,1,
+        0,0,1,
+        0,0,0};
+      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(), correct_matrix, 16) == 0,
+                    matrix.to_string());
+}
