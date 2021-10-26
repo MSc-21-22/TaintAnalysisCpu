@@ -8,15 +8,16 @@ class Matrix{
     public:
         std::shared_ptr<int[]> matrix;
         int rowSize;
+        int size;
 
         Matrix(int rowSize): rowSize(rowSize){
-            std::shared_ptr<int[]> new_matrix(new int[rowSize * rowSize]);
+            size = rowSize*rowSize;
+            std::shared_ptr<int[]> new_matrix(new int[size]);
             matrix = new_matrix;
+            std::fill(matrix.get(), matrix.get() + size, 0);
         }
 
         void to_unit_matrix(){
-            int size = rowSize*rowSize;
-            std::fill(matrix.get(), matrix.get() + size, 0);
             for(int i = 0; i < rowSize; i++){
                 matrix.get()[rowSize*i+i] = 1;
             }
@@ -47,6 +48,6 @@ Matrix unit_matrix(int row_size) {
 Matrix empty_matrix(int row_size) {
     Matrix matrix(row_size);
     //Set taint constant to 1
-    matrix(row_size, row_size) = 1;
+    matrix(row_size-1, row_size-1) = 1;
     return matrix;
 }
