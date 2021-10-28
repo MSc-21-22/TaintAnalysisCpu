@@ -14,13 +14,18 @@ TEST_CASE("matrix transform initilization") {
     MatrixTransforms<int> matrixTransformer({"a","b"});
     node.accept(matrixTransformer);
 
+    
+    //     0,1,0,1,
+    //     0,1,0,0,
+    //     0,0,1,0,
+    //     0,0,0,1
     int correct_matrix[] = {
-        0,1,0,1,
-        0,1,0,0,
+        0,0,0,0,
+        1,1,0,0,
         0,0,1,0,
-        0,0,0,1};
+        1,0,0,1};
       Matrix matrix = matrixTransformer.matrices[0];
-      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(), correct_matrix, 16) == 0,
+      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
                     matrix.to_string());
 
 } 
@@ -33,14 +38,19 @@ TEST_CASE("matrix transform assignment") {
     MatrixTransforms<int> matrixTransformer({"a","b"});
     node.accept(matrixTransformer);
 
+
+    //      0,0,0,1,
+    //      0,1,0,0,
+    //      0,0,1,0,
+    //      0,0,0,1
     int correct_matrix[] = 
-        {0,0,0,1,
-         0,1,0,0,
-         0,0,1,0,
-         0,0,0,1};
+       {0,0,0,0,
+        0,1,0,0,
+        0,0,1,0,
+        1,0,0,1};
 
       Matrix matrix = matrixTransformer.matrices[0];
-      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,16) == 0,
+      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,sizeof(correct_matrix)) == 0,
                     matrix.to_string());
 } 
 
@@ -51,14 +61,18 @@ TEST_CASE("matrix transform assign return") {
     MatrixTransforms<int> matrixTransformer({"a","b"});
     node.accept(matrixTransformer);
 
+    //      0,0,1,0,
+    //      0,1,0,0,
+    //      0,0,1,0,
+    //      0,0,0,1
     int correct_matrix[] = 
-        {0,0,1,0,
+        {0,0,0,0,
          0,1,0,0,
-         0,0,1,0,
+         1,0,1,0,
          0,0,0,1};
 
       Matrix matrix = matrixTransformer.matrices[0];
-      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,16) == 0,
+      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,sizeof(correct_matrix)) == 0,
                     matrix.to_string());
 } 
 
@@ -81,15 +95,20 @@ TEST_CASE("matrix transform function entry"){
     MatrixTransforms<int> matrixTransforms({"a","b","c"});
     funcEntry->accept(matrixTransforms);
 
+    //     {0,0,1,0,0,
+    //      0,0,0,0,1,
+    //      0,0,0,0,0,
+    //      0,0,0,0,0,
+    //      0,0,0,0,1
     int correct_matrix[] =
-        {0,0,1,0,0,
-         0,0,0,0,1,
+        {0,0,0,0,0,
          0,0,0,0,0,
+         1,0,0,0,0,
          0,0,0,0,0,
-         0,0,0,0,1};
+         0,1,0,0,1};
 
     Matrix matrix = matrixTransforms.matrices[0];
-    CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,16) == 0,
+    CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,sizeof(correct_matrix)) == 0,
                   matrix.to_string());
 }
 
@@ -102,14 +121,18 @@ TEST_CASE("matrix transform return") {
     MatrixTransforms<int> matrixTransformer({"a","b"});
     node.accept(matrixTransformer);
 
+    //      0,0,0,0,
+    //      0,0,0,0,
+    //      1,0,0,0,
+    //      0,0,0,1
     int correct_matrix[] = 
-        {0,0,0,0,
+        {0,0,1,0,
          0,0,0,0,
-         1,0,0,0,
+         0,0,0,0,
          0,0,0,1};
 
       Matrix matrix = matrixTransformer.matrices[0];
-      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,16) == 0,
+      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,sizeof(correct_matrix)) == 0,
                     matrix.to_string());
 } 
 
@@ -127,10 +150,13 @@ TEST_CASE("Create successor node matrix"){
     std::vector<std::shared_ptr<Node<int>>> vec{node1,node2,node3};
     auto matrix = get_successor_matrix(vec);
 
+    //     0,1,1,
+    //     0,0,1,
+    //     0,0,0
     int correct_matrix[] = {
-        0,1,1,
-        0,0,1,
-        0,0,0};
-      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(), correct_matrix, 16) == 0,
+        0,0,0,
+        1,0,0,
+        1,1,0};
+      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
                     matrix.to_string());
 }

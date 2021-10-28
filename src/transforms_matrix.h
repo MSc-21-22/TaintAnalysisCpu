@@ -34,7 +34,7 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
 
 
         void visit_initializtion(InitializerNode<LatticeType>& node){
-            Matrix matrix(rowSize);
+            Matrix matrix = unit_matrix(rowSize);
             std::set<std::string> expr_vars = node.expression->get_variables();
             int id_index = variables[node.id];
 
@@ -90,7 +90,7 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
         }
 
         void visit_return(ReturnNode<LatticeType>& node){
-            Matrix matrix = empty_matrix(rowSize);
+            Matrix matrix = base_transfer_matrix(rowSize);
             std::set<std::string> expr_vars = node.expression->get_variables();
 
             for(std::string expr_var : expr_vars){
@@ -110,7 +110,7 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
         }
 
         void visit_functionEntry(FunctionEntryNode<LatticeType>& node){
-            Matrix matrix = empty_matrix(rowSize);
+            Matrix matrix = base_transfer_matrix(rowSize);
             if (node.successors.size() == 0)
                 return;
 
