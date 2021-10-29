@@ -30,17 +30,17 @@ void cpu_analysis(ScTransformer<std::set<std::string>> program){
 }
 
 void gpu_analysis(ScTransformer<std::set<std::string>> program){
-    VarVisitor<std::set<std::string>> varAnalyzer;
-    for(auto& node : program.nodes){
-        (*node).accept(varAnalyzer);
-    }
-    for(std::string var: varAnalyzer.variables){
-        std::cout << var << std::endl;
-    }
-    MatrixTransforms<std::set<std::string>> matrixTransformer{varAnalyzer.variables};
-    for(auto& node : program.nodes){
-        (*node).accept(matrixTransformer);
-    }
+    // VarVisitor<std::set<std::string>> varAnalyzer;
+    // for(auto& node : program.nodes){
+    //     (*node).accept(varAnalyzer);
+    // }
+    // for(std::string var: varAnalyzer.variables){
+    //     std::cout << var << std::endl;
+    // }
+    // MatrixTransforms<std::set<std::string>> matrixTransformer{varAnalyzer.variables};
+    // for(auto& node : program.nodes){
+    //     (*node).accept(matrixTransformer);
+    // }
 }
 
 int main(int argc, char *argv[]){

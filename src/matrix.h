@@ -4,10 +4,11 @@
 #include <algorithm>
 #include <assert.h>
 
+template<typename ElementType>
 class Matrix{
 
     public:
-        std::shared_ptr<int[]> matrix;
+        std::shared_ptr<ElementType[]> matrix;
         int rowCount;
         int columnCount;
         int size;
@@ -27,7 +28,7 @@ class Matrix{
             }
         }
 
-        int& operator()(int row, int column){
+        ElementType& operator()(int row, int column){
             return matrix.get()[row+column*rowCount];
         }
 
@@ -45,12 +46,23 @@ class Matrix{
     private:
         void create_matrix(){
             size = rowCount*columnCount;
-            std::shared_ptr<int[]> new_matrix(new int[size]);
+            std::shared_ptr<ElementType[]> new_matrix(new ElementType[size]);
             matrix = new_matrix;
             std::fill(matrix.get(), matrix.get() + size, 0);
         }
 };
 
-Matrix unit_matrix(int row_size);
+template<typename ElementType>
+Matrix<ElementType> unit_matrix(int row_size) {
+    Matrix<ElementType> matrix(row_size);
+    matrix.to_unit_matrix();
+    return matrix;
+}
 
-Matrix base_transfer_matrix(int row_size);
+template<typename ElementType>
+Matrix<ElementType> base_transfer_matrix(int row_size) {
+    Matrix<ElementType> matrix(row_size);
+    //Set taint constant to 1
+    matrix(row_size-1, row_size-1) = 1;
+    return matrix;
+}

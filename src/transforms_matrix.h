@@ -11,12 +11,12 @@
 #define RETURN_VAR "£return"
 #define TAINT_VAR "£"
 
-template <typename LatticeType>
+template <typename LatticeType, typename ElementType>
 class MatrixTransforms : public CfgVisitor<LatticeType>
 {
     public:
         std::map<std::string, int> variables{};
-        std::vector<Matrix> matrices{};
+        std::vector<Matrix<ElementType>> matrices{};
         int size;
         int rowSize;
 
@@ -34,7 +34,7 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
 
 
         void visit_initializtion(InitializerNode<LatticeType>& node){
-            Matrix matrix = unit_matrix(rowSize);
+            auto matrix = unit_matrix<ElementType>(rowSize);
             std::set<std::string> expr_vars = node.expression->get_variables();
             int id_index = variables[node.id];
 
@@ -51,11 +51,11 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
         }
 
         void visit_functiondef(FunctionDefinition<LatticeType>& node){
-            matrices.push_back(unit_matrix(rowSize));
+            matrices.push_back(unit_matrix<ElementType>(rowSize));
         }
         
         void visit_assignReturn(AssignReturnNode<LatticeType>& node){
-            Matrix matrix = unit_matrix(rowSize);
+            auto matrix = unit_matrix<ElementType>(rowSize);
             int id_index = variables[node.id];
 
             matrix(id_index,id_index) = 0;
@@ -65,7 +65,7 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
         }
 
         void visit_assignment(AssignmentNode<LatticeType>& node){
-            Matrix matrix = unit_matrix(rowSize);
+            auto matrix = unit_matrix<ElementType>(rowSize);
             std::set<std::string> expr_vars = node.expression->get_variables();
             int id_index = variables[node.id];
 
@@ -82,15 +82,15 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
         }
 
         void visit_functioncall(FunctionCall<LatticeType>& node){
-            matrices.push_back(unit_matrix(rowSize));
+            matrices.push_back(unit_matrix<ElementType>(rowSize));
         }
 
         void visit_if(IfNode<LatticeType>& node){
-            matrices.push_back(unit_matrix(rowSize));
+            matrices.push_back(unit_matrix<ElementType>(rowSize));
         }
 
         void visit_return(ReturnNode<LatticeType>& node){
-            Matrix matrix = base_transfer_matrix(rowSize);
+            auto matrix = base_transfer_matrix<ElementType>(rowSize);
             std::set<std::string> expr_vars = node.expression->get_variables();
 
             for(std::string expr_var : expr_vars){
@@ -102,15 +102,15 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
         }
 
         void visit_whileloop(WhileLoop<LatticeType>& node){
-            matrices.push_back(unit_matrix(rowSize));
+            matrices.push_back(unit_matrix<ElementType>(rowSize));
         }
 
         void visit_emptyReturn(EmptyReturnNode<LatticeType>& node){
-            matrices.push_back(unit_matrix(rowSize));
+            matrices.push_back(unit_matrix<ElementType>(rowSize));
         }
 
         void visit_functionEntry(FunctionEntryNode<LatticeType>& node){
-            Matrix matrix = base_transfer_matrix(rowSize);
+            auto matrix = base_transfer_matrix<ElementType>(rowSize);
             if (node.successors.size() == 0)
                 return;
 
@@ -139,13 +139,13 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
         }
 
         void visit_functionExit(FunctionExitNode<LatticeType>& node) {
-            matrices.push_back(unit_matrix(rowSize));
+            matrices.push_back(unit_matrix<ElementType>(rowSize));
         }
 };
 
-template<typename LatticeType>
-Matrix get_successor_matrix(std::vector<std::shared_ptr<Node<LatticeType>>> nodes){
-    Matrix matrix = Matrix(nodes.size());
+template<typename LatticeType, typename ElementType>
+Matrix<ElementType> get_successor_matrix(std::vector<std::shared_ptr<Node<LatticeType>>> nodes){
+    Matrix<ElementType> matrix = Matrix<ElementType>(nodes.size());
     std::map<std::shared_ptr<Node<LatticeType>>, int> node_map{};
 
     int i = 0;
