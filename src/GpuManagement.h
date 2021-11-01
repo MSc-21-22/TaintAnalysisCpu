@@ -12,6 +12,11 @@ public:
     GpuResource(int rowCount, int columnCount, size_t element_size);
     GpuResource(int rowCount, int columnCount, void* data_ptr, size_t element_size);
 
+    GpuResource(const GpuResource& other);
+    GpuResource(GpuResource&& other) noexcept;
+    GpuResource& operator=(const GpuResource& other);
+    GpuResource& operator=(GpuResource&& other) noexcept;
+
     void multiply_f32_to_f32(const GpuResource& operand, GpuResource& result);
     void multiply_vector_f32_to_f32(int offset, const GpuResource& operand);
 

@@ -206,20 +206,23 @@ TEST_CASE("Matrix multiply test"){
 
     Matrix<float> matrixA{2};
     matrixA(0,0) = 1;
-    GpuMatrix<float> a{matrixA};
+    matrixA(1,1) = 1;
 
     Matrix<float> matrixB = unit_matrix<float>(2);
     matrixB(0,1) = 1;
-    GpuMatrix<float> b{matrixB};
+    matrixB(1,1) = 1;
 
     assert(sizeof(float) == 4);
     
-    auto c = a.multiply(b);
+    GpuMatrix<float> a{matrixA};
+    GpuMatrix<float> b{matrixB};
+    GpuMatrix<float> c = a.multiply(b);
+    
     Matrix<float> matrixC = c.to_matrix();
 
     float correct_matrix[] {
         1,0,
-        1,0};
+        1,1};
     
     destroy_cublas();
 
@@ -260,27 +263,138 @@ TEST_CASE("Matrix multiply initial state with succ test"){
 
     Matrix<float> succ = unit_matrix<float>(2);
     succ(0,1) = 1;
-    GpuMatrix<float> a{succ};
+    GpuMatrix<float> succ_gpu{succ};
 
     Matrix<float> state(5,2);
     state(3,0) = 1;
     state(3,1) = 1;
     state(0,0) = 1;
-    GpuMatrix<float> b{state};
+    GpuMatrix<float> state_gpu{state};
 
     assert(sizeof(float) == 4);
     
-    auto c = b.multiply(a);
+    auto c = state_gpu.multiply(succ_gpu);
     Matrix<float> matrixC = c.to_matrix();
+
+    // 1 1
+    // 0 0
+    // 0 0
+    // 1 1
+    // 0 0
 
     float correct_matrix[] {
         1,0,0,1,0,
-        1,0,0,1,0};
+        1,0,0,2,0};
     
     destroy_cublas();
 
     CHECK_MESSAGE(std::memcmp(matrixC.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
             matrixC.to_string());
+}
+
+
+TEST_CASE("Matrix multiply 5x5"){
+    create_cublas();
+
+    Matrix<float> matrixA{5};
+    matrixA(0,0) = 1;
+    matrixA(1,1) = 1;
+    matrixA(1,2) = 1;
+    matrixA(3,0) = 1;
+    matrixA(3,2) = 1;
+    matrixA(3,4) = 1;
+    matrixA(4,3) = 1;
+    GpuMatrix<float> a{matrixA};
+    auto test_a = a.to_matrix();
+
+    float correct_a[] = {
+        1,0,0,1,0,
+        0,1,0,0,0,
+        0,1,0,1,0,
+        0,0,0,0,1,
+        0,0,0,1,0
+    };
+
+    CHECK_MESSAGE(std::memcmp(test_a.matrix.get(), correct_a, sizeof(correct_a)) == 0,
+        test_a.to_string());
+
+    Matrix<float> matrixB = unit_matrix<float>(5);
+    matrixB(3,1) = 1;
+    GpuMatrix<float> b{matrixB};
+    auto test_b = b.to_matrix();
+
+    float correct_b[] = {
+        1,0,0,0,0,
+        0,1,0,1,0,
+        0,0,1,0,0,
+        0,0,0,1,0,
+        0,0,0,0,1
+    };
+
+    CHECK_MESSAGE(std::memcmp(test_b.matrix.get(), correct_b, sizeof(correct_b)) == 0,
+            test_b.to_string());
+
+    assert(sizeof(float) == 4);
+    
+    auto c = a.multiply(b);
+    Matrix<float> matrixC = c.to_matrix();
+
+    // 1 0 0 0 0
+    // 0 1 1 0 0
+    // 0 0 0 0 0
+    // 1 0 1 0 1
+    // 0 1 0 1 0
+
+    float correct_matrix[] {
+        1, 0, 0, 1, 0,
+        0, 1, 0, 0, 1,
+        0, 1, 0, 1, 0,
+        0, 0, 0, 0, 1,
+        0, 0, 0, 1, 0};
+    
+    destroy_cublas();
+
+    CHECK_MESSAGE(std::memcmp(matrixC.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
+            matrixC.to_string());
+}
+
+TEST_CASE("Matrix vector multiplication error 13 reproduction"){
+    // a = £
+    // b = a
+    create_cublas();
+    // 0, 0, 0, 1
+    // 0, 1, 0, 0
+    // 0, 0, 1, 0
+    // 0, 0, 0, 1
+    Matrix<float> assign_a = unit_matrix<float>(4);
+    assign_a(0,0) = 0;
+    assign_a(0,3) = 1;
+    GpuMatrix<float> transfer = assign_a;
+
+    // 0, 0
+    // 0, 0
+    // 0, 0
+    // 1, 1
+    Matrix<float> state(4,2);
+    state(3,0) = 1;
+    state(3,1) = 1;
+    GpuMatrix<float> state_gpu = state;
+
+    state_gpu.multiply_vector(0, transfer);
+
+
+    Matrix<float> result = state_gpu.to_matrix(); 
+    //     1,0,
+    //     0,0,
+    //     0,0,
+    //     1,1
+    float correct_state[] = {
+        1,0,0,1,
+        0,0,0,1};
+
+    destroy_cublas();
+    CHECK_MESSAGE(std::memcmp(result.matrix.get(), correct_state, sizeof(correct_state)) == 0,
+            result.to_string());
 }
 
 TEST_CASE("Run analysis"){
@@ -290,6 +404,10 @@ TEST_CASE("Run analysis"){
     Matrix<float> succ = unit_matrix<float>(2);
     succ(0,1) = 1;
 
+    // 0, 0, 0, 1
+    // 0, 1, 0, 0
+    // 0, 0, 1, 0
+    // 0, 0, 0, 1
     Matrix<float> assign_a = unit_matrix<float>(4);
     assign_a(0,0) = 0;
     assign_a(0,3) = 1;
@@ -298,20 +416,25 @@ TEST_CASE("Run analysis"){
     assign_b(1,1) = 0;
     assign_b(1,0) = 1;
 
+    // 0, 0
+    // 0, 0
+    // 0, 0
+    // 1, 1
     Matrix<float> state(4,2);
     state(3,0) = 1;
     state(3,1) = 1;
 
-    std::vector<Matrix<float>> transfer_matrices{assign_a, assign_b};
+    std::vector<Matrix<float>> transfer_matrices = {assign_a, assign_b};
     auto result = analyse(transfer_matrices, succ, state);
 
     //     1,1,
     //     0,1,
     //     0,0,
-    //     1,1
+    //     1,3
     float correct_state[] = {
         1,0,0,1,
-        1,1,0,1};
+        1,1,0,3};
+
 
     CHECK_MESSAGE(std::memcmp(result.matrix.get(), correct_state, sizeof(correct_state)) == 0,
             result.to_string());
