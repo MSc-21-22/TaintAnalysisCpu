@@ -4,7 +4,7 @@
 #include <memory>
 #include "../src/transforms_matrix.h"
 #include "../src/matrix_analysis.h"
-#include "../src/GpuManagement.h"
+#include "../src/kernel.h"
 
 TEST_CASE("unit matrix") {
 
@@ -438,4 +438,23 @@ TEST_CASE("Run analysis"){
 
     CHECK_MESSAGE(std::memcmp(result.matrix.get(), correct_state, sizeof(correct_state)) == 0,
             result.to_string());
+}
+
+TEST_CASE("Gpu memcmp"){
+
+
+    // 0, 0, 0, 1
+    // 0, 1, 0, 0
+    // 0, 0, 1, 0
+    // 0, 0, 0, 1
+    Matrix<float> test_matrix = unit_matrix<float>(4);
+    test_matrix(0,0) = 0;
+    test_matrix(0,3) = 1;
+
+    GpuMatrix<float> a(test_matrix);
+    GpuMatrix<float> b(test_matrix);
+
+
+    CHECK_MESSAGE(gpu_mem_cmp(a.resource, b.resource),
+            "Two gpu matricies were not identical on the host device");
 }

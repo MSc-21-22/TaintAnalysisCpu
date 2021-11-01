@@ -2,78 +2,55 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include "kernel.h"
+#include <iostream>
 
 #include <stdio.h>
 
-cudaError_t addWithCuda(int* c, const int* a, const int* b, int width, int height       );
+bool cudaMemcmp(const float *a, const float* b, int size);
 
-__global__ void addKernel(int *c, const int *a, const int *b, int width)
+__global__ void memcmp_kernel(const float* a, const float* b, int size, bool* result)
 {
-    //Flatten x and y indexes into a single 1 dimensional value used to index the array
-    int i = threadIdx.x + threadIdx.y * width;
-    c[i] = a[i] + b[i];
+    int i = threadIdx.x;
+    if(i < size && ((a[i] !=0) != (b[i] != 0))){
+        *result = true;
+    }
 }
 
-KernelResult add_with_cuda(int* out, const int *a, const int *b, int width, int height){
-    cudaError_t cudaStatus = addWithCuda(out, a, b, 3, 2);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "add_with_cuda failed!");
-        return KernelResult::Failure;
-    }
-    return KernelResult::Success;
+bool gpu_mem_cmp(GpuResource& a, GpuResource& b){
+    int size = a.rowCount*a.columnCount*a.element_size;
+    return cudaMemcmp((float*)a.resource, (float*)b.resource, size);
 }
 
 // Helper function for using CUDA to add vectors in parallel.
-cudaError_t addWithCuda(int *c, const int *a, const int *b, int width, int height)
+bool cudaMemcmp(const float *a, const float* b, int size)
 {
-    dim3 dims(width, height);
-    int *dev_a = 0;
-    int *dev_b = 0;
-    int *dev_c = 0;
-    cudaError_t cudaStatus;
-    unsigned int size = width * height;
+    bool* dev_result = nullptr;
+    bool result = false;
+    int block_count = size/128 + 1;
+    dim3 threadsPerBlock(128);
 
     // Choose which GPU to run on, change this on a multi-GPU system.
-    cudaStatus = cudaSetDevice(0);
+    auto cudaStatus = cudaSetDevice(0);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
         goto Error;
     }
 
     // Allocate GPU buffers for three vectors (two input, one output)    .
-    cudaStatus = cudaMalloc((void**)&dev_c, size * sizeof(int));
+    cudaStatus = cudaMalloc((void**)&dev_result, sizeof(bool));
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMalloc failed!");
         goto Error;
     }
 
-    cudaStatus = cudaMalloc((void**)&dev_a, size * sizeof(int));
+    cudaStatus = cudaMemcpy(dev_result, &result, sizeof(bool), cudaMemcpyHostToDevice);
     if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
-
-    cudaStatus = cudaMalloc((void**)&dev_b, size * sizeof(int));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
-
-    // Copy input vectors from host memory to GPU buffers.
-    cudaStatus = cudaMemcpy(dev_a, a, size * sizeof(int), cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed!");
-        goto Error;
-    }
-
-    cudaStatus = cudaMemcpy(dev_b, b, size * sizeof(int), cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed!");
+        fprintf(stderr, "Copy false to gpu failed");
         goto Error;
     }
 
     // Launch a kernel on the GPU with one thread for each element.
-    addKernel<<<1, dims>>>(dev_c, dev_a, dev_b, width);
+    memcmp_kernel<<<block_count, threadsPerBlock>>>(a, b, size, dev_result);
 
     // Check for any errors launching the kernel
     cudaStatus = cudaGetLastError();
@@ -91,16 +68,17 @@ cudaError_t addWithCuda(int *c, const int *a, const int *b, int width, int heigh
     }
 
     // Copy output vector from GPU buffer to host memory.
-    cudaStatus = cudaMemcpy(c, dev_c, size * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaStatus = cudaMemcpy(&result, dev_result, sizeof(bool), cudaMemcpyDeviceToHost);
     if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed!");
+        fprintf(stderr, "cudaMemcpy failed with message: %d", cudaStatus);
         goto Error;
     }
 
+    cudaFree(dev_result);
+    return !result;
+
 Error:
-    cudaFree(dev_c);
-    cudaFree(dev_a);
-    cudaFree(dev_b);
+    cudaFree(dev_result);
     
-    return cudaStatus;
+    return false;
 }

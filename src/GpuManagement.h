@@ -1,3 +1,4 @@
+#pragma once
 #include "matrix.h"
 
 void create_cublas();

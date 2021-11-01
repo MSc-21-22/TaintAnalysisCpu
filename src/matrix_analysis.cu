@@ -1,7 +1,7 @@
 #include "matrix_analysis.h"
 #include <iostream>
 #include "GpuManagement.h"
-
+#include "kernel.h"
 
 Matrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<float>& successor_matrix, Matrix<float>& initial_state){
     create_cublas();
@@ -15,22 +15,18 @@ Matrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<floa
         transfers.push_back(std::move(mama_mia));
     }
     
-    // GpuMatrix<float> matrixA{transfer_matrices[0]};
-
-
-    //state.multiply_vector(0, transfers[0]);
-
-
-    int iterations = 2;
-    while(iterations > 0){
+    while(true){
         GpuMatrix<float> next_state = state.multiply(succ);
     
         for(int i = 0; i < transfer_matrices.size(); ++i) {
             next_state.multiply_vector(i, transfers[i]);
         }
 
+
+        if(gpu_mem_cmp(state.resource, next_state.resource)){
+            break;
+        }
         state = next_state;
-        iterations--;
     }
 
     Matrix<float> output = state.to_matrix();

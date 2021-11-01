@@ -44,22 +44,6 @@ void gpu_analysis(ScTransformer<std::set<std::string>> program){
 }
 
 int main(int argc, char *argv[]){
-
-    const int arraySize = 3 * 2;
-    const int a[arraySize] = { 1, 2, 3, 4, 5, 6 };
-    const int b[arraySize] = { 10, 20, 30, 40, 50, 60 };
-    int c[arraySize] = { 0 };
-
-    // Add vectors in parallel.
-    auto cudaStatus = add_with_cuda(c, a, b, 3, 2);
-
-    if(cudaStatus == KernelResult::Success){
-        std::cout << "Succeded with " << c[0] << ", " << c[1] << ", " << c[2] << std::endl;
-        std::cout << "              " << c[3] << ", " << c[4] << ", " << c[5] << std::endl;
-    }else{
-        std::cout << "Kernel failed" << std::endl;
-    }
-
     if(argc == 2){
         antlr4::ANTLRFileStream csfile;
         csfile.loadFromFile(argv[1]);
