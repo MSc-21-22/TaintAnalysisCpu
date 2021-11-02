@@ -171,13 +171,13 @@ TEST_CASE("Create successor node matrix"){
     std::vector<std::shared_ptr<Node<int>>> vec{node1,node2,node3};
     auto matrix = get_successor_matrix<int, float>(vec);
 
+    //     1,1,1,
     //     0,1,1,
-    //     0,0,1,
-    //     0,0,0
+    //     0,0,1
     float correct_matrix[] = {
-        0,0,0,
         1,0,0,
-        1,1,0};
+        1,1,0,
+        1,1,1};
       CHECK_MESSAGE(std::memcmp(matrix.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
                     matrix.to_string());
 }

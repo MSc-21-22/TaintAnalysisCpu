@@ -145,7 +145,7 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
 
 template<typename LatticeType, typename ElementType>
 Matrix<ElementType> get_successor_matrix(std::vector<std::shared_ptr<Node<LatticeType>>> nodes){
-    Matrix<ElementType> matrix = Matrix<ElementType>(nodes.size());
+    Matrix<ElementType> matrix = unit_matrix<ElementType>(nodes.size());
     std::map<std::shared_ptr<Node<LatticeType>>, int> node_map{};
 
     int i = 0;
