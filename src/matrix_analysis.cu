@@ -11,8 +11,7 @@ Matrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<floa
     GpuMatrix<float> result(initial_state.rowCount, initial_state.columnCount);
     // Allocate transfer matrices
     for(Matrix<float>& transfer : transfer_matrices) {
-        GpuMatrix<float> mama_mia(transfer);
-        transfers.push_back(std::move(mama_mia));
+        transfers.push_back(std::move(GpuMatrix<float>(transfer)));
     }
     
     while(true){

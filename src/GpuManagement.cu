@@ -26,7 +26,6 @@ GpuResource::GpuResource(int rowCount, int columnCount, void* data_ptr, size_t e
     if(cudaMalloc(&resource, element_size*rowCount*columnCount) != 0){
         std::cout << "allocation of matrix failed" << std::endl;
     }
-    std::cout << resource << std::endl;
     if(cublasSetMatrix(rowCount, columnCount, element_size, data_ptr, rowCount, resource, rowCount) != CUBLAS_STATUS_SUCCESS){
         std::cout << "setMatrix of matrix failed" << std::endl;
     }
@@ -37,7 +36,6 @@ GpuResource::GpuResource(int rowCount, int columnCount, size_t element_size): ro
     if(cublasAlloc(rowCount*columnCount, element_size, &resource) != CUBLAS_STATUS_SUCCESS){
         std::cout << "allocation of resource failed" << std::endl;
     }
-    std::cout << resource << std::endl;
 }
 
 GpuResource::GpuResource(const GpuResource& other){
@@ -102,7 +100,6 @@ GpuResource& GpuResource::operator=(GpuResource&& other) noexcept{
 }
 
 void GpuResource::retrieve_from_gpu(void* dst_ptr){
-    std::cout << "Retrieving "<<rowCount << "x"<<columnCount << " with "<<element_size << std::endl;
     auto status = cublasGetMatrix(rowCount, columnCount, element_size, resource, rowCount, dst_ptr, rowCount);
     if(status != CUBLAS_STATUS_SUCCESS){
         std::cout << "cublas_get_matrix failed with " << status << std::endl;
