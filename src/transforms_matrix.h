@@ -61,6 +61,7 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
             int id_index = variables[node.id];
 
             matrix(id_index,id_index) = 0;
+            matrix(variables[RETURN_VAR],variables[RETURN_VAR]) = 0;
             matrix(id_index, variables[RETURN_VAR]) = 1;
             
             matrices.push_back(matrix);
