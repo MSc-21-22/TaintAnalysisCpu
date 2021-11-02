@@ -24,7 +24,10 @@ class VarVisitor : public CfgVisitor<LatticeType>
             variables.insert(node.id);
         }
 
-        void visit_assignment(AssignmentNode<LatticeType>& node){}
+        void visit_assignment(AssignmentNode<LatticeType>& node){
+            variables.insert(node.id);
+        }
+
         void visit_functioncall(FunctionCall<LatticeType>& node){}
         void visit_if(IfNode<LatticeType>& node){}
         void visit_return(ReturnNode<LatticeType>& node){}
