@@ -26,7 +26,9 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
             int i = 0;
             std::set<std::string>::iterator it;
             for (it=progVariables.begin(); it!=progVariables.end(); it++){
-                variables[*it] = i++;
+                if(*it != TAINT_VAR && *it != RETURN_VAR){
+                    variables[*it] = i++;
+                }
             }
             variables[RETURN_VAR] = i++;
             variables[TAINT_VAR] = i++;
