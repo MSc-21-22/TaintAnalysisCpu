@@ -1,6 +1,6 @@
 int f(int n){
     if(5){
-        a=n+2;
+        a=n+£;
     }else{
         a=5;
     }

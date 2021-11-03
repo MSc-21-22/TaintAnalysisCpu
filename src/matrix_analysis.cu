@@ -2,6 +2,54 @@
 #include <iostream>
 #include "GpuManagement.h"
 #include "kernel.h"
+#include <map>
+#include "transforms_matrix.h"
+#include "var_visitor.h"
+
+void set_node_states(Matrix<float>& state, std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes, const std::map<std::string, int>& variables){
+    for(int i = 0; i<nodes.size(); i++){
+        std::set<std::string> taint_state;
+        for (auto it = variables.begin(); it != variables.end(); it++){
+            std::cout << it->first << " " << it->second << " " << state(it->second,i) << std::endl;
+            if(state(it->second,i) != 0){
+                taint_state.insert(it->first);
+            }
+        }
+        nodes[i]->state = taint_state;
+    }
+}
+
+Matrix<float> get_initial_matrix(int var_count, int node_count){
+    Matrix<float> init_state(var_count, node_count);
+    for(int i = 0; i<node_count; i++){
+        init_state(var_count-1,i) = 1;      // set row of taint variable to 1
+    }
+    return init_state;
+}
+
+void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>> nodes){
+    // Get variables
+    VarVisitor<std::set<std::string>> varAnalyzer;
+    for(auto& node : nodes){
+        (*node).accept(varAnalyzer);
+    }
+
+    // Create transfer matrices
+    MatrixTransforms<std::set<std::string>, float> matrixTransformer{varAnalyzer.variables};
+    for(auto& node : nodes){
+        (*node).accept(matrixTransformer);
+    }
+
+    // Create successor matrix
+    auto successor_matrix = get_successor_matrix<std::set<std::string>, float>(nodes);
+    
+    Matrix<float> init_state = get_initial_matrix(matrixTransformer.variables.size(), nodes.size());
+    auto result_state = analyse(matrixTransformer.matrices, successor_matrix, init_state);
+    std::cout << result_state.to_string() << std::endl;
+
+    // Set the tainted state on nodes
+    set_node_states(result_state, nodes, matrixTransformer.variables);
+}
 
 Matrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<float>& successor_matrix, Matrix<float>& initial_state){
     create_cublas();

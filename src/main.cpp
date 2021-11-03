@@ -1,15 +1,12 @@
 #include <iostream>
 #include <string>
-#include <memory>
 #include "antlr4-runtime/scLexer.h"
 #include "antlr4-runtime/scParser.h"
 #include "transforms.h"
 #include "worklist.h"
 #include "taint_analysis.h"
 #include "digraph.h"
-#include "kernel.h"
-#include "var_visitor.h"
-#include "transforms_matrix.h"
+#include "matrix_analysis.h"
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -29,19 +26,6 @@ void cpu_analysis(ScTransformer<std::set<std::string>> program){
     print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
 }
 
-void gpu_analysis(ScTransformer<std::set<std::string>> program){
-    // VarVisitor<std::set<std::string>> varAnalyzer;
-    // for(auto& node : program.nodes){
-    //     (*node).accept(varAnalyzer);
-    // }
-    // for(std::string var: varAnalyzer.variables){
-    //     std::cout << var << std::endl;
-    // }
-    // MatrixTransforms<std::set<std::string>> matrixTransformer{varAnalyzer.variables};
-    // for(auto& node : program.nodes){
-    //     (*node).accept(matrixTransformer);
-    // }
-}
 
 int main(int argc, char *argv[]){
     if(argc == 2){
@@ -55,7 +39,8 @@ int main(int argc, char *argv[]){
         }
 
         // cpu_analysis(program);
-        gpu_analysis(program);
+        gpu_analysis(program.nodes);
+        print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
 
     }
 
