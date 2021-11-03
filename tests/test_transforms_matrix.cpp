@@ -84,12 +84,12 @@ TEST_CASE("matrix transform assign return") {
 
     //      0,0,1,0,
     //      0,1,0,0,
-    //      0,0,1,0,
+    //      0,0,0,0,
     //      0,0,0,1
     float correct_matrix[] = 
         {0,0,0,0,
          0,1,0,0,
-         1,0,1,0,
+         1,0,0,0,
          0,0,0,1};
 
       Matrix<float> matrix = matrixTransformer.matrices[0];
