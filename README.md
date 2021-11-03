@@ -32,3 +32,11 @@ The use cmake to compile antlr and the project
     cmake -B build/ -D ANTLR_EXECUTABLE={path to jar file} \
                     -D CMAKE_CUDA_ARCHITECTURE={computability version}
     cmake --build build/
+
+
+# Usage
+
+    analyser [--gpu | -g] path/to/program.sc
+
+--gpu | -g : run the analysis using the GPU otherwise defaults to running the analysis on the CPU
+
