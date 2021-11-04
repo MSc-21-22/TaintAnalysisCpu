@@ -28,7 +28,7 @@ SourcedTaintState join(Node<SourcedTaintState>& node){
     return state;
 }
 
-std::set<int> MultiTaintAnalyzer::get_tainted_variables(std::shared_ptr<Expression> expression, Node<SourcedTaintState>&node)
+std::set<int> MultiTaintAnalyzer::get_taints(std::shared_ptr<Expression> expression, Node<SourcedTaintState>&node)
 {
     std::set<int> sources;
     for (auto& var : expression->get_variables()){
@@ -49,12 +49,12 @@ std::set<int> MultiTaintAnalyzer::get_tainted_variables(std::shared_ptr<Expressi
 
 void MultiTaintAnalyzer::visit_initializtion(InitializerNode<SourcedTaintState>& node){
     node.state = join(node);
-    node.state[node.id] = get_tainted_variables(node.expression, node);
+    node.state[node.id] = get_taints(node.expression, node);
 }
 
 void MultiTaintAnalyzer::visit_assignment(AssignmentNode<SourcedTaintState>& node){
     node.state = join(node);
-    node.state[node.id] = get_tainted_variables(node.expression, node);
+    node.state[node.id] = get_taints(node.expression, node);
 }
 void MultiTaintAnalyzer::visit_functioncall(FunctionCall<SourcedTaintState>& node){
     node.state = join(node);
@@ -68,7 +68,7 @@ void MultiTaintAnalyzer::visit_functiondef(FunctionDefinition<SourcedTaintState>
 void MultiTaintAnalyzer::visit_return(ReturnNode<SourcedTaintState>& node){
     auto state = join(node);
 
-    node.state["£return"] = get_tainted_variables(node.expression, node);
+    node.state["£return"] = get_taints(node.expression, node);
 }
 void MultiTaintAnalyzer::visit_whileloop(WhileLoop<SourcedTaintState>& node){
     node.state = join(node);
@@ -95,7 +95,7 @@ void MultiTaintAnalyzer::visit_functionEntry(FunctionEntryNode<SourcedTaintState
 
 
         for(size_t i = 0; i < call->arguments.size(); ++i){
-            auto taint_sources = get_tainted_variables(call->arguments[i], *pred);
+            auto taint_sources = get_taints(call->arguments[i], *pred);
             auto parameter = def->formalParameters[i];
             node.state[parameter] = taint_sources;
         }

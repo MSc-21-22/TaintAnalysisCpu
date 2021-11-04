@@ -14,7 +14,7 @@ void print_taint_source(SourcedTaintState& result, std::ostream& stream);
 class MultiTaintAnalyzer : public CfgVisitor<SourcedTaintState> {
     int next_source = 0;
 
-    std::set<int> get_tainted_variables(std::shared_ptr<Expression> expression, Node<SourcedTaintState>&node);
+    std::set<int> get_taints(std::shared_ptr<Expression> expression, Node<SourcedTaintState>&node);
 public:
     std::map<long long int, int> node_to_source{};
 
