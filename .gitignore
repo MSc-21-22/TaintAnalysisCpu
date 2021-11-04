@@ -72,3 +72,5 @@ _deps
 # End of https://www.toptal.com/developers/gitignore/api/cmake,visualstudiocode,c++
 
 build/*
+
+antlr-4.9.2-complete.jar

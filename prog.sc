@@ -1,8 +1,8 @@
 int f(int n){
     if(5){
-        a=n+2;
+        int a=n+2;
     }else{
-        a=5;
+        int a=5 * £;
     }
     return a;
 }

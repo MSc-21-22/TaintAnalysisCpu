@@ -9,6 +9,7 @@ if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
 endif()
 
 
+set(CMAKE_CXX_FLAGS "-Wall -Wpedantic -Wextra")
 set(CMAKE_CXX_STANDARD 14)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -31,7 +32,7 @@ include_directories(src/
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     tests/)
 add_executable(analyzer src/main.cpp  src/antlr4-runtime/scBaseVisitor.cpp src/antlr4-runtime/scLexer.cpp src/antlr4-runtime/scParser.cpp src/antlr4-runtime/scVisitor.cpp 
-            src/taint_analysis.cpp src/kernel.cu)
+            src/taint_analysis.cpp src/kernel.cu src/multi_taint_analysis.cpp)
 add_dependencies(analyzer antlr4_static)
 target_link_libraries(analyzer antlr4_static)
 #target_compile_features(particles PUBLIC cxx_std_14)

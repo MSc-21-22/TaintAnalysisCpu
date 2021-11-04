@@ -67,5 +67,6 @@
         "typeinfo": "cpp",
         "cstring": "cpp",
         "cinttypes": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }
