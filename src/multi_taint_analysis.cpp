@@ -6,7 +6,6 @@ SourcedTaintState least_upper_bound(const SourcedTaintState& left, const Sourced
         state[it->first] = it->second;
     }
     for (SourcedTaintState::const_iterator it=right.begin(); it!=right.end(); ++it){
-        auto state_contains_element = state.find(it->first) != state.end();
         for(auto& taint_source : it->second){
             state[it->first].insert(taint_source);
         }
@@ -95,7 +94,7 @@ void MultiTaintAnalyzer::visit_functionEntry(FunctionEntryNode<SourcedTaintState
         }
 
 
-        for(int i = 0; i < call->arguments.size(); ++i){
+        for(size_t i = 0; i < call->arguments.size(); ++i){
             auto taint_sources = get_tainted_variables(call->arguments[i], *pred);
             auto parameter = def->formalParameters[i];
             node.state[parameter] = taint_sources;

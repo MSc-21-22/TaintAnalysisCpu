@@ -53,7 +53,7 @@ public:
     Cloner(std::vector<std::shared_ptr<Node<LatticeType>>>* node_vector): node_vector(node_vector){}
 
     void visit_initializtion(InitializerNode<LatticeType>& node){
-
+        clone_node<InitializerNode<LatticeType>>(node);
     }
     void visit_assignment(AssignmentNode<LatticeType>& node){
         clone_node<AssignmentNode<LatticeType>>(node);
