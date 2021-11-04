@@ -28,9 +28,9 @@ SourcedTaintState join(Node<SourcedTaintState>& node){
     return state;
 }
 
-std::set<TaintSource> MultiTaintAnalyzer::get_tainted_variables(std::shared_ptr<Expression> expression, Node<SourcedTaintState>&node)
+std::set<int> MultiTaintAnalyzer::get_tainted_variables(std::shared_ptr<Expression> expression, Node<SourcedTaintState>&node)
 {
-    std::set<TaintSource> sources;
+    std::set<int> sources;
     for (auto& var : expression->get_variables()){
         if(var == "£"){
             if (node_to_source.find((long long int)&node) == node_to_source.end()){

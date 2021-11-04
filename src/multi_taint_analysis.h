@@ -5,8 +5,7 @@
 #include <map>
 #include <ostream>
 
-typedef int TaintSource;
-typedef std::map<std::string, std::set<TaintSource>> SourcedTaintState;
+typedef std::map<std::string, std::set<int>> SourcedTaintState;
 
 SourcedTaintState least_upper_bound(const SourcedTaintState& left, const SourcedTaintState& right);
 
@@ -15,9 +14,9 @@ void print_taint_source(SourcedTaintState& result, std::ostream& stream);
 class MultiTaintAnalyzer : public CfgVisitor<SourcedTaintState> {
     int next_source = 0;
 
-    std::set<TaintSource> get_tainted_variables(std::shared_ptr<Expression> expression, Node<SourcedTaintState>&node);
+    std::set<int> get_tainted_variables(std::shared_ptr<Expression> expression, Node<SourcedTaintState>&node);
 public:
-    std::map<long long int, TaintSource> node_to_source{};
+    std::map<long long int, int> node_to_source{};
 
     void visit_initializtion(InitializerNode<SourcedTaintState>& node);
     void visit_assignment(AssignmentNode<SourcedTaintState>& node);
