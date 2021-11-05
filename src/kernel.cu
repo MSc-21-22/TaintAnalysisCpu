@@ -3,6 +3,7 @@
 #include "device_launch_parameters.h"
 #include "kernel.h"
 #include <iostream>
+#include <iostream>
 
 #include <stdio.h>
 
@@ -10,14 +11,14 @@ bool cudaMemcmp(const float *a, const float* b, int size);
 
 __global__ void memcmp_kernel(const float* a, const float* b, int size, bool* result)
 {
-    int i = threadIdx.x;
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
     if(i < size && ((a[i] !=0) != (b[i] != 0))){
         *result = true;
     }
 }
 
 bool gpu_mem_cmp(GpuResource& a, GpuResource& b){
-    int size = a.rowCount*a.columnCount*a.element_size;
+    int size = a.rowCount*a.columnCount;
     return cudaMemcmp((float*)a.resource, (float*)b.resource, size);
 }
 

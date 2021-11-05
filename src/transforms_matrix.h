@@ -40,11 +40,11 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
             std::set<std::string> expr_vars = node.expression->get_variables();
             int id_index = variables[node.id];
 
-            matrix(id_index,id_index) = 0;
+            matrix(id_index,id_index) = 0.0f;
 
             for(std::string expr_var : expr_vars){
                 if (variables.count(expr_var)){
-                    matrix(id_index, variables[expr_var]) = 1;
+                    matrix(id_index, variables[expr_var]) = 1.0f;
                 }
             }     
             
@@ -60,9 +60,9 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
             auto matrix = unit_matrix<ElementType>(rowSize);
             int id_index = variables[node.id];
 
-            matrix(id_index,id_index) = 0;
-            matrix(variables[RETURN_VAR],variables[RETURN_VAR]) = 0;
-            matrix(id_index, variables[RETURN_VAR]) = 1;
+            matrix(id_index,id_index) = 0.0f;
+            matrix(variables[RETURN_VAR],variables[RETURN_VAR]) = 0.0f;
+            matrix(id_index, variables[RETURN_VAR]) = 1.0f;
             
             matrices.push_back(matrix);
         }
@@ -72,11 +72,11 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
             std::set<std::string> expr_vars = node.expression->get_variables();
             int id_index = variables[node.id];
 
-            matrix(id_index,id_index) = 0;
+            matrix(id_index,id_index) = 0.0f;
 
             for(std::string expr_var : expr_vars){
                 if (variables.count(expr_var)){
-                    matrix(id_index, variables[expr_var]) = 1;
+                    matrix(id_index, variables[expr_var]) = 1.0f;
                 }
             }     
             
@@ -98,7 +98,7 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
 
             for(std::string expr_var : expr_vars){
                 if (variables.count(expr_var)){
-                    matrix(variables[RETURN_VAR], variables[expr_var]) = 1;
+                    matrix(variables[RETURN_VAR], variables[expr_var]) = 1.0f;
                 }
             } 
             matrices.push_back(matrix);
@@ -134,7 +134,7 @@ class MatrixTransforms : public CfgVisitor<LatticeType>
                     int param_id = variables[def->formalParameters[i]];
                     for(auto& var : vars) {
                         int arg_id = variables[var];
-                        matrix(param_id, arg_id) = 1;
+                        matrix(param_id, arg_id) = 1.0f;
                     }
                 }
             }
@@ -159,7 +159,7 @@ Matrix<ElementType> get_successor_matrix(std::vector<std::shared_ptr<Node<Lattic
     for(auto node : nodes){
         int node_index = node_map[node];
         for (auto succ_node : node->successors){
-            matrix(node_index, node_map[succ_node]) = 1;
+            matrix(node_index, node_map[succ_node]) = 1.0f;
         }
     }
     return matrix;

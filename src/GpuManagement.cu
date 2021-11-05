@@ -125,7 +125,6 @@ void GpuResource::multiply_f32_to_f32(const GpuResource& operand, GpuResource& r
 
 
 void GpuResource::multiply_vector_f32_to_f32(int offset, const GpuResource& operand){
-    
     float* float_resource = (float*)resource;
 
     float alpha = 1;

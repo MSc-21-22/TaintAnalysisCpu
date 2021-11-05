@@ -40,8 +40,7 @@ int main(int argc, char *argv[]){
 
         if(argc == 3 && (strcmp(argv[1], "-g") == 0 || strcmp(argv[1], "--gpu") == 0)){
             std::cout << "Running analysis using GPU" << std::endl;
-            gpu_analysis(program.nodes);
-            print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+            gpu_analysis(program.nodes, program.entryNodes);
         }else{
             std::cout << "Running analysis using CPU" << std::endl;
             cpu_analysis(program);

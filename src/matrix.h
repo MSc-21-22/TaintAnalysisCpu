@@ -24,7 +24,7 @@ class Matrix{
         void to_unit_matrix(){
             assert(rowCount==columnCount);
             for(int i = 0; i < rowCount; i++){
-                matrix.get()[rowCount*i+i] = 1;
+                matrix.get()[rowCount*i+i] = 1.0f;
             }
         }
 
@@ -36,9 +36,9 @@ class Matrix{
             std::string res;
             for(int row = 0; row<rowCount; row++){
                 for(int column = 0; column<columnCount; column++){
-                    res += std::to_string((int)matrix.get()[row+column*rowCount]);
+                    res += std::to_string((int)(matrix.get()[row+column*rowCount] != 0.0f));
                 }
-                res += " ";
+                res += "\n";
             }
             return res;
         }
@@ -63,6 +63,6 @@ template<typename ElementType>
 Matrix<ElementType> base_transfer_matrix(int row_size) {
     Matrix<ElementType> matrix(row_size);
     //Set taint constant to 1
-    matrix(row_size-1, row_size-1) = 1;
+    matrix(row_size-1, row_size-1) = 1.0f;
     return matrix;
 }
