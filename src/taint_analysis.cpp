@@ -77,7 +77,7 @@ void TaintAnalyzer::visit_return(ReturnNode<std::set<std::string>> &node)
     }
 }
 
-void TaintAnalyzer::visit_emptyReturn(EmptyReturnNode<std::set<std::string>> &node)
+void TaintAnalyzer::visit_emptyReturn(EmptyReturnNode<std::set<std::string>>&)
 {
 
 }
@@ -103,7 +103,7 @@ void TaintAnalyzer::visit_functionEntry(FunctionEntryNode<std::set<std::string>>
         }
 
 
-        for(int i = 0; i < call->arguments.size(); ++i){
+        for(size_t i = 0; i < call->arguments.size(); ++i){
             bool isTainted = call->arguments[i]->evaluate(pred->state);
             if(isTainted){
                 auto parameter = def->formalParameters[i];

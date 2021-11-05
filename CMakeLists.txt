@@ -9,6 +9,7 @@ if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
 endif()
 
 
+set(CMAKE_CXX_FLAGS "-Wall -Wpedantic -Wextra")
 set(CMAKE_CXX_STANDARD 14)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -35,7 +36,7 @@ include_directories(src/
 #link_directories(/opt/nvidia/hpc_sdk/Linux_x86_64/21.9/math_libs/11.4/targets/x86_64-linux/lib/)
 
 add_library(analyze_lib src/antlr4-runtime/scBaseVisitor.cpp src/antlr4-runtime/scLexer.cpp src/antlr4-runtime/scParser.cpp src/antlr4-runtime/scVisitor.cpp 
-                src/taint_analysis.cpp src/matrix_analysis.cu src/kernel.cu src/GpuManagement.cu src/digraph.cpp)
+                src/taint_analysis.cpp src/matrix_analysis.cu src/kernel.cu src/GpuManagement.cu src/digraph.cpp src/multi_taint_analysis.cpp)
 target_link_libraries(analyze_lib cublas)
 
 add_executable(analyzer src/main.cpp)

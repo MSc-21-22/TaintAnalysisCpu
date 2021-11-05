@@ -17,7 +17,7 @@ class EmptyExpression : public Expression
 public:
     EmptyExpression() {}
 
-    bool evaluate(std::set<std::string> &state)
+    bool evaluate(std::set<std::string>&)
     {
         return true;
     }
@@ -41,7 +41,7 @@ public:
     std::shared_ptr<Expression> lhs;
     std::shared_ptr<Expression> rhs;
 
-    BinaryOperatorExpression(std::shared_ptr<Expression> lhs, std::string op, std::shared_ptr<Expression> rhs): lhs(lhs), op(op), rhs(rhs){}
+    BinaryOperatorExpression(std::shared_ptr<Expression> lhs, std::string op, std::shared_ptr<Expression> rhs): op(op), lhs(lhs), rhs(rhs){}
 
     bool evaluate(std::set<std::string> &state)
     {
@@ -72,7 +72,7 @@ public:
 
     LiteralExpression(std::string literal): literal(literal){}
 
-    bool evaluate(std::set<std::string> &state)
+    bool evaluate(std::set<std::string>&)
     {
         return false;
     }

@@ -68,5 +68,6 @@
         "cstring": "cpp",
         "cinttypes": "cpp",
         "csignal": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }

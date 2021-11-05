@@ -1,4 +1,4 @@
-#include "vector"
+#include <vector>
 #include "cfg.h"
 
 template<typename LatticeType>

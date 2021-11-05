@@ -48,7 +48,7 @@ public:
     {
         os << "return " << node.expression->dotPrint();
     }
-    void visit_emptyReturn(EmptyReturnNode<LatticeType> &node) override
+    void visit_emptyReturn(EmptyReturnNode<LatticeType> &) override
     {
         os << "return";
     }
@@ -66,7 +66,7 @@ public:
         os << "Entry\n";
     }
 
-    void visit_functionExit(FunctionExitNode<LatticeType> &node) override {
+    void visit_functionExit(FunctionExitNode<LatticeType> &) override {
         os << "Exit";
     }
     

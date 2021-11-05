@@ -5,6 +5,7 @@
 #include "transforms.h"
 #include "worklist.h"
 #include "taint_analysis.h"
+#include "multi_taint_analysis.h"
 #include "digraph.h"
 #include "matrix_analysis.h"
 
@@ -26,29 +27,48 @@ void cpu_analysis(ScTransformer<std::set<std::string>> program){
     print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
 }
 
+void cpu_multi_taint_analysis(ScTransformer<SourcedTaintState> program){
+    MultiTaintAnalyzer analyzer;
+    worklist(program.nodes, analyzer);
+
+    print_digraph_subgraph(program.entryNodes, std::cout, print_taint_source, "main");
+}
 
 int main(int argc, char *argv[]){
     if(argc > 1){
+
+        bool gpu_flag = false, multi_taint_flag = false;
+        for (int i = 1; i < argc; i++)
+        {
+            char* arg = argv[i];
+            if(strcmp(arg, "--gpu") == 0 || strcmp(arg, "-g") == 0){
+                gpu_flag = true;
+            }
+            if(strcmp(arg, "--multi") == 0 || strcmp(arg, "-m") == 0){
+                multi_taint_flag = true;
+            }
+        }
+
         antlr4::ANTLRFileStream csfile;
         csfile.loadFromFile(argv[argc-1]);
         antlr4::ANTLRInputStream prog(csfile);
-        auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
-        
-        for (auto& node : program.nodes){
-            node->state.insert("£");
-        }
 
-        if(argc == 3 && (strcmp(argv[1], "-g") == 0 || strcmp(argv[1], "--gpu") == 0)){
+        if(gpu_flag){
             std::cout << "Running analysis using GPU" << std::endl;
+            auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
             gpu_analysis(program.nodes, program.entryNodes);
         }else{
-            std::cout << "Running analysis using CPU" << std::endl;
-            cpu_analysis(program);
+            if(multi_taint_flag){
+                std::cout << "Running multi-taint analysis using CPU" << std::endl;
+                auto program = parse_to_cfg_transformer<SourcedTaintState>(prog);
+                cpu_multi_taint_analysis(program);
+            }else{
+                std::cout << "Running analysis using CPU" << std::endl;
+                auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+                cpu_analysis(program);
+            }
         }
 
-
     }
-
-    //antlr4::ANTLRInputStream stream("int f(int n){a=n+2; return a;} void i(int j) {j=£; x = 2*(5-2); while(x) { y = 3+j; x=x-1; int fr = f(j);} i = y;}");
     return 0;
 }
