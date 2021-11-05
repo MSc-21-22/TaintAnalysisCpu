@@ -430,14 +430,14 @@ TEST_CASE("Run analysis"){
     //     1,1,
     //     0,1,
     //     0,0,
-    //     1,3
+    //     1,1
     float correct_state[] = {
         1,0,0,1,
-        1,1,0,3};
+        1,1,0,1};
+    GpuMatrix<float> correct_matrix(correct_state, 4, 2);
 
-
-    CHECK_MESSAGE(std::memcmp(result.matrix.get(), correct_state, sizeof(correct_state)) == 0,
-            result.to_string());
+    CHECK_MESSAGE(gpu_mem_cmp(result.resource, correct_matrix.resource),
+            result.to_matrix().to_string());
 }
 
 TEST_CASE("Gpu memcmp"){

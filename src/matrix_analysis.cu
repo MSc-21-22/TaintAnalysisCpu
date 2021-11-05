@@ -35,7 +35,7 @@ std::set<std::string> get_variables(std::vector<std::shared_ptr<Node<std::set<st
     return varAnalyzer.variables;
 }
 
-void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes, std::vector<std::shared_ptr<FunctionEntryNode<std::set<std::string>>>> &entryNodes){
+void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes){
     
     auto variables = get_variables(nodes);
 
@@ -49,16 +49,13 @@ void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nod
     auto successor_matrix = get_successor_matrix<std::set<std::string>, float>(nodes);
     
     Matrix<float> init_state = get_initial_matrix(matrixTransformer.variables.size(), nodes.size());
-    auto result_state = analyse(matrixTransformer.matrices, successor_matrix, init_state);
+    auto result_state = analyse(matrixTransformer.matrices, successor_matrix, init_state).to_matrix();
 
     // Set the tainted state on nodes
     set_node_states(result_state, nodes, matrixTransformer.variables);
-
-    auto printer = print_matrix<std::set<std::string>>(nodes, matrixTransformer.variables, result_state);
-    print_digraph_subgraph(entryNodes, std::cout, printer, "main");
 }
 
-Matrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<float>& successor_matrix, Matrix<float>& initial_state){
+GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<float>& successor_matrix, Matrix<float>& initial_state){
     create_cublas();
     std::vector<GpuMatrix<float>> transfers;
     GpuMatrix<float> succ(successor_matrix);
@@ -86,9 +83,8 @@ Matrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<floa
         state = next_state;
     }
     std::cout << "Analysis took " << i << " iterations \n";
-    Matrix<float> output = state.to_matrix();
 
     destroy_cublas();
     
-    return output;
+    return state;
 }

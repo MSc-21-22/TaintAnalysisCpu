@@ -36,7 +36,7 @@ class Matrix{
             std::string res;
             for(int row = 0; row<rowCount; row++){
                 for(int column = 0; column<columnCount; column++){
-                    res += std::to_string((int)(matrix.get()[row+column*rowCount] != 0.0f));
+                    res += std::to_string((int)(matrix.get()[row+column*rowCount]));
                 }
                 res += "\n";
             }

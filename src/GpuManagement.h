@@ -36,6 +36,8 @@ public:
 
     GpuMatrix(const GpuResource& resource) : resource(resource){}
 
+    GpuMatrix(const ElementType data[], int rows, int columns) : resource(rows, columns, (void*)data, sizeof(ElementType)) {}
+
     
     GpuMatrix<float> multiply(GpuMatrix<ElementType>& other){
         assert(false);

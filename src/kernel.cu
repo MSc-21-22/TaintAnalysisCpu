@@ -3,7 +3,6 @@
 #include "device_launch_parameters.h"
 #include "kernel.h"
 #include <iostream>
-#include <iostream>
 
 #include <stdio.h>
 

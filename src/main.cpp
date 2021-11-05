@@ -56,7 +56,8 @@ int main(int argc, char *argv[]){
         if(gpu_flag){
             std::cout << "Running analysis using GPU" << std::endl;
             auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
-            gpu_analysis(program.nodes, program.entryNodes);
+            gpu_analysis(program.nodes);
+            print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
         }else{
             if(multi_taint_flag){
                 std::cout << "Running multi-taint analysis using CPU" << std::endl;

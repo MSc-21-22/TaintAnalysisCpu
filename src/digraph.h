@@ -62,11 +62,11 @@ public:
         os << "if(" << node.expression->dotPrint() << ")";
     }
 
-    void visit_functionEntry(FunctionEntryNode<LatticeType> &node) override {
+    void visit_functionEntry(FunctionEntryNode<LatticeType>&) override {
         os << "Entry\n";
     }
 
-    void visit_functionExit(FunctionExitNode<LatticeType> &) override {
+    void visit_functionExit(FunctionExitNode<LatticeType>&) override {
         os << "Exit";
     }
     
