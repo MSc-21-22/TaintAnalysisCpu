@@ -35,7 +35,10 @@ The use cmake to compile antlr and the project
 
 # Usage
 
-    analyser [--gpu | -g] path/to/program.sc
+    analyzer [OPTIONS] path/to/program.sc
 
+## Options
 --gpu | -g : run the analysis using the GPU otherwise defaults to running the analysis on the CPU
+
+--multi | -m : run multi-coloured taint analysis (only implemented with cpu)
 
