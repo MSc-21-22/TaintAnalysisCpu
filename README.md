@@ -31,3 +31,14 @@ The use cmake to compile antlr and the project
 
     cmake -B build/ -D ANTLR_EXECUTABLE={path to jar file} -D CMAKE_CUDA_ARCHITECTURES={computability version}
     cmake --build build/
+
+
+# Usage
+
+    analyzer [OPTIONS] path/to/program.sc
+
+## Options
+--gpu | -g : run the analysis using the GPU otherwise defaults to running the analysis on the CPU
+
+--multi | -m : run multi-coloured taint analysis (only implemented with cpu)
+

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "cfg.h"
 #include <ostream>
 
@@ -60,11 +62,11 @@ public:
         os << "if(" << node.expression->dotPrint() << ")";
     }
 
-    void visit_functionEntry(FunctionEntryNode<LatticeType> &) override {
-        os << "Entry";
+    void visit_functionEntry(FunctionEntryNode<LatticeType>&) override {
+        os << "Entry\n";
     }
 
-    void visit_functionExit(FunctionExitNode<LatticeType> &) override {
+    void visit_functionExit(FunctionExitNode<LatticeType>&) override {
         os << "Exit";
     }
     
@@ -112,10 +114,8 @@ void print_digraph_with_result(std::vector<std::shared_ptr<Node<LatticeType>>> &
     }
 }
 
-std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Expression>& arg){
-    os << arg->dotPrint();
-    return os;
-}
+
+std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Expression>& arg);
 
 template <typename LatticeType, typename PrintLambda>
 void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionEntryNode<LatticeType>>> &entryNodes, std::ostream &stream, PrintLambda lattice_printer, std::string analyzeFunction)
@@ -144,6 +144,7 @@ void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionEntryNode<Lattic
         {
             stream << (unsigned long long int)node.get() << "[label = \"";
             node->accept(printer);
+            lattice_printer(node->state, stream);
             stream << "\"]\n";
             std::string returnpath = "";
             printer.visitedNodes.insert((unsigned long long int)node.get());

@@ -26,15 +26,23 @@ if(NOT DEFINED CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES)
     message(FATAL_ERROR "The cuda toolkit was not found?!")
 endif()
 
+set( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" "-lcublas" )
+
 include_directories(src/
     src/antlr4-runtime
     ${ANTLR4_INCLUDE_DIRS}
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     tests/)
-add_executable(analyzer src/main.cpp  src/antlr4-runtime/scBaseVisitor.cpp src/antlr4-runtime/scLexer.cpp src/antlr4-runtime/scParser.cpp src/antlr4-runtime/scVisitor.cpp 
-            src/taint_analysis.cpp src/kernel.cu src/multi_taint_analysis.cpp)
+#link_directories(/opt/nvidia/hpc_sdk/Linux_x86_64/21.9/math_libs/11.4/targets/x86_64-linux/lib/)
+
+add_library(analyze_lib src/antlr4-runtime/scBaseVisitor.cpp src/antlr4-runtime/scLexer.cpp src/antlr4-runtime/scParser.cpp src/antlr4-runtime/scVisitor.cpp 
+                src/taint_analysis.cpp src/matrix_analysis.cu src/kernel.cu src/GpuManagement.cu src/digraph.cpp src/multi_taint_analysis.cpp)
+target_link_libraries(analyze_lib cublas)
+
+add_executable(analyzer src/main.cpp)
 add_dependencies(analyzer antlr4_static)
-target_link_libraries(analyzer antlr4_static)
+target_link_libraries(analyzer antlr4_static analyze_lib)
 #target_compile_features(particles PUBLIC cxx_std_14)
 
-add_executable(test tests/main.cpp)
+add_executable(test tests/test_transforms_matrix.cpp)
+target_link_libraries(test analyze_lib)

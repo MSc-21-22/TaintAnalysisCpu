@@ -1,6 +1,4 @@
-enum KernelResult {
-    Success,
-    Failure
-};
+#pragma once
+#include "GpuManagement.h"
 
-enum KernelResult add_with_cuda(int* out, const int *a, const int *b, int width, int height);
+bool gpu_mem_cmp(GpuResource& a, GpuResource& b);
