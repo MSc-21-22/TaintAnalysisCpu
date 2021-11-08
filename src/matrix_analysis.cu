@@ -6,6 +6,7 @@
 #include "transforms_matrix.h"
 #include "var_visitor.h"
 #include "digraph.h"
+#include <chrono>
 
 void set_node_states(Matrix<float>& state, std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes, const std::map<std::string, int>& variables){
     for(int i = 0; i<nodes.size(); i++){
@@ -36,7 +37,7 @@ std::set<std::string> get_variables(std::vector<std::shared_ptr<Node<std::set<st
 }
 
 void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes){
-    
+    auto start = std::chrono::system_clock::now();
     auto variables = get_variables(nodes);
 
     // Create transfer matrices
@@ -49,14 +50,31 @@ void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nod
     auto successor_matrix = get_successor_matrix<std::set<std::string>, float>(nodes);
     
     Matrix<float> init_state = get_initial_matrix(matrixTransformer.variables.size(), nodes.size());
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff = end - start;
+    std::cout << "Matrix creation " << diff.count() << "s\n";
+
     auto result_state = analyse(matrixTransformer.matrices, successor_matrix, init_state).to_matrix();
 
-    // Set the tainted state on nodes
+
+    start = std::chrono::system_clock::now();
     set_node_states(result_state, nodes, matrixTransformer.variables);
+    end = std::chrono::system_clock::now();
+    diff = end - start;
+    std::cout << "Move data to cpu " << diff.count() << "s\n";
+    // Set the tainted state on nodes
 }
 
 GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<float>& successor_matrix, Matrix<float>& initial_state){
-    create_cublas();
+    auto start = std::chrono::system_clock::now();
+    create_cublas(); 
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff = end - start;
+    std::cout << "Cublas creation " << diff.count() << "s\n";
+
+
+    start = std::chrono::system_clock::now();
+    
     std::vector<GpuMatrix<float>> transfers;
     GpuMatrix<float> succ(successor_matrix);
     GpuMatrix<float> state(initial_state);
@@ -65,26 +83,54 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
     for(Matrix<float>& transfer : transfer_matrices) {
         transfers.emplace_back(transfer);
     }
+
+    end = std::chrono::system_clock::now();
+    diff = end - start;
+    std::cout << "Gpu memory alloc/copy " << diff.count() << "s\n";
+
     
-    int i = 0;
+    start = std::chrono::system_clock::now();
+
+    std::chrono::duration<double> matrix_diff;
+    std::chrono::duration<double> memcmp_diff;
+
     while(true){
+        auto _start = std::chrono::system_clock::now();
         GpuMatrix<float> next_state = state.multiply(succ);
+
 
         for(int i = 0; i < transfer_matrices.size(); ++i) {
             next_state.multiply_vector(i, transfers[i]);
         }
+        auto _end = std::chrono::system_clock::now();
+        matrix_diff += _end - _start;
         
-        if(i > 19 && gpu_mem_cmp(state.resource, next_state.resource)){
-            i++;
-        state = next_state;
+
+        _start = std::chrono::system_clock::now();
+        auto cmp = gpu_mem_cmp(state.resource, next_state.resource);
+        _end = std::chrono::system_clock::now();
+        memcmp_diff += _end - _start;
+
+        if(cmp){
+            state = next_state;
             break;
         }
-        i++;
         state = next_state;
     }
-    std::cout << "Analysis took " << i << " iterations \n";
 
+    end = std::chrono::system_clock::now();
+    diff = end - start;
+    std::cout << "analysis " << diff.count() << "s\n";
+    std::cout << "matrix math " << matrix_diff.count() << "s\n";
+    std::cout << "gpu memcmp " << memcmp_diff.count() << "s\n";
+
+
+    start = std::chrono::system_clock::now();
     destroy_cublas();
+    end = std::chrono::system_clock::now();
+    diff = end - start;
+    std::cout << "cublas destroy " << diff.count() << "s\n";
+
     
     return state;
 }

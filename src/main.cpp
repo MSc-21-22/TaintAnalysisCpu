@@ -8,6 +8,8 @@
 #include "multi_taint_analysis.h"
 #include "digraph.h"
 #include "matrix_analysis.h"
+#include "GpuManagement.h"
+#include <chrono>
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -24,7 +26,7 @@ void cpu_analysis(ScTransformer<std::set<std::string>> program){
     worklist(program.nodes, analyzer);
 
     //print_digraph_with_result<std::set<std::string>>(program.nodes, std::cout, print_result);
-    print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+    // print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
 }
 
 void cpu_multi_taint_analysis(ScTransformer<SourcedTaintState> program){
@@ -55,14 +57,18 @@ int main(int argc, char *argv[]){
 
         if(gpu_flag){
             std::cout << "Running analysis using GPU" << std::endl;
+            auto start = std::chrono::system_clock::now();
             auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+            auto end = std::chrono::system_clock::now();
+            std::chrono::duration<double> diff = end - start;
+            std::cout << "Parsing " << diff.count() << "s\n";
             gpu_analysis(program.nodes);
-            print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+            // print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
         }else{
             if(multi_taint_flag){
                 std::cout << "Running multi-taint analysis using CPU" << std::endl;
                 auto program = parse_to_cfg_transformer<SourcedTaintState>(prog);
-                cpu_multi_taint_analysis(program);
+                // cpu_multi_taint_analysis(program);
             }else{
                 std::cout << "Running analysis using CPU" << std::endl;
                 auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
