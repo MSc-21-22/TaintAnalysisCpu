@@ -38,10 +38,10 @@ private:
         if(has_created(node))
             return nullptr;
 
-        visit_children(node, *this);
         auto clone = std::make_shared<NodeType>(node);
         clone->predecessors = {};
         nodeConverter[&node] = clone;
+        visit_children(node, *this);
         
         node_vector->push_back(clone);
         set_successors(clone);
