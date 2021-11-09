@@ -1,0 +1,3 @@
+[submodule "deps/cuBool"]
+	path = deps/cuBool
+	url = git@github.com:JetBrains-Research/cuBool.git

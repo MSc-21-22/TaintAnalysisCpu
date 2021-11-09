@@ -458,3 +458,37 @@ TEST_CASE("Gpu memcmp"){
     CHECK_MESSAGE(gpu_mem_cmp(a.resource, b.resource),
             "Two gpu matricies were not identical on the host device");
 }
+
+#include <cubool/bool_matrix.h>
+#include <cubool/GpuBoolMatrix.h>
+
+TEST_CASE("test cubool transfer"){
+    BoolMatrix matrix(3,3);
+    matrix.add_safe(0,0);
+    matrix.add_safe(1,1);
+    matrix.add_safe(2,2);
+
+    create_cubool();
+
+    {
+
+        GpuBoolMatrix a(matrix);
+        GpuBoolMatrix b(a);
+
+        CHECK_MESSAGE(a.resource != b.resource, "The gpu pointers should be different");
+
+        auto a_m = a.retrieve_from_gpu();
+        auto b_m = b.retrieve_from_gpu();
+
+        CHECK(matrix.row_count == a_m.row_count);
+        CHECK(matrix.column_count == a_m.column_count);
+        CHECK(matrix.rows == a_m.rows);
+        CHECK(matrix.columns == a_m.columns);
+
+        CHECK_MESSAGE(matrix == a_m, "a_m should be equal to the initial matrix");
+        CHECK_MESSAGE(a_m == b_m, "The copied matrix should be equal to the new matrix");
+    
+    }
+
+    destroy_cubool();
+}
