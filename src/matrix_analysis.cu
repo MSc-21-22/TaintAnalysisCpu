@@ -7,6 +7,7 @@
 #include "var_visitor.h"
 #include "digraph.h"
 #include <chrono>
+#include "timing.h"
 
 void set_node_states(Matrix<float>& state, std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes, const std::map<std::string, int>& variables){
     for(int i = 0; i<nodes.size(); i++){
@@ -37,7 +38,7 @@ std::set<std::string> get_variables(std::vector<std::shared_ptr<Node<std::set<st
 }
 
 void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes){
-    auto start = std::chrono::system_clock::now();
+    Stopwatch stopwatch;
     auto variables = get_variables(nodes);
 
     // Create transfer matrices
@@ -50,30 +51,21 @@ void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nod
     auto successor_matrix = get_successor_matrix<std::set<std::string>, float>(nodes);
     
     Matrix<float> init_state = get_initial_matrix(matrixTransformer.variables.size(), nodes.size());
-    auto end = std::chrono::system_clock::now();
-    std::chrono::duration<double> diff = end - start;
-    std::cout << "Matrix creation " << diff.count() << "s\n";
+    stopwatch.printTimeMicroseconds("Matrix creation ");
 
     auto result_state = analyse(matrixTransformer.matrices, successor_matrix, init_state).to_matrix();
 
-
-    start = std::chrono::system_clock::now();
-    set_node_states(result_state, nodes, matrixTransformer.variables);
-    end = std::chrono::system_clock::now();
-    diff = end - start;
-    std::cout << "Move data to cpu " << diff.count() << "s\n";
+    timeFunc("Move data to cpu: ", 
+        set_node_states, result_state, nodes, matrixTransformer.variables);
     // Set the tainted state on nodes
 }
 
 GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<float>& successor_matrix, Matrix<float>& initial_state){
-    auto start = std::chrono::system_clock::now();
-    create_cublas(); 
-    auto end = std::chrono::system_clock::now();
-    std::chrono::duration<double> diff = end - start;
-    std::cout << "Cublas creation " << diff.count() << "s\n";
+    
+    timeFunc("Cublas creation: ", 
+        create_cublas);
 
-
-    start = std::chrono::system_clock::now();
+    Stopwatch stopwatch;
     
     std::vector<GpuMatrix<float>> transfers;
     GpuMatrix<float> succ(successor_matrix);
@@ -84,32 +76,26 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
         transfers.emplace_back(transfer);
     }
 
-    end = std::chrono::system_clock::now();
-    diff = end - start;
-    std::cout << "Gpu memory alloc/copy " << diff.count() << "s\n";
+    stopwatch.printTimeMicroseconds("Gpu memory alloc/copy ");
 
     
-    start = std::chrono::system_clock::now();
-
-    std::chrono::duration<double> matrix_diff;
-    std::chrono::duration<double> memcmp_diff;
+    Stopwatch analysisStopwatch;
+    Stopwatch matrixStopwatch;
+    Stopwatch memcmpStopwatch;
 
     while(true){
-        auto _start = std::chrono::system_clock::now();
+        matrixStopwatch.start();
         GpuMatrix<float> next_state = state.multiply(succ);
 
 
         for(int i = 0; i < transfer_matrices.size(); ++i) {
             next_state.multiply_vector(i, transfers[i]);
         }
-        auto _end = std::chrono::system_clock::now();
-        matrix_diff += _end - _start;
-        
+        matrixStopwatch.stop();        
 
-        _start = std::chrono::system_clock::now();
+        memcmpStopwatch.start();
         auto cmp = gpu_mem_cmp(state.resource, next_state.resource);
-        _end = std::chrono::system_clock::now();
-        memcmp_diff += _end - _start;
+        memcmpStopwatch.stop();
 
         if(cmp){
             state = next_state;
@@ -118,19 +104,12 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
         state = next_state;
     }
 
-    end = std::chrono::system_clock::now();
-    diff = end - start;
-    std::cout << "analysis " << diff.count() << "s\n";
-    std::cout << "matrix math " << matrix_diff.count() << "s\n";
-    std::cout << "gpu memcmp " << memcmp_diff.count() << "s\n";
+    analysisStopwatch.printTimeMicroseconds("analysis ");
+    matrixStopwatch.printTimeMicroseconds("matrix math ");
+    memcmpStopwatch.printTimeMicroseconds("gpu memcmp ");
 
-
-    start = std::chrono::system_clock::now();
-    destroy_cublas();
-    end = std::chrono::system_clock::now();
-    diff = end - start;
-    std::cout << "cublas destroy " << diff.count() << "s\n";
-
+    timeFunc("Cublas destroy: ",
+        destroy_cublas);
     
     return state;
 }

@@ -10,6 +10,7 @@
 #include "matrix_analysis.h"
 #include "GpuManagement.h"
 #include <chrono>
+#include "timing.h"
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -23,9 +24,10 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
 
 void cpu_analysis(ScTransformer<std::set<std::string>> program){
     TaintAnalyzer analyzer;
-    worklist(program.nodes, analyzer);
 
-    //print_digraph_with_result<std::set<std::string>>(program.nodes, std::cout, print_result);
+    timeFunc("Analyzing: ", 
+        worklist<std::set<std::string>>, program.nodes, analyzer);
+
     // print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
 }
 
@@ -57,12 +59,11 @@ int main(int argc, char *argv[]){
 
         if(gpu_flag){
             std::cout << "Running analysis using GPU" << std::endl;
-            auto start = std::chrono::system_clock::now();
-            auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
-            auto end = std::chrono::system_clock::now();
-            std::chrono::duration<double> diff = end - start;
-            std::cout << "Parsing " << diff.count() << "s\n";
-            gpu_analysis(program.nodes);
+
+            auto program = timeFunc<ScTransformer<std::set<std::string>>>("Creating CFG nodes: ", 
+                parse_to_cfg_transformer<std::set<std::string>>, prog);
+            
+            timeFunc("GPU analysis: ", gpu_analysis, program.nodes);
             // print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
         }else{
             if(multi_taint_flag){
@@ -71,7 +72,9 @@ int main(int argc, char *argv[]){
                 // cpu_multi_taint_analysis(program);
             }else{
                 std::cout << "Running analysis using CPU" << std::endl;
-                auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+
+                auto program = timeFunc<ScTransformer<std::set<std::string>>>("Creating CFG nodes: ", 
+                    parse_to_cfg_transformer<std::set<std::string>>, prog);
                 cpu_analysis(program);
             }
         }
