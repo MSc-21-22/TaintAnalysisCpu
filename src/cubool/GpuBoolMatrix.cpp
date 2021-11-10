@@ -27,6 +27,14 @@ void destroy_cubool(){
     is_initialized = false;
 }
 
+GpuBoolMatrix::GpuBoolMatrix(int rows, int columns){
+    rowCount = rows;
+    columnCount = columns;
+
+    CHECK(cuBool_Matrix_New(&resource, rows, columns),
+        "Failed to allocate matrix");
+}
+
 GpuBoolMatrix::GpuBoolMatrix(const BoolMatrix& matrix){
     rowCount = matrix.row_count;
     columnCount = matrix.column_count;
@@ -49,18 +57,17 @@ GpuBoolMatrix::GpuBoolMatrix(const GpuBoolMatrix& other){
 }
 GpuBoolMatrix::GpuBoolMatrix(GpuBoolMatrix&& other) noexcept{
     rowCount = other.rowCount;
-    other.rowCount = 0;
-
     columnCount = other.columnCount;
-    other.columnCount = 0;
-
     resource = other.resource;
+
     other.resource = nullptr;
 }
 GpuBoolMatrix& GpuBoolMatrix::operator=(const GpuBoolMatrix& other){
-    //Deallocate old resource first
-    CHECK(cuBool_Matrix_Free(resource),
-        "Failed to deallocate matrix (copy assignment)");
+    //Deallocate old resource 
+    if(resource != nullptr){
+        CHECK(cuBool_Matrix_Free(resource),
+            "Failed to deallocate matrix (copy assignment)");
+    }
 
     rowCount = other.rowCount;
     columnCount = other.columnCount;
@@ -70,22 +77,18 @@ GpuBoolMatrix& GpuBoolMatrix::operator=(const GpuBoolMatrix& other){
     return *this;
 }
 GpuBoolMatrix& GpuBoolMatrix::operator=(GpuBoolMatrix&& other) noexcept{
-    //Deallocate old resource first
-    CHECK(cuBool_Matrix_Free(resource),
-        "Failed to deallocate matrix (move assignment)");
-
-    rowCount = other.rowCount;
-    other.rowCount = 0;
-
-    columnCount = other.columnCount;
-    other.columnCount = 0;
-
-    resource = other.resource;
-    other.resource = nullptr;
+    std::swap(rowCount, other.rowCount);
+    std::swap(columnCount, other.columnCount);
+    std::swap(resource, other.resource);
     return *this;
 }
 
-BoolMatrix GpuBoolMatrix::retrieve_from_gpu(){
+GpuBoolMatrix& GpuBoolMatrix::operator=(const GpuOperation<GpuBoolMatrix>& operation){
+    operation.execute(*this);
+    return *this;
+}
+
+BoolMatrix GpuBoolMatrix::retrieve_from_gpu() const{
     cuBool_Index values;
     CHECK(cuBool_Matrix_Nvals(resource, &values),
         "Failed to get number of values");
@@ -103,42 +106,47 @@ BoolMatrix GpuBoolMatrix::retrieve_from_gpu(){
     return BoolMatrix(rowCount, columnCount, std::move(row_vec), std::move(column_vec));
 }
 
-// void GpuBoolMatrix::multiply_f32_to_f32(const GpuBoolMatrix& operand, GpuBoolMatrix& result){
-//     assert(rowCount == result.rowCount); 
-//     assert(operand.columnCount == result.columnCount);
-//     assert(columnCount == operand.rowCount);
-//     float alpha = 1;
-//     float beta = 0;
-//     auto status = cublasSgemm_v2(get_cublas(), CUBLAS_OP_N, CUBLAS_OP_N, 
-//         rowCount, operand.columnCount, columnCount,
-//         &alpha, (float*)resource, rowCount,
-//         (float*)operand.resource, operand.rowCount,
-//         &beta, (float*)result.resource, result.rowCount);
+GpuOperation<GpuBoolMatrix> GpuBoolMatrix::operator*(const GpuBoolMatrix& other) const{
+    GpuOperation<GpuBoolMatrix> op(
+        [=](GpuBoolMatrix& result){
+            assert(result.columnCount == other.columnCount);
+            assert(result.rowCount == rowCount);
+            assert(columnCount == other.rowCount);
 
-//     if(status != CUBLAS_STATUS_SUCCESS) {
-//         std::cout << "Matrix multiplication failed with " << status << std::endl;
-//     }
-// }    
+            CHECK(cuBool_MxM(result.resource, resource, other.resource, CUBOOL_HINT_NO),
+                "Failed to do matrix multiplication");
+        }
+    );
+    return op;
+}
 
+GpuOperation<GpuBoolMatrix> GpuBoolMatrix::operator+(const GpuBoolMatrix& other) const{
+    GpuOperation<GpuBoolMatrix> op(
+        [=](GpuBoolMatrix& result){
+            assert(result.rowCount == other.rowCount);
+            assert(result.rowCount == rowCount);
 
-// void GpuBoolMatrix::multiply_vector_f32_to_f32(int offset, const GpuBoolMatrix& operand){
-//     float* float_resource = (float*)resource;
+            assert(result.columnCount == other.columnCount);
+            assert(result.columnCount == columnCount);
+            
 
-//     float alpha = 1;
-//     float beta = 0;
-//     auto status = cublasSgemv_v2(get_cublas(), CUBLAS_OP_N, 
-//         operand.rowCount, operand.columnCount,
-//         &alpha,
-//         (float *)operand.resource, operand.rowCount,
-//         float_resource + offset, 1, 
-//         &beta, float_resource + offset, 1);
+            CHECK(cuBool_Matrix_EWiseAdd(result.resource, resource, other.resource, CUBOOL_HINT_NO),
+                "Failed to do matrix addition");
+        }
+    );
+    return op;
+}
 
-//     if(status != CUBLAS_STATUS_SUCCESS) {
-//         std::cout << "Matrix vector multiplication failed with " << status << std::endl;
-//     }
-// }
+uint32_t GpuBoolMatrix::get_element_count() const{
+    cuBool_Index values;
+    CHECK(cuBool_Matrix_Nvals(resource, &values),
+        "Failed to get number of values");
+    return values;
+}
 
 GpuBoolMatrix::~GpuBoolMatrix(){
-    CHECK(cuBool_Matrix_Free(resource), 
-        "Failed to deallocate matrix(deconstruction)");
+    if(resource != nullptr){
+        CHECK(cuBool_Matrix_Free(resource), 
+            "Failed to deallocate matrix(deconstruction)");
+    }
 }

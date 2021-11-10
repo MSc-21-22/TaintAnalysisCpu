@@ -28,11 +28,20 @@ class VarVisitor : public CfgVisitor<LatticeType>
             variables.insert(node.id);
         }
 
-        void visit_functioncall(FunctionCall<LatticeType>& node){}
-        void visit_if(IfNode<LatticeType>& node){}
-        void visit_return(ReturnNode<LatticeType>& node){}
-        void visit_whileloop(WhileLoop<LatticeType>& node){}
-        void visit_emptyReturn(EmptyReturnNode<LatticeType>& node){}
-        void visit_functionEntry(FunctionEntryNode<LatticeType>& node){}
-        void visit_functionExit(FunctionExitNode<LatticeType>& node) {}
+        void visit_functioncall(FunctionCall<LatticeType>&){}
+        void visit_if(IfNode<LatticeType>&){}
+        void visit_return(ReturnNode<LatticeType>&){}
+        void visit_whileloop(WhileLoop<LatticeType>&){}
+        void visit_emptyReturn(EmptyReturnNode<LatticeType>&){}
+        void visit_functionEntry(FunctionEntryNode<LatticeType>&){}
+        void visit_functionExit(FunctionExitNode<LatticeType>&) {}
 };
+
+template<typename LatticeType>
+std::set<std::string> get_variables(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes){
+    VarVisitor<LatticeType> varAnalyzer;
+    for(auto& node : nodes){
+        (*node).accept(varAnalyzer);
+    }
+    return varAnalyzer.variables;
+}

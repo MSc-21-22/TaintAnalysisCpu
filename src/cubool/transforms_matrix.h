@@ -16,37 +16,41 @@ template <typename LatticeType>
 class BoolMatrixTransforms : public CfgVisitor<LatticeType>
 {
     public:
-        std::map<std::string, int> variables{};
+        std::vector<std::pair<std::string, int>> variables{};
+        std::map<std::string, int> variable_map{};
         std::vector<BoolMatrix> matrices{};
         int size;
         int rowSize;
 
-        MatrixTransforms(std::set<std::string> progVariables){
+        BoolMatrixTransforms(const std::set<std::string>& progVariables){
             rowSize = progVariables.size() + 2;
             size = rowSize * rowSize;
             int i = 0;
             std::set<std::string>::iterator it;
             for (it=progVariables.begin(); it!=progVariables.end(); it++){
                 if(*it != TAINT_VAR && *it != RETURN_VAR){
-                    variables[*it] = i++;
+                    variables.emplace_back(*it, i);
+                    variable_map[*it] = i++;
                 }
             }
-            variables[RETURN_VAR] = i++;
-            variables[TAINT_VAR] = i++;
+            variables.emplace_back(RETURN_VAR, i);
+            variable_map[RETURN_VAR] = i++;
+            variables.emplace_back(TAINT_VAR, i);
+            variable_map[TAINT_VAR] = i++;
         }
 
         void add_assignment_matrix(std::string& dst, std::shared_ptr<Expression> src){
-            BoolMatrix matrix;
+            BoolMatrix matrix(rowSize, rowSize);
             std::set<std::string> expr_vars = src->get_variables();
-            int id_index = variables[dst];
+            int id_index = variable_map[dst];
 
             for(auto& it : variables){
-                if(it->second == id_index){
+                if(it.second == id_index){
                     for(auto& var : expr_vars){
-                        matrix.add_safe(id_index, variables[var]);
+                        matrix.add_safe(id_index, variable_map[var]);
                     }
                 }else{
-                    matrix.add_safe(it->second, it->second);
+                    matrix.add_safe(it.second, it.second);
                 }
             }
 
@@ -54,8 +58,8 @@ class BoolMatrixTransforms : public CfgVisitor<LatticeType>
         }
 
         void add_unit(){
-            BoolMatrix matrix;
-            for(int i = 0; i < variables.size(); ++i){
+            BoolMatrix matrix(rowSize, rowSize);
+            for(size_t i = 0; i < variables.size(); ++i){
                 matrix.add_safe(i,i);
             }
 
@@ -67,19 +71,19 @@ class BoolMatrixTransforms : public CfgVisitor<LatticeType>
             add_assignment_matrix(node.id, node.expression);
         }
 
-        void visit_functiondef(FunctionDefinition<LatticeType>& node){
+        void visit_functiondef(FunctionDefinition<LatticeType>&){
             add_unit();
         }
         
         void visit_assignReturn(AssignReturnNode<LatticeType>& node){
-            BoolMatrix matrix;
-            int id_index = variables[dst];
+            BoolMatrix matrix(rowSize, rowSize);
+            int id_index = variable_map[node.id];
 
             for(auto& it : variables){
-                if(it->second == id_index){
-                    matrix.add_safe(id_index, variables[RETURN_VAR]);
-                }else if(it->first != RETURN_VAR){
-                    matrix.add_safe(it->second, it->second);
+                if(it.second == id_index){
+                    matrix.add_safe(id_index, variable_map[RETURN_VAR]);
+                }else if(it.first != RETURN_VAR){
+                    matrix.add_safe(it.second, it.second);
                 }
             }
 
@@ -90,28 +94,29 @@ class BoolMatrixTransforms : public CfgVisitor<LatticeType>
             add_assignment_matrix(node.id, node.expression);
         }
 
-        void visit_functioncall(FunctionCall<LatticeType>& node){
+        void visit_functioncall(FunctionCall<LatticeType>&){
             add_unit();
         }
 
-        void visit_if(IfNode<LatticeType>& node){
+        void visit_if(IfNode<LatticeType>&){
             add_unit();
         }
 
         void visit_return(ReturnNode<LatticeType>& node){
-            add_assignment_matrix(RETURN_VAR, node.expression);
+            std::string x = RETURN_VAR;
+            add_assignment_matrix(x, node.expression);
         }
 
-        void visit_whileloop(WhileLoop<LatticeType>& node){
+        void visit_whileloop(WhileLoop<LatticeType>&){
             add_unit();
         }
 
-        void visit_emptyReturn(EmptyReturnNode<LatticeType>& node){
+        void visit_emptyReturn(EmptyReturnNode<LatticeType>&){
             add_unit();
         }
 
         void visit_functionEntry(FunctionEntryNode<LatticeType>& node){
-            BoolMatrix matrix;
+            BoolMatrix matrix(rowSize, rowSize);
             if (node.successors.size() == 0)
                 return;
 
@@ -127,11 +132,11 @@ class BoolMatrixTransforms : public CfgVisitor<LatticeType>
                 }
 
 
-                for(int i = 0; i < call->arguments.size(); ++i){
+                for(size_t i = 0; i < call->arguments.size(); ++i){
                     auto vars = call->arguments[i]->get_variables();
-                    int param_id = variables[def->formalParameters[i]];
+                    int param_id = variable_map[def->formalParameters[i]];
                     for(auto& var : vars) {
-                        int arg_id = variables[var];
+                        int arg_id = variable_map[var];
                         matrix.add_safe(param_id, arg_id);
                     }
                 }
@@ -139,14 +144,14 @@ class BoolMatrixTransforms : public CfgVisitor<LatticeType>
             matrices.push_back(matrix);
         }
 
-        void visit_functionExit(FunctionExitNode<LatticeType>& node) {
+        void visit_functionExit(FunctionExitNode<LatticeType>&) {
             add_unit();
         }
 };
 
 template<typename LatticeType>
 BoolMatrix get_successor_matrix(std::vector<std::shared_ptr<Node<LatticeType>>> nodes){
-    BoolMatrix matrix;
+    BoolMatrix matrix(nodes.size(), nodes.size());
     std::map<std::shared_ptr<Node<LatticeType>>, int> node_map{};
 
     int i = 0;
@@ -156,8 +161,14 @@ BoolMatrix get_successor_matrix(std::vector<std::shared_ptr<Node<LatticeType>>> 
 
     for(auto node : nodes){
         int node_index = node_map[node];
+
+        std::set<int> sorted_set{node_index};
         for (auto succ_node : node->successors){
-            matrix.add_safe(node_index, node_map[succ_node]);
+            sorted_set.insert(node_map[succ_node]);
+        }
+
+        for(auto id : sorted_set){
+            matrix.add_safe(node_index, id);
         }
     }
     return matrix;

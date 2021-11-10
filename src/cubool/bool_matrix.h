@@ -2,6 +2,7 @@
 #include <vector>
 #include <assert.h>
 #include <cstdint>
+#include <ostream>
 
 class BoolMatrix{
 public:
@@ -17,3 +18,5 @@ public:
     void add_safe(int row_index, int column_index);
     void add(int row_index, int column_index);
 };
+
+std::ostream& operator<<(std::ostream& os, const BoolMatrix& matrix);

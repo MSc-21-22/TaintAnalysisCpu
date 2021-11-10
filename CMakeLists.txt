@@ -41,7 +41,7 @@ include_directories(src/
 set(CMAKE_CXX_FLAGS "-Wall -Wpedantic -Wextra")
 add_library(analyze_lib src/antlr4-runtime/scBaseVisitor.cpp src/antlr4-runtime/scLexer.cpp src/antlr4-runtime/scParser.cpp src/antlr4-runtime/scVisitor.cpp 
                 src/taint_analysis.cpp src/matrix_analysis.cu src/kernel.cu src/GpuManagement.cu src/digraph.cpp src/multi_taint_analysis.cpp src/cubool/bool_matrix.cpp
-                src/cubool/GpuBoolMatrix.cpp)
+                src/cubool/GpuBoolMatrix.cpp src/cubool/cubool_analysis.cpp)
 add_dependencies(analyze_lib antlr4_static cubool)
 target_link_libraries(analyze_lib cublas cubool)
 
