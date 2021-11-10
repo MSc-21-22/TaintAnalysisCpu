@@ -1,5 +1,5 @@
 
-// Generated from /home/cortez/Desktop/Uni/SW9/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from /home/nhug/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
 
 #pragma once
 
@@ -15,7 +15,7 @@ public:
     T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, T__4 = 5, T__5 = 6, T__6 = 7, 
     T__7 = 8, T__8 = 9, T__9 = 10, INTEGER = 11, PLUS = 12, MINUS = 13, 
     DIVISION = 14, MULTIPLICATION = 15, ASSIGN = 16, LPAREN = 17, RPAREN = 18, 
-    ID = 19, WS = 20
+    LEQ = 19, GEQ = 20, LT = 21, GT = 22, ID = 23, WS = 24
   };
 
   scLexer(antlr4::CharStream *input);
