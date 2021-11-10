@@ -92,6 +92,10 @@ MULTIPLICATION     : '*' ;
 ASSIGN             : '=' ;
 LPAREN             : '(' ;
 RPAREN             : ')' ;
+LEQ                : '<=';
+GEQ                : '>=';
+LT                 : '<' ;
+GT                 : '>' ;
 
 // Identifiers
 ID                  : [_]*[a-z][A-Za-z0-9_]*
