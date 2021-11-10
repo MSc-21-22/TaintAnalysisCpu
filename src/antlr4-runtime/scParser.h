@@ -226,10 +226,6 @@ public:
     antlr4::tree::TerminalNode *MINUS();
     antlr4::tree::TerminalNode *DIVISION();
     antlr4::tree::TerminalNode *MULTIPLICATION();
-    antlr4::tree::TerminalNode *LEQ();
-    antlr4::tree::TerminalNode *GEQ();
-    antlr4::tree::TerminalNode *LT();
-    antlr4::tree::TerminalNode *GT();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
