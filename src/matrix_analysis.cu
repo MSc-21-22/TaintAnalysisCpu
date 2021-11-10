@@ -104,7 +104,7 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
         state = next_state;
     }
 
-    analysisStopwatch.printTimeMicroseconds("analysis ");
+    analysisStopwatch.printTimeMicroseconds("Least fixed point algorithm ");
     matrixStopwatch.printTimeMicroseconds("matrix math ");
     memcmpStopwatch.printTimeMicroseconds("gpu memcmp ");
 

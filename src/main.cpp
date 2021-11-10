@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
             auto program = timeFunc<ScTransformer<std::set<std::string>>>("Creating CFG nodes: ", 
                 parse_to_cfg_transformer<std::set<std::string>>, prog);
             
-            timeFunc("GPU analysis: ", gpu_analysis, program.nodes);
+            timeFunc("Total GPU analysis: ", gpu_analysis, program.nodes);
             // print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
         }else{
             if(multi_taint_flag){
