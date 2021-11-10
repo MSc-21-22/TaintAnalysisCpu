@@ -122,7 +122,7 @@ GpuOperation<GpuBoolMatrix> GpuBoolMatrix::operator*(const GpuBoolMatrix& other)
 
 GpuOperation<GpuBoolMatrix> GpuBoolMatrix::operator+(const GpuBoolMatrix& other) const{
     GpuOperation<GpuBoolMatrix> op(
-        [=](GpuBoolMatrix& result){
+        [&](GpuBoolMatrix& result){
             assert(result.rowCount == other.rowCount);
             assert(result.rowCount == rowCount);
 
@@ -149,4 +149,15 @@ GpuBoolMatrix::~GpuBoolMatrix(){
         CHECK(cuBool_Matrix_Free(resource), 
             "Failed to deallocate matrix(deconstruction)");
     }
+}
+
+std::ostream& operator<<(std::ostream& os, const GpuBoolMatrix& matrix){
+    cuBool_Index rows, cols;
+    CHECK(cuBool_Matrix_Nrows(matrix.resource, &rows),
+        "Failed to get row count");
+    CHECK(cuBool_Matrix_Ncols(matrix.resource, &cols),
+        "Failed to get column count");
+
+    os << rows << " x " << cols;
+    os << matrix.retrieve_from_gpu();
 }

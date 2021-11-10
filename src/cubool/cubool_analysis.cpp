@@ -26,6 +26,8 @@ GpuBoolMatrix run_analysis(const BoolMatrix& initial, const std::vector<BoolMatr
 
     int i = 0;
     for(auto& transfer : transfer_functions){
+        
+
         transfers.emplace_back(transfer);
 
         BoolMatrix matrix_slice(transfer_functions.size(), 1);
@@ -51,12 +53,13 @@ GpuBoolMatrix run_analysis(const BoolMatrix& initial, const std::vector<BoolMatr
 
         for(size_t i = 0; i < transfers.size(); ++i){
             std::cout << i << '\n';
-            GpuBoolMatrix state_copy(state);
             slice = next_state * slicers[i];
             expanded = slice * expanders[i];
-
             expanded = transfers[i] * expanded;
-            state = state_copy + expanded;
+            {
+                GpuBoolMatrix state_copy(state);
+                state = expanded + state_copy;
+            }
         }
 
         uint32_t new_count = state.get_element_count();

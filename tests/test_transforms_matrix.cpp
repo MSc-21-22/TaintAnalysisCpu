@@ -502,3 +502,25 @@ TEST_CASE("test cubool"){
 
     destroy_cubool();
 }
+
+TEST_CASE("cubool addition bug"){
+    BoolMatrix matrix(3,3);
+    matrix.add_safe(0,0);
+
+    BoolMatrix matrix_2(3,3);
+    matrix_2.add_safe(1,0);
+
+    create_cubool();
+
+    //Enclose in seperate scope to ensure gpu deallocation
+    //before destroy_cubool to avoid exception
+    {
+        GpuBoolMatrix a(matrix);
+        GpuBoolMatrix c(matrix_2);
+
+        GpuBoolMatrix r(a);
+        a = r + c;
+    }
+
+    destroy_cubool();
+}

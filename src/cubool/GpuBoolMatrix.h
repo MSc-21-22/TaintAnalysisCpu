@@ -3,6 +3,7 @@
 #include "bool_matrix.h"
 #include <cubool.h>
 #include <functional>
+#include <ostream>
 
 void create_cubool();
 void destroy_cubool();
@@ -39,3 +40,5 @@ public:
     BoolMatrix retrieve_from_gpu() const;
     ~GpuBoolMatrix();
 };
+
+std::ostream& operator<<(std::ostream& os, const GpuBoolMatrix& matrix);
