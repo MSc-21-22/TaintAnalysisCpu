@@ -191,13 +191,15 @@ public:
 
     virtual antlrcpp::Any visitFunctionCall(scParser::FunctionCallContext *ctx) override 
     {
-        antlrcpp::Any result = ctx->args()->accept(this);
-        auto args = result.as<std::vector<std::shared_ptr<Expression>>>();
+        std::vector<std::shared_ptr<Expression>> args;
+        if(ctx->args() != nullptr){
+            antlrcpp::Any result = ctx->args()->accept(this);
+            args = result.as<std::vector<std::shared_ptr<Expression>>>();
+        }
         auto id = ctx->ID()->getText();
         std::shared_ptr<FunctionEntryNode<LatticeType>> functionEntry = std::static_pointer_cast<FunctionEntryNode<LatticeType>>(functions[id]);
         auto successor = clone_entry(functionEntry, &nodes);
         entryNodes.push_back(successor);
-
 
         auto node = std::make_shared<FunctionCall<LatticeType>>(id, args);
         link_to_lasts(node);
