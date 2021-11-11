@@ -27,7 +27,11 @@ It is also recommended to the following page to find out what computability vers
 
 # Compiling
 
-The use cmake to compile antlr and the project
+Start by downloading or updating the git submodule dependencies
+
+    git submodule update --init --recursive
+
+Then use cmake to compile the dependencies and the project
 
     cmake -B build/ -D ANTLR_EXECUTABLE={path to jar file} -D CMAKE_CUDA_ARCHITECTURES={computability version}
     cmake --build build/
@@ -41,4 +45,6 @@ The use cmake to compile antlr and the project
 --gpu | -g : run the analysis using the GPU otherwise defaults to running the analysis on the CPU
 
 --multi | -m : run multi-coloured taint analysis (only implemented with cpu)
+
+--benchmark | -b : output execution time of the different phases of the analysis
 
