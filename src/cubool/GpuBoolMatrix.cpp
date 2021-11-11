@@ -89,9 +89,7 @@ GpuBoolMatrix& GpuBoolMatrix::operator=(const GpuOperation<GpuBoolMatrix>& opera
 }
 
 BoolMatrix GpuBoolMatrix::retrieve_from_gpu() const{
-    cuBool_Index values;
-    CHECK(cuBool_Matrix_Nvals(resource, &values),
-        "Failed to get number of values");
+    cuBool_Index values = get_element_count();
 
     uint32_t rows[4096];
     uint32_t columns[4096];
