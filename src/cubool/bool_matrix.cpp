@@ -48,3 +48,11 @@ std::ostream& operator<<(std::ostream& os, const BoolMatrix& matrix){
             os << '\n';
     }
 }
+
+BoolMatrix initial_matrix(int var_count, int node_count){
+    BoolMatrix init_state(var_count, node_count);
+    for(int i = 0; i<node_count; i++){
+        init_state.add_safe(var_count-1, i);
+    }
+    return init_state;
+}

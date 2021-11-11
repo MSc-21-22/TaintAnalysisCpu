@@ -20,3 +20,5 @@ public:
 };
 
 std::ostream& operator<<(std::ostream& os, const BoolMatrix& matrix);
+
+BoolMatrix initial_matrix(int var_count, int node_count);

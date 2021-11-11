@@ -7,16 +7,6 @@
 #include "GpuBoolMatrix.h"
 #include "analysis.h"
 
-
-
-BoolMatrix initial_matrix(int var_count, int node_count){
-    BoolMatrix init_state(var_count, node_count);
-    for(int i = 0; i<node_count; i++){
-        init_state.add_safe(var_count-1, i);
-    }
-    return init_state;
-}
-
 GpuBoolMatrix run_analysis(const BoolMatrix& initial, const std::vector<BoolMatrix>& transfer_functions, const BoolMatrix& successor){
     GpuBoolMatrix state(initial);
     GpuBoolMatrix succ(successor);
