@@ -458,3 +458,69 @@ TEST_CASE("Gpu memcmp"){
     CHECK_MESSAGE(gpu_mem_cmp(a.resource, b.resource),
             "Two gpu matricies were not identical on the host device");
 }
+
+#include <cubool/bool_matrix.h>
+#include <cubool/GpuBoolMatrix.h>
+
+TEST_CASE("test cubool"){
+    BoolMatrix matrix(3,3);
+    matrix.add_safe(0,0);
+    matrix.add_safe(1,1);
+    matrix.add_safe(2,2);
+
+    BoolMatrix matrix_2(3,3);
+    matrix_2.add_safe(0,0);
+    matrix_2.add_safe(0,1);
+    matrix_2.add_safe(1,2);
+
+    create_cubool();
+
+    //Enclose in seperate scope to ensure gpu deallocation
+    //before destroy_cubool to avoid exception
+    {
+
+        GpuBoolMatrix a(matrix);
+        GpuBoolMatrix b(a);
+
+        CHECK_MESSAGE(a.resource != b.resource, "The gpu pointers should be different");
+
+        auto a_m = a.retrieve_from_gpu();
+        auto b_m = b.retrieve_from_gpu();
+
+        CHECK_MESSAGE(matrix == a_m, "a_m should be equal to the initial matrix");
+        CHECK_MESSAGE(a_m == b_m, "The copied matrix should be equal to the new matrix");
+    
+
+        GpuBoolMatrix other(matrix_2);
+        GpuBoolMatrix result(3,3);
+        result = a * other;
+
+        auto result_m = result.retrieve_from_gpu();
+
+        CHECK_MESSAGE(matrix_2 == result_m, "Multiplication with unit matrix cause no change");
+    }
+
+    destroy_cubool();
+}
+
+TEST_CASE("cubool addition bug"){
+    BoolMatrix matrix(3,3);
+    matrix.add_safe(0,0);
+
+    BoolMatrix matrix_2(3,3);
+    matrix_2.add_safe(1,0);
+
+    create_cubool();
+
+    //Enclose in seperate scope to ensure gpu deallocation
+    //before destroy_cubool to avoid exception
+    {
+        GpuBoolMatrix a(matrix);
+        GpuBoolMatrix c(matrix_2);
+
+        GpuBoolMatrix r(a);
+        a = r + c;
+    }
+
+    destroy_cubool();
+}

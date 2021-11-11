@@ -8,9 +8,15 @@
 #include "multi_taint_analysis.h"
 #include "digraph.h"
 #include "matrix_analysis.h"
+<<<<<<< HEAD
 #include "GpuManagement.h"
 #include <chrono>
 #include "timing.h"
+=======
+#include <cubool.h>
+#include <stdio.h>
+#include "cubool/analysis.h"
+>>>>>>> master
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -45,7 +51,7 @@ void cpu_multi_taint_analysis(ScTransformer<SourcedTaintState> program){
 int main(int argc, char *argv[]){
     if(argc > 1){
 
-        bool gpu_flag = false, multi_taint_flag = false;
+        bool gpu_flag = false, multi_taint_flag = false, cubool_flag = false;
         for (int i = 1; i < argc; i++)
         {
             char* arg = argv[i];
@@ -58,6 +64,9 @@ int main(int argc, char *argv[]){
             if(strcmp(arg, "--benchmark") == 0 || strcmp(arg, "-b") == 0){
                 timing::should_benchmark = true;
             }
+            if(strcmp(arg, "--cubool") == 0 || strcmp(arg, "-c") == 0){
+                cubool_flag = true;
+            }
         }
 
         antlr4::ANTLRFileStream csfile;
@@ -65,14 +74,17 @@ int main(int argc, char *argv[]){
         antlr4::ANTLRInputStream prog(csfile);
 
         if(gpu_flag){
-            std::cout << "Running analysis using GPU" << std::endl;
-
-            auto program = timeFunc<ScTransformer<std::set<std::string>>>("Creating CFG nodes: ", 
-                parse_to_cfg_transformer<std::set<std::string>>, prog);
-            
-            timeFunc("Total GPU analysis: ", gpu_analysis, program.nodes);
-            if(!timing::should_benchmark) {
-                print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+            if(cubool_flag){
+                std::cout << "Running analysis using cuBool on GPU" << std::endl;
+                auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+                cubool_analyse(program.nodes);
+            }else{
+                std::cout << "Running analysis using cuBLAS on GPU" << std::endl;
+                auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+                gpu_analysis(program.nodes);
+                if(!timing::should_benchmark){
+                    print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+                }
             }
         }else{
             if(multi_taint_flag){
