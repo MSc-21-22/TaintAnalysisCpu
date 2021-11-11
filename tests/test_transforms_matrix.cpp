@@ -216,7 +216,8 @@ TEST_CASE("Matrix multiply test"){
     
     GpuMatrix<float> a{matrixA};
     GpuMatrix<float> b{matrixB};
-    GpuMatrix<float> c = a.multiply(b);
+    GpuMatrix<float> c(matrixA.rowCount, matrixB.columnCount);
+    a.multiply(b, c);
     
     Matrix<float> matrixC = c.to_matrix();
 
@@ -273,7 +274,8 @@ TEST_CASE("Matrix multiply initial state with succ test"){
 
     assert(sizeof(float) == 4);
     
-    auto c = state_gpu.multiply(succ_gpu);
+    GpuMatrix<float> c(state_gpu.resource.rowCount, succ_gpu.resource.columnCount);
+    state_gpu.multiply(succ_gpu, c);
     Matrix<float> matrixC = c.to_matrix();
 
     // 1 1
@@ -336,7 +338,8 @@ TEST_CASE("Matrix multiply 5x5"){
 
     assert(sizeof(float) == 4);
     
-    auto c = a.multiply(b);
+    GpuMatrix<float> c(a.resource.rowCount, b.resource.columnCount);
+    a.multiply(b, c);
     Matrix<float> matrixC = c.to_matrix();
 
     // 1 0 0 0 0
