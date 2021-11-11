@@ -9,7 +9,7 @@ if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
 endif()
 
 
-set(CMAKE_CXX_FLAGS "-Wall -Wpedantic -Wextra")
+
 set(CMAKE_CXX_STANDARD 14)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -18,6 +18,8 @@ add_definitions(-DANTLR4CPP_STATIC)
 set(ANTLR4_WITH_STATIC_CRT OFF)
 include(cmake/ExternalAntlr4Cpp.cmake)   
 
+set(CUBOOL_COPY_TO_PY_PACKAGE OFF)
+add_subdirectory(deps/cuBool/)
 project(analyzer CXX CUDA)
 
 find_package(ANTLR REQUIRED)
@@ -28,21 +30,24 @@ endif()
 
 set( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" "-lcublas" )
 
+
 include_directories(src/
     src/antlr4-runtime
     ${ANTLR4_INCLUDE_DIRS}
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    deps/cuBool/cubool/include/cubool
     tests/)
 #link_directories(/opt/nvidia/hpc_sdk/Linux_x86_64/21.9/math_libs/11.4/targets/x86_64-linux/lib/)
-
+set(CMAKE_CXX_FLAGS "-Wall -Wpedantic -Wextra")
 add_library(analyze_lib src/antlr4-runtime/scBaseVisitor.cpp src/antlr4-runtime/scLexer.cpp src/antlr4-runtime/scParser.cpp src/antlr4-runtime/scVisitor.cpp 
-                src/taint_analysis.cpp src/matrix_analysis.cu src/kernel.cu src/GpuManagement.cu src/digraph.cpp src/multi_taint_analysis.cpp)
-target_link_libraries(analyze_lib cublas)
+                src/taint_analysis.cpp src/matrix_analysis.cu src/kernel.cu src/GpuManagement.cu src/digraph.cpp src/multi_taint_analysis.cpp src/cubool/bool_matrix.cpp
+                src/cubool/GpuBoolMatrix.cpp src/cubool/cubool_analysis.cpp)
+add_dependencies(analyze_lib antlr4_static cubool)
+target_link_libraries(analyze_lib cublas cubool)
 
 add_executable(analyzer src/main.cpp)
 add_dependencies(analyzer antlr4_static)
 target_link_libraries(analyzer antlr4_static analyze_lib)
-#target_compile_features(particles PUBLIC cxx_std_14)
 
 add_executable(test tests/test_transforms_matrix.cpp)
 target_link_libraries(test analyze_lib)

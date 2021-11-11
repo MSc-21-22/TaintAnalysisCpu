@@ -8,6 +8,9 @@
 #include "multi_taint_analysis.h"
 #include "digraph.h"
 #include "matrix_analysis.h"
+#include <cubool.h>
+#include <stdio.h>
+#include "cubool/analysis.h"
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -37,7 +40,7 @@ void cpu_multi_taint_analysis(ScTransformer<SourcedTaintState> program){
 int main(int argc, char *argv[]){
     if(argc > 1){
 
-        bool gpu_flag = false, multi_taint_flag = false;
+        bool gpu_flag = false, multi_taint_flag = false, cubool_flag = false;
         for (int i = 1; i < argc; i++)
         {
             char* arg = argv[i];
@@ -47,6 +50,9 @@ int main(int argc, char *argv[]){
             if(strcmp(arg, "--multi") == 0 || strcmp(arg, "-m") == 0){
                 multi_taint_flag = true;
             }
+            if(strcmp(arg, "--cubool") == 0 || strcmp(arg, "-c") == 0){
+                cubool_flag = true;
+            }
         }
 
         antlr4::ANTLRFileStream csfile;
@@ -54,10 +60,16 @@ int main(int argc, char *argv[]){
         antlr4::ANTLRInputStream prog(csfile);
 
         if(gpu_flag){
-            std::cout << "Running analysis using GPU" << std::endl;
-            auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
-            gpu_analysis(program.nodes);
-            print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+            if(cubool_flag){
+                std::cout << "Running analysis using cuBool on GPU" << std::endl;
+                auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+                cubool_analyse(program.nodes);
+            }else{
+                std::cout << "Running analysis using cuBLAS on GPU" << std::endl;
+                auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+                gpu_analysis(program.nodes);
+                print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+            }
         }else{
             if(multi_taint_flag){
                 std::cout << "Running multi-taint analysis using CPU" << std::endl;

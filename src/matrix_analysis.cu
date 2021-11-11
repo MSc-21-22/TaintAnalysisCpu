@@ -27,14 +27,6 @@ Matrix<float> get_initial_matrix(int var_count, int node_count){
     return init_state;
 }
 
-std::set<std::string> get_variables(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes){
-    VarVisitor<std::set<std::string>> varAnalyzer;
-    for(auto& node : nodes){
-        (*node).accept(varAnalyzer);
-    }
-    return varAnalyzer.variables;
-}
-
 void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes){
     
     auto variables = get_variables(nodes);
