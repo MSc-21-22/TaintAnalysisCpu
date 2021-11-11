@@ -9,7 +9,7 @@ if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
 endif()
 
 
-set(CMAKE_CXX_FLAGS "-Wall -Wpedantic -Wextra -g")
+set(CMAKE_CXX_FLAGS "-Wall -Wpedantic -Wextra")
 set(CMAKE_CXX_STANDARD 14)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
