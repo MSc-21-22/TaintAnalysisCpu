@@ -46,3 +46,5 @@ Then use cmake to compile the dependencies and the project
 
 --multi | -m : run multi-coloured taint analysis (only implemented with cpu)
 
+--benchmark | -b : output execution time of the different phases of the analysis
+

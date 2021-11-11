@@ -8,9 +8,15 @@
 #include "multi_taint_analysis.h"
 #include "digraph.h"
 #include "matrix_analysis.h"
+<<<<<<< HEAD
+#include "GpuManagement.h"
+#include <chrono>
+#include "timing.h"
+=======
 #include <cubool.h>
 #include <stdio.h>
 #include "cubool/analysis.h"
+>>>>>>> master
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -24,17 +30,22 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
 
 void cpu_analysis(ScTransformer<std::set<std::string>> program){
     TaintAnalyzer analyzer;
-    worklist(program.nodes, analyzer);
 
-    //print_digraph_with_result<std::set<std::string>>(program.nodes, std::cout, print_result);
-    print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+    timeFunc("Analyzing: ", 
+        worklist<std::set<std::string>>, program.nodes, analyzer);
+
+    if(!timing::should_benchmark) {
+        print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+    }
 }
 
 void cpu_multi_taint_analysis(ScTransformer<SourcedTaintState> program){
     MultiTaintAnalyzer analyzer;
     worklist(program.nodes, analyzer);
 
-    print_digraph_subgraph(program.entryNodes, std::cout, print_taint_source, "main");
+    if(!timing::should_benchmark) {
+        print_digraph_subgraph(program.entryNodes, std::cout, print_taint_source, "main");
+    }
 }
 
 int main(int argc, char *argv[]){
@@ -49,6 +60,9 @@ int main(int argc, char *argv[]){
             }
             if(strcmp(arg, "--multi") == 0 || strcmp(arg, "-m") == 0){
                 multi_taint_flag = true;
+            }
+            if(strcmp(arg, "--benchmark") == 0 || strcmp(arg, "-b") == 0){
+                timing::should_benchmark = true;
             }
             if(strcmp(arg, "--cubool") == 0 || strcmp(arg, "-c") == 0){
                 cubool_flag = true;
@@ -68,7 +82,9 @@ int main(int argc, char *argv[]){
                 std::cout << "Running analysis using cuBLAS on GPU" << std::endl;
                 auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
                 gpu_analysis(program.nodes);
-                print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+                if(!timing::should_benchmark){
+                    print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+                }
             }
         }else{
             if(multi_taint_flag){
@@ -77,7 +93,9 @@ int main(int argc, char *argv[]){
                 cpu_multi_taint_analysis(program);
             }else{
                 std::cout << "Running analysis using CPU" << std::endl;
-                auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+
+                auto program = timeFunc<ScTransformer<std::set<std::string>>>("Creating CFG nodes: ", 
+                    parse_to_cfg_transformer<std::set<std::string>>, prog);
                 cpu_analysis(program);
             }
         }
