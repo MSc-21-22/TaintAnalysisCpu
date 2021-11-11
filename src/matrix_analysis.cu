@@ -55,9 +55,9 @@ void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nod
 
     auto result_state = analyse(matrixTransformer.matrices, successor_matrix, init_state).to_matrix();
 
+    // Set the tainted state on nodes
     timeFunc("Move data to cpu: ", 
         set_node_states, result_state, nodes, matrixTransformer.variables);
-    // Set the tainted state on nodes
 }
 
 GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<float>& successor_matrix, Matrix<float>& initial_state){

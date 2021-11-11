@@ -69,7 +69,7 @@ int main(int argc, char *argv[]){
             if(multi_taint_flag){
                 std::cout << "Running multi-taint analysis using CPU" << std::endl;
                 auto program = parse_to_cfg_transformer<SourcedTaintState>(prog);
-                // cpu_multi_taint_analysis(program);
+                cpu_multi_taint_analysis(program);
             }else{
                 std::cout << "Running analysis using CPU" << std::endl;
 
