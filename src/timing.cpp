@@ -1,5 +1,9 @@
 #include "timing.h"
 
+namespace timing{
+    bool should_benchmark = false;
+}
+
 Stopwatch::Stopwatch(){
     start();
 }
@@ -20,5 +24,7 @@ void Stopwatch::printTimeMicroseconds(std::string message){
         stop();
     }
     auto time = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
-    std::cout << message << time << " μs" << std::endl;
+    if(timing::should_benchmark){
+        std::cout << message << time << " μs" << std::endl;
+    }
 }

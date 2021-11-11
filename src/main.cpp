@@ -28,14 +28,18 @@ void cpu_analysis(ScTransformer<std::set<std::string>> program){
     timeFunc("Analyzing: ", 
         worklist<std::set<std::string>>, program.nodes, analyzer);
 
-    // print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+    if(!timing::should_benchmark) {
+        print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+    }
 }
 
 void cpu_multi_taint_analysis(ScTransformer<SourcedTaintState> program){
     MultiTaintAnalyzer analyzer;
     worklist(program.nodes, analyzer);
 
-    print_digraph_subgraph(program.entryNodes, std::cout, print_taint_source, "main");
+    if(!timing::should_benchmark) {
+        print_digraph_subgraph(program.entryNodes, std::cout, print_taint_source, "main");
+    }
 }
 
 int main(int argc, char *argv[]){
@@ -51,6 +55,9 @@ int main(int argc, char *argv[]){
             if(strcmp(arg, "--multi") == 0 || strcmp(arg, "-m") == 0){
                 multi_taint_flag = true;
             }
+            if(strcmp(arg, "--benchmark") == 0 || strcmp(arg, "-b") == 0){
+                timing::should_benchmark = true;
+            }
         }
 
         antlr4::ANTLRFileStream csfile;
@@ -64,7 +71,9 @@ int main(int argc, char *argv[]){
                 parse_to_cfg_transformer<std::set<std::string>>, prog);
             
             timeFunc("Total GPU analysis: ", gpu_analysis, program.nodes);
-            // print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+            if(!timing::should_benchmark) {
+                print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+            }
         }else{
             if(multi_taint_flag){
                 std::cout << "Running multi-taint analysis using CPU" << std::endl;
