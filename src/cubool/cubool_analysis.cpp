@@ -20,10 +20,10 @@ GpuBoolMatrix run_analysis(const BoolMatrix& initial, const std::vector<BoolMatr
 
         transfers.emplace_back(transfer);
 
-        BoolMatrix matrix_slice(transfer_functions.size(), 1);
-        matrix_slice.add_safe(i, 0);
+        BoolMatrix matrix_slicer(transfer_functions.size(), 1);
+        matrix_slicer.add_safe(i, 0);
 
-        slicers.emplace_back(matrix_slice);
+        slicers.emplace_back(matrix_slicer);
 
         BoolMatrix matrix_expand(1, transfer_functions.size());
         matrix_expand.add_safe(0, i);
