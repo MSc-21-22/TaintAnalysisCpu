@@ -145,12 +145,9 @@ GpuResource::~GpuResource(){
     cudaFree(resource);
 }
 
-
 template<>
-GpuMatrix<float> GpuMatrix<float>::multiply(GpuMatrix<float>& other) {
-    GpuMatrix<float> result(resource.rowCount, resource.columnCount);
+void GpuMatrix<float>::multiply(GpuMatrix<float>& other, GpuMatrix<float>& result) {
     resource.multiply_f32_to_f32(other.resource, result.resource);
-    return result;
 }
 
 template<>

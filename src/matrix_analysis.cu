@@ -62,6 +62,7 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
     std::vector<GpuMatrix<float>> transfers;
     GpuMatrix<float> succ(successor_matrix);
     GpuMatrix<float> state(initial_state);
+    GpuMatrix<float> next_state(initial_state.rowCount, initial_state.columnCount);
     GpuMatrix<float> result(initial_state.rowCount, initial_state.columnCount);
     // Allocate transfer matrices
     for(Matrix<float>& transfer : transfer_matrices) {
@@ -77,7 +78,7 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
 
     while(true){
         matrixStopwatch.start();
-        GpuMatrix<float> next_state = state.multiply(succ);
+        state.multiply(succ, next_state);
 
 
         for(int i = 0; i < transfer_matrices.size(); ++i) {

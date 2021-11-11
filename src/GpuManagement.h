@@ -29,6 +29,7 @@ template<typename ElementType>
 class GpuMatrix{
 public:
     GpuResource resource;
+    
     GpuMatrix(const Matrix<ElementType>& matrix) : resource(matrix.rowCount, matrix.columnCount, matrix.matrix.get(), sizeof(ElementType)){
     }
 
@@ -38,8 +39,7 @@ public:
 
     GpuMatrix(const ElementType data[], int rows, int columns) : resource(rows, columns, (void*)data, sizeof(ElementType)) {}
 
-    
-    GpuMatrix<float> multiply(GpuMatrix<ElementType>& other){
+    void multiply(GpuMatrix<float>& other, GpuMatrix<float>& result){
         assert(false);
     }
 

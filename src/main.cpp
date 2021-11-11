@@ -8,15 +8,12 @@
 #include "multi_taint_analysis.h"
 #include "digraph.h"
 #include "matrix_analysis.h"
-<<<<<<< HEAD
 #include "GpuManagement.h"
 #include <chrono>
 #include "timing.h"
-=======
 #include <cubool.h>
 #include <stdio.h>
 #include "cubool/analysis.h"
->>>>>>> master
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
