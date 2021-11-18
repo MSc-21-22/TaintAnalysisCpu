@@ -48,21 +48,28 @@ void cpu_multi_taint_analysis(ScTransformer<SourcedTaintState> program){
 int main(int argc, char *argv[]){
     if(argc > 1){
 
-        bool gpu_flag = false, multi_taint_flag = false, cubool_flag = false;
+        bool gpu_flag = false, multi_taint_flag = false, cubool_flag = false, cpu_flag = false;
         for (int i = 1; i < argc; i++)
         {
             char* arg = argv[i];
             if(strcmp(arg, "--gpu") == 0 || strcmp(arg, "-g") == 0){
                 gpu_flag = true;
             }
-            if(strcmp(arg, "--multi") == 0 || strcmp(arg, "-m") == 0){
-                multi_taint_flag = true;
-            }
+
             if(strcmp(arg, "--benchmark") == 0 || strcmp(arg, "-b") == 0){
                 timing::should_benchmark = true;
             }
-            if(strcmp(arg, "--cubool") == 0 || strcmp(arg, "-c") == 0){
-                cubool_flag = true;
+            if(gpu_flag){
+                if(strcmp(arg, "--cubool") == 0 || strcmp(arg, "-c") == 0){
+                    cubool_flag = true;
+                }
+            }else{
+                if(strcmp(arg, "--cpu") == 0 || strcmp(arg, "-c") == 0){
+                    cpu_flag = true;
+                    if(strcmp(arg, "--multi") == 0 || strcmp(arg, "-m") == 0){
+                        multi_taint_flag = true;
+                    }
+                }
             }
         }
 
@@ -83,7 +90,7 @@ int main(int argc, char *argv[]){
                     print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
                 }
             }
-        }else{
+        }else if(cpu_flag){
             if(multi_taint_flag){
                 std::cout << "Running multi-taint analysis using CPU" << std::endl;
                 auto program = parse_to_cfg_transformer<SourcedTaintState>(prog);
@@ -92,9 +99,18 @@ int main(int argc, char *argv[]){
                 std::cout << "Running analysis using CPU" << std::endl;
 
                 auto program = timeFunc<ScTransformer<std::set<std::string>>>("Creating CFG nodes: ", 
-                    parse_to_cfg_transformer<std::set<std::string>>, prog);
+                parse_to_cfg_transformer<std::set<std::string>>, prog);
                 cpu_analysis(program);
             }
+        }else{
+            std::cout << "Invalid command\n";
+            std::cout << " --cpu -c for use on cpu\n";
+            std::cout << " with cpu flag:\n";
+            std::cout << "  --multi -m for multi taint analysis\n";
+            std::cout << " --gpu -g for use on gpu\n";
+            std::cout << " with gpu flag:\n";
+            std::cout << "  --cubool -c to use cubool gpu library\n";
+            std::cout << " --benchmark -b to enable benchmarking where possible\n";
         }
 
     }
