@@ -6,13 +6,42 @@ int f(int n){
     }
     return a;
 }
-void main(int j){
-    j = £;
-    int x = 2*(5-2);
-    while(x){
-        int y = 3+j;
-        x=x-1;
-        int a = f(j);
+
+int read_input(){
+    return £;
+}
+
+int is_even(int n){
+    int out;
+    if(n){
+        out = 1;
+    }else{
+        out = 0;
     }
-    t = x+a;
+
+    return out
+}
+
+void main(int j){
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
 }
