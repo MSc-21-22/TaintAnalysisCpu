@@ -12,14 +12,14 @@ int read_input(){
 }
 
 int is_even(int n){
-    int out;
+    int out = 0;
     if(n){
         out = 1;
     }else{
         out = 0;
     }
 
-    return out
+    return out;
 }
 
 void main(int j){
@@ -27,7 +27,7 @@ void main(int j){
         int i = 5;
         while(i){
             int x = x + j * i;
-            i = f(x);
+            int i = f(x);
         }
     }else{
         int z = read_input();
