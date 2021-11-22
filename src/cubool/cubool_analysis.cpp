@@ -42,7 +42,6 @@ GpuBoolMatrix run_analysis(const BoolMatrix& initial, const std::vector<BoolMatr
         next_state = state * succ;
 
         for(size_t i = 0; i < transfers.size(); ++i){
-            std::cout << i << '\n';
             slice = next_state * slicers[i];
             expanded = slice * expanders[i];
             expanded = transfers[i] * expanded;
@@ -77,7 +76,6 @@ void analyse(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes){
     BoolMatrix init_state = initial_matrix(matrixTransformer.variables.size(), nodes.size());
     auto result_state = run_analysis(init_state, matrixTransformer.matrices, successor_matrix);
     // Set the tainted state on nodes
-    std::cout << result_state.retrieve_from_gpu();
     
     //set_node_states(result_state, nodes, matrixTransformer.variables);
 }
