@@ -5,6 +5,8 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <ios>
 
 typedef std::chrono::high_resolution_clock::time_point TimeVar;
 
@@ -48,11 +50,20 @@ public:
     void start();
     void stop();
     void printTimeMicroseconds(std::string message);
+    void saveTimeMicroseconds();
+    static void add_line(){
+        std::fstream fout;
+        fout.open("timings.csv", std::ios::out | std::ios::app);
+
+        fout << "\n";   
+    }
 
 private:
     TimeVar startTime;
     std::chrono::duration<double> duration;
     bool running;
+
+    int64_t get_time_microseconds();
 };
 
 

@@ -19,12 +19,22 @@ void Stopwatch::stop(){
     duration += endTime - startTime;
 }
 
-void Stopwatch::printTimeMicroseconds(std::string message){
+int64_t Stopwatch::get_time_microseconds(){
     if(running){
         stop();
     }
-    auto time = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
+    return std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
+}
+
+void Stopwatch::saveTimeMicroseconds(){
+    std::fstream fout;
+    fout.open("timings.csv", std::ios::out | std::ios::app);
+
+    fout << get_time_microseconds() << ",";   
+}
+
+void Stopwatch::printTimeMicroseconds(std::string message){
     if(timing::should_benchmark){
-        std::cout << message << time << " μs" << std::endl;
+        std::cout << message << get_time_microseconds() << " μs" << std::endl;
     }
 }

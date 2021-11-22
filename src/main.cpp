@@ -48,10 +48,15 @@ void cpu_multi_taint_analysis(ScTransformer<SourcedTaintState> program){
 int main(int argc, char *argv[]){
     if(argc > 1){
 
-        bool gpu_flag = false, multi_taint_flag = false, cubool_flag = false, cpu_flag = false;
+        bool gpu_flag = false, multi_taint_flag = false, cubool_flag = false, cpu_flag = false, benchmark_all = false;
         for (int i = 1; i < argc; i++)
         {
             char* arg = argv[i];
+            if(strcmp(arg, "--benchmark-all") == 0 || strcmp(arg, "-ba") == 0){
+                timing::should_benchmark = true;
+                benchmark_all = true;
+            }
+
             if(strcmp(arg, "--gpu") == 0 || strcmp(arg, "-g") == 0){
                 gpu_flag = true;
             }
@@ -76,6 +81,28 @@ int main(int argc, char *argv[]){
         antlr4::ANTLRFileStream csfile;
         csfile.loadFromFile(argv[argc-1]);
         antlr4::ANTLRInputStream prog(csfile);
+
+        if(benchmark_all){
+
+            std::cout << "*** CPU analysis ***" << std::endl;
+            auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+            Stopwatch cpu_watch;
+            cpu_analysis(program);
+            cpu_watch.saveTimeMicroseconds();
+
+            std::cout << "*** GPU cuBLAS analysis ***" << std::endl;
+            Stopwatch cuBLAS_watch;
+            gpu_analysis(program.nodes);
+            cuBLAS_watch.saveTimeMicroseconds();
+
+            std::cout << "*** GPU cuBool analysis ***" << std::endl;
+            Stopwatch cuBool_watch;
+            cubool_analyse(program.nodes);
+            cuBool_watch.saveTimeMicroseconds();
+
+            Stopwatch::add_line();
+            return 0;
+        }
 
         if(gpu_flag){
             if(cubool_flag){
