@@ -43,7 +43,7 @@ void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nod
     auto successor_matrix = get_successor_matrix<std::set<std::string>, float>(nodes);
     
     Matrix<float> init_state = get_initial_matrix(matrixTransformer.variables.size(), nodes.size());
-    stopwatch.printTimeMicroseconds("Matrix creation ");
+    stopwatch.print_time<Microseconds>("Matrix creation ");
 
     auto result_state = analyse(matrixTransformer.matrices, successor_matrix, init_state).to_matrix();
 
@@ -59,11 +59,11 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
     std::vector<GpuMatrix<float>> transfers;
     Stopwatch succWatch;
     GpuMatrix<float> succ(successor_matrix);
-    succWatch.printTimeMicroseconds("Successor matrix allocation ");
+    succWatch.print_time<Microseconds>("Successor matrix allocation ");
 
     Stopwatch stateWatch;
     GpuMatrix<float> state(initial_state);
-    stateWatch.printTimeMicroseconds("State matrix allocation ");
+    stateWatch.print_time<Microseconds>("State matrix allocation ");
 
     GpuMatrix<float> next_state(initial_state.rowCount, initial_state.columnCount);
     GpuMatrix<float> result(initial_state.rowCount, initial_state.columnCount);
@@ -73,9 +73,9 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
     for(Matrix<float>& transfer : transfer_matrices) {
         transfers.emplace_back(transfer);
     }
-    transferWatch.printTimeMicroseconds("Transfer matrices allocation ");
+    transferWatch.print_time<Microseconds>("Transfer matrices allocation ");
 
-    stopwatch.printTimeMicroseconds("Gpu memory alloc/copy ");
+    stopwatch.print_time<Microseconds>("Gpu memory alloc/copy ");
 
     
     Stopwatch analysisStopwatch;
@@ -103,9 +103,9 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
         state = next_state;
     }
 
-    analysisStopwatch.printTimeMicroseconds("Least fixed point algorithm ");
-    matrixStopwatch.printTimeMicroseconds("matrix math ");
-    memcmpStopwatch.printTimeMicroseconds("gpu memcmp ");
+    analysisStopwatch.print_time<Microseconds>("Least fixed point algorithm ");
+    matrixStopwatch.print_time<Microseconds>("matrix math ");
+    memcmpStopwatch.print_time<Microseconds>("gpu memcmp ");
 
     timeFunc("Cublas destroy: ",
         destroy_cublas);

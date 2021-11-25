@@ -88,21 +88,21 @@ int main(int argc, char *argv[]){
             auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
             Stopwatch cpu_watch;
             cpu_analysis(program);
-            cpu_watch.saveTimeMicroseconds();
+            cpu_watch.save_time<Microseconds>();
 
             std::cout << "\n⭐ GPU cuBLAS analysis ⭐" << std::endl;
             timeFunc("Cublas creation: ", 
                 create_cublas);
             Stopwatch cuBLAS_watch;
             gpu_analysis(program.nodes);
-            cuBLAS_watch.saveTimeMicroseconds();
+            cuBLAS_watch.save_time<Microseconds>();
 
             std::cout << "\n⭐ GPU cuBool analysis ⭐" << std::endl;
             timeFunc("Cubool creation: ", 
                 create_cubool);
             Stopwatch cuBool_watch;
             cubool_analyse(program.nodes);
-            cuBool_watch.saveTimeMicroseconds();
+            cuBool_watch.save_time<Microseconds>();
 
             Stopwatch::add_line();
             return 0;

@@ -36,7 +36,7 @@ GpuBoolMatrix run_analysis(const BoolMatrix& initial, const std::vector<BoolMatr
     GpuBoolMatrix next_state(state.rowCount, state.columnCount);
     GpuBoolMatrix slice(state.rowCount, 1);
     GpuBoolMatrix expanded(state.rowCount, state.columnCount);
-    matrix_alloc_watch.printTimeMicroseconds("Matrix allocation ");
+    matrix_alloc_watch.print_time<Microseconds>("Matrix allocation ");
 
     Stopwatch least_fixed_point_watch;
     uint32_t old_count = state.get_element_count();
@@ -59,7 +59,7 @@ GpuBoolMatrix run_analysis(const BoolMatrix& initial, const std::vector<BoolMatr
             old_count = new_count;
         }
     }
-    least_fixed_point_watch.printTimeMicroseconds("Least fixed point: ");
+    least_fixed_point_watch.print_time<Microseconds>("Least fixed point: ");
     
     return state;
 }
