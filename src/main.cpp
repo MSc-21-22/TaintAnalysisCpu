@@ -84,18 +84,22 @@ int main(int argc, char *argv[]){
 
         if(benchmark_all){
 
-            std::cout << "*** CPU analysis ***" << std::endl;
+            std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
             auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
             Stopwatch cpu_watch;
             cpu_analysis(program);
             cpu_watch.saveTimeMicroseconds();
 
-            std::cout << "*** GPU cuBLAS analysis ***" << std::endl;
+            std::cout << "\n⭐ GPU cuBLAS analysis ⭐" << std::endl;
+            timeFunc("Cublas creation: ", 
+                create_cublas);
             Stopwatch cuBLAS_watch;
             gpu_analysis(program.nodes);
             cuBLAS_watch.saveTimeMicroseconds();
 
-            std::cout << "*** GPU cuBool analysis ***" << std::endl;
+            std::cout << "\n⭐ GPU cuBool analysis ⭐" << std::endl;
+            timeFunc("Cubool creation: ", 
+                create_cubool);
             Stopwatch cuBool_watch;
             cubool_analyse(program.nodes);
             cuBool_watch.saveTimeMicroseconds();
@@ -108,10 +112,14 @@ int main(int argc, char *argv[]){
             if(cubool_flag){
                 std::cout << "Running analysis using cuBool on GPU" << std::endl;
                 auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+                timeFunc("Cubool creation: ", 
+                    create_cubool);
                 cubool_analyse(program.nodes);
             }else{
                 std::cout << "Running analysis using cuBLAS on GPU" << std::endl;
                 auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+                timeFunc("Cublas creation: ", 
+                    create_cublas);
                 gpu_analysis(program.nodes);
                 if(!timing::should_benchmark){
                     print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");

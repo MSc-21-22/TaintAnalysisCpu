@@ -2,9 +2,9 @@
 #include <memory>
 #include <vector>
 #include <var_visitor.h>
+#include "timing.h"
 
 #include "transforms_matrix.h"
-#include "GpuBoolMatrix.h"
 #include "analysis.h"
 
 GpuBoolMatrix run_analysis(const BoolMatrix& initial, const std::vector<BoolMatrix>& transfer_functions, const BoolMatrix& successor){
@@ -14,10 +14,10 @@ GpuBoolMatrix run_analysis(const BoolMatrix& initial, const std::vector<BoolMatr
     std::vector<GpuBoolMatrix> slicers;
     std::vector<GpuBoolMatrix> transfers;
 
+    Stopwatch matrix_alloc_watch;
     int i = 0;
     for(auto& transfer : transfer_functions){
         
-
         transfers.emplace_back(transfer);
 
         BoolMatrix matrix_slicer(transfer_functions.size(), 1);
@@ -36,7 +36,9 @@ GpuBoolMatrix run_analysis(const BoolMatrix& initial, const std::vector<BoolMatr
     GpuBoolMatrix next_state(state.rowCount, state.columnCount);
     GpuBoolMatrix slice(state.rowCount, 1);
     GpuBoolMatrix expanded(state.rowCount, state.columnCount);
+    matrix_alloc_watch.printTimeMicroseconds("Matrix allocation ");
 
+    Stopwatch least_fixed_point_watch;
     uint32_t old_count = state.get_element_count();
     while(true){
         next_state = state * succ;
@@ -57,6 +59,7 @@ GpuBoolMatrix run_analysis(const BoolMatrix& initial, const std::vector<BoolMatr
             old_count = new_count;
         }
     }
+    least_fixed_point_watch.printTimeMicroseconds("Least fixed point: ");
     
     return state;
 }
@@ -81,7 +84,6 @@ void analyse(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes){
 }
 
 void cubool_analyse(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes){
-    create_cubool();
     analyse(nodes);
     destroy_cubool();
 }
