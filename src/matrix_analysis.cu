@@ -57,9 +57,9 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
     Stopwatch stopwatch;
     
     std::vector<GpuMatrix<float>> transfers;
-    Stopwatch succWatch;
+    Stopwatch succ_watch;
     GpuMatrix<float> succ(successor_matrix);
-    succWatch.print_time<Microseconds>("Successor matrix allocation ");
+    succ_watch.print_time<Microseconds>("Successor matrix allocation ");
 
     Stopwatch stateWatch;
     GpuMatrix<float> state(initial_state);
