@@ -18,13 +18,3 @@ void Stopwatch::stop(){
     auto endTime = std::chrono::high_resolution_clock::now();
     duration += endTime - startTime;
 }
-
-void Stopwatch::printTimeMicroseconds(std::string message){
-    if(running){
-        stop();
-    }
-    auto time = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
-    if(timing::should_benchmark){
-        std::cout << message << time << " μs" << std::endl;
-    }
-}

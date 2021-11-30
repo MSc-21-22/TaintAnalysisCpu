@@ -43,33 +43,39 @@ void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nod
     auto successor_matrix = get_successor_matrix<std::set<std::string>, float>(nodes);
     
     Matrix<float> init_state = get_initial_matrix(matrixTransformer.variables.size(), nodes.size());
-    stopwatch.printTimeMicroseconds("Matrix creation ");
+    stopwatch.print_time<Microseconds>("Matrix creation ");
 
     auto result_state = analyse(matrixTransformer.matrices, successor_matrix, init_state).to_matrix();
 
     // Set the tainted state on nodes
-    timeFunc("Move data to cpu: ", 
+    time_func("Move data to cpu: ", 
         set_node_states, result_state, nodes, matrixTransformer.variables);
 }
 
 GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<float>& successor_matrix, Matrix<float>& initial_state){
-    
-    timeFunc("Cublas creation: ", 
-        create_cublas);
 
     Stopwatch stopwatch;
     
     std::vector<GpuMatrix<float>> transfers;
+    Stopwatch succ_watch;
     GpuMatrix<float> succ(successor_matrix);
+    succ_watch.print_time<Microseconds>("Successor matrix allocation ");
+
+    Stopwatch stateWatch;
     GpuMatrix<float> state(initial_state);
+    stateWatch.print_time<Microseconds>("State matrix allocation ");
+
     GpuMatrix<float> next_state(initial_state.rowCount, initial_state.columnCount);
     GpuMatrix<float> result(initial_state.rowCount, initial_state.columnCount);
+
     // Allocate transfer matrices
+    Stopwatch transferWatch;
     for(Matrix<float>& transfer : transfer_matrices) {
         transfers.emplace_back(transfer);
     }
+    transferWatch.print_time<Microseconds>("Transfer matrices allocation ");
 
-    stopwatch.printTimeMicroseconds("Gpu memory alloc/copy ");
+    stopwatch.print_time<Microseconds>("Gpu memory alloc/copy ");
 
     
     Stopwatch analysisStopwatch;
@@ -97,11 +103,11 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
         state = next_state;
     }
 
-    analysisStopwatch.printTimeMicroseconds("Least fixed point algorithm ");
-    matrixStopwatch.printTimeMicroseconds("matrix math ");
-    memcmpStopwatch.printTimeMicroseconds("gpu memcmp ");
+    analysisStopwatch.print_time<Microseconds>("Least fixed point algorithm ");
+    matrixStopwatch.print_time<Microseconds>("matrix math ");
+    memcmpStopwatch.print_time<Microseconds>("gpu memcmp ");
 
-    timeFunc("Cublas destroy: ",
+    time_func("Cublas destroy: ",
         destroy_cublas);
     
     return state;

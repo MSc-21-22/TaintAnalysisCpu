@@ -28,7 +28,7 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
 void cpu_analysis(ScTransformer<std::set<std::string>> program){
     TaintAnalyzer analyzer;
 
-    timeFunc("Analyzing: ", 
+    time_func("Analyzing: ", 
         worklist<std::set<std::string>>, program.nodes, analyzer);
 
     if(!timing::should_benchmark) {
@@ -48,10 +48,15 @@ void cpu_multi_taint_analysis(ScTransformer<SourcedTaintState> program){
 int main(int argc, char *argv[]){
     if(argc > 1){
 
-        bool gpu_flag = false, multi_taint_flag = false, cubool_flag = false, cpu_flag = false;
+        bool gpu_flag = false, multi_taint_flag = false, cubool_flag = false, cpu_flag = false, benchmark_all = false;
         for (int i = 1; i < argc; i++)
         {
             char* arg = argv[i];
+            if(strcmp(arg, "--benchmark-all") == 0 || strcmp(arg, "-ba") == 0){
+                timing::should_benchmark = true;
+                benchmark_all = true;
+            }
+
             if(strcmp(arg, "--gpu") == 0 || strcmp(arg, "-g") == 0){
                 gpu_flag = true;
             }
@@ -77,14 +82,44 @@ int main(int argc, char *argv[]){
         csfile.loadFromFile(argv[argc-1]);
         antlr4::ANTLRInputStream prog(csfile);
 
+        if(benchmark_all){
+
+            std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
+            auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+            Stopwatch cpu_watch;
+            cpu_analysis(program);
+            cpu_watch.save_time<Microseconds>();
+
+            std::cout << "\n⭐ GPU cuBLAS analysis ⭐" << std::endl;
+            time_func("Cublas creation: ", 
+                create_cublas);
+            Stopwatch cuBLAS_watch;
+            gpu_analysis(program.nodes);
+            cuBLAS_watch.save_time<Microseconds>();
+
+            std::cout << "\n⭐ GPU cuBool analysis ⭐" << std::endl;
+            time_func("Cubool creation: ", 
+                create_cubool);
+            Stopwatch cuBool_watch;
+            cubool_analyse(program.nodes);
+            cuBool_watch.save_time<Microseconds>();
+
+            Stopwatch::add_line();
+            return 0;
+        }
+
         if(gpu_flag){
             if(cubool_flag){
                 std::cout << "Running analysis using cuBool on GPU" << std::endl;
                 auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+                time_func("Cubool creation: ", 
+                    create_cubool);
                 cubool_analyse(program.nodes);
             }else{
                 std::cout << "Running analysis using cuBLAS on GPU" << std::endl;
                 auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+                time_func("Cublas creation: ", 
+                    create_cublas);
                 gpu_analysis(program.nodes);
                 if(!timing::should_benchmark){
                     print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
@@ -98,7 +133,7 @@ int main(int argc, char *argv[]){
             }else{
                 std::cout << "Running analysis using CPU" << std::endl;
 
-                auto program = timeFunc<ScTransformer<std::set<std::string>>>("Creating CFG nodes: ", 
+                auto program = time_func<ScTransformer<std::set<std::string>>>("Creating CFG nodes: ", 
                 parse_to_cfg_transformer<std::set<std::string>>, prog);
                 cpu_analysis(program);
             }
