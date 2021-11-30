@@ -28,7 +28,7 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
 void cpu_analysis(ScTransformer<std::set<std::string>> program){
     TaintAnalyzer analyzer;
 
-    timeFunc("Analyzing: ", 
+    time_func("Analyzing: ", 
         worklist<std::set<std::string>>, program.nodes, analyzer);
 
     if(!timing::should_benchmark) {
@@ -91,14 +91,14 @@ int main(int argc, char *argv[]){
             cpu_watch.save_time<Microseconds>();
 
             std::cout << "\n⭐ GPU cuBLAS analysis ⭐" << std::endl;
-            timeFunc("Cublas creation: ", 
+            time_func("Cublas creation: ", 
                 create_cublas);
             Stopwatch cuBLAS_watch;
             gpu_analysis(program.nodes);
             cuBLAS_watch.save_time<Microseconds>();
 
             std::cout << "\n⭐ GPU cuBool analysis ⭐" << std::endl;
-            timeFunc("Cubool creation: ", 
+            time_func("Cubool creation: ", 
                 create_cubool);
             Stopwatch cuBool_watch;
             cubool_analyse(program.nodes);
@@ -112,13 +112,13 @@ int main(int argc, char *argv[]){
             if(cubool_flag){
                 std::cout << "Running analysis using cuBool on GPU" << std::endl;
                 auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
-                timeFunc("Cubool creation: ", 
+                time_func("Cubool creation: ", 
                     create_cubool);
                 cubool_analyse(program.nodes);
             }else{
                 std::cout << "Running analysis using cuBLAS on GPU" << std::endl;
                 auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
-                timeFunc("Cublas creation: ", 
+                time_func("Cublas creation: ", 
                     create_cublas);
                 gpu_analysis(program.nodes);
                 if(!timing::should_benchmark){
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]){
             }else{
                 std::cout << "Running analysis using CPU" << std::endl;
 
-                auto program = timeFunc<ScTransformer<std::set<std::string>>>("Creating CFG nodes: ", 
+                auto program = time_func<ScTransformer<std::set<std::string>>>("Creating CFG nodes: ", 
                 parse_to_cfg_transformer<std::set<std::string>>, prog);
                 cpu_analysis(program);
             }

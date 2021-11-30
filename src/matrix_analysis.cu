@@ -48,7 +48,7 @@ void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nod
     auto result_state = analyse(matrixTransformer.matrices, successor_matrix, init_state).to_matrix();
 
     // Set the tainted state on nodes
-    timeFunc("Move data to cpu: ", 
+    time_func("Move data to cpu: ", 
         set_node_states, result_state, nodes, matrixTransformer.variables);
 }
 
@@ -107,7 +107,7 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
     matrixStopwatch.print_time<Microseconds>("matrix math ");
     memcmpStopwatch.print_time<Microseconds>("gpu memcmp ");
 
-    timeFunc("Cublas destroy: ",
+    time_func("Cublas destroy: ",
         destroy_cublas);
     
     return state;

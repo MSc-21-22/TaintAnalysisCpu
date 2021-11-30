@@ -15,7 +15,7 @@ namespace timing{
 }
 
 template<typename ReturnType, typename F, typename... Args>
-ReturnType timeFunc(std::string message, F func, Args&&... args){
+ReturnType time_func(std::string message, F func, Args&&... args){
     if(timing::should_benchmark){
         TimeVar start = std::chrono::high_resolution_clock::now();
 
@@ -30,7 +30,7 @@ ReturnType timeFunc(std::string message, F func, Args&&... args){
 }
 
 template<typename F, typename... Args>
-void timeFunc(std::string message, F func, Args&&... args){
+void time_func(std::string message, F func, Args&&... args){
     if(timing::should_benchmark){
         TimeVar start = std::chrono::high_resolution_clock::now();
 
