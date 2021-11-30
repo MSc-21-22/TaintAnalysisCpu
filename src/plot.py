@@ -14,5 +14,6 @@ labels = ['CPU', 'GPU cuBLAS','GPU cuBool']
 # plt.boxplot(values, labels=['CPU', 'GPU cuBLAS','GPU cuBool'], widths=0.6)
 plt.bar(labels, averages)
 plt.yscale("log")
+plt.gca().set_ylabel('time [μs]')
 
 plt.show()
