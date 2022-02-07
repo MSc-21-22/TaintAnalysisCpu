@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
+message("cuda includes: ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
+
 if(NOT DEFINED ANTLR_EXECUTABLE)
     message(FATAL_ERROR "You must define ANTLR_EXECUTABLE using the flag -D ANTLR_EXECUTABLE=...")
 endif()

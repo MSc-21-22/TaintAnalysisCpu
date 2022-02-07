@@ -10,7 +10,7 @@ cublasHandle_t get_cublas(){
     return handle;
 }
 void create_cublas(){
-    cudaSetDevice(0);
+    cudaSetDevice(1);
     if(cublasCreate_v2(&handle) != CUBLAS_STATUS_SUCCESS){
         std::cout << "Create cublas failed" << std::endl;
     }
@@ -165,15 +165,16 @@ GpuStream::GpuStream(GpuStream &&other) noexcept{
 }
 GpuStream &GpuStream::operator=(GpuStream &&other) noexcept{
     stream_ptr = other.stream_ptr;
+    return *this;
 }
 GpuStream::~GpuStream(){
-    cudaStreamDestroy(*stream_ptr);
-    delete stream_ptr;
+    cudaStreamDestroy(*((cudaStream_t*)stream_ptr));
+    delete (cudaStream_t*)stream_ptr;
 }
 
-GpuStream::set_as_current() {
-    cublasSetStream(get_cublas(), *stream_ptr);
+void GpuStream::set_as_current() {
+    cublasSetStream_v2(get_cublas(), *((cudaStream_t*)stream_ptr));
 }
-GpuStream::synchronize() {
-    cudaStreamSynchronize(*stream_ptr);
+void GpuStream::synchronize() {
+    cudaStreamSynchronize(*((cudaStream_t*)stream_ptr));
 }
