@@ -4,6 +4,23 @@
 void create_cublas();
 void destroy_cublas();
 
+class GpuStream
+{
+    void *stream_ptr;
+public:
+    GpuStream();
+
+    GpuStream(const GpuStream &other) = delete;
+    GpuStream &operator=(const GpuStream &other) = delete;
+    GpuStream(GpuStream &&other) noexcept;
+    GpuStream &operator=(GpuStream &&other) noexcept;
+    ~GpuStream();
+
+    void set_as_current();
+    void synchronize();
+};
+
+
 class GpuResource{
 public:
     void* resource;

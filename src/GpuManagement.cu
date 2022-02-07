@@ -155,3 +155,25 @@ void GpuMatrix<float>::multiply_vector(int column_index, GpuMatrix<float>& other
     int offset = column_index * resource.rowCount;
     resource.multiply_vector_f32_to_f32(offset, other.resource);
 }
+
+GpuStream::GpuStream() {
+    stream_ptr = new cudaStream_t();
+    cudaStreamCreate((cudaStream_t*)stream_ptr);
+}
+GpuStream::GpuStream(GpuStream &&other) noexcept{
+    stream_ptr = other.stream_ptr;
+}
+GpuStream &GpuStream::operator=(GpuStream &&other) noexcept{
+    stream_ptr = other.stream_ptr;
+}
+GpuStream::~GpuStream(){
+    cudaStreamDestroy(*stream_ptr);
+    delete stream_ptr;
+}
+
+GpuStream::set_as_current() {
+    cublasSetStream(get_cublas(), *stream_ptr);
+}
+GpuStream::synchronize() {
+    cudaStreamSynchronize(*stream_ptr);
+}
