@@ -20,7 +20,7 @@ TEST_CASE("unit matrix") {
         0,1,0,0,
         0,0,1,0,
         0,0,0,1};
-    CHECK_MESSAGE(std::memcmp(matrix.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
+    CHECK_MESSAGE(std::memcmp(matrix.matrix, correct_matrix, sizeof(correct_matrix)) == 0,
                 matrix.to_string());
 
 } 
@@ -46,7 +46,7 @@ TEST_CASE("matrix transform initilization") {
         0,0,1,0,
         1,0,0,1};
     Matrix<float> matrix = matrixTransformer.matrices[0];
-    CHECK_MESSAGE(std::memcmp(matrix.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
+    CHECK_MESSAGE(std::memcmp(matrix.matrix, correct_matrix, sizeof(correct_matrix)) == 0,
                 matrix.to_string());
 
 } 
@@ -71,7 +71,7 @@ TEST_CASE("matrix transform assignment") {
         1,0,0,1};
 
       Matrix<float> matrix = matrixTransformer.matrices[0];
-      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,sizeof(correct_matrix)) == 0,
+      CHECK_MESSAGE(std::memcmp(matrix.matrix,correct_matrix,sizeof(correct_matrix)) == 0,
                     matrix.to_string());
 } 
 
@@ -93,7 +93,7 @@ TEST_CASE("matrix transform assign return") {
          0,0,0,1};
 
       Matrix<float> matrix = matrixTransformer.matrices[0];
-      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,sizeof(correct_matrix)) == 0,
+      CHECK_MESSAGE(std::memcmp(matrix.matrix,correct_matrix,sizeof(correct_matrix)) == 0,
                     matrix.to_string());
 } 
 
@@ -129,7 +129,7 @@ TEST_CASE("matrix transform function entry"){
          0,1,0,0,1};
 
     Matrix<float> matrix = matrixTransforms.matrices[0];
-    CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,sizeof(correct_matrix)) == 0,
+    CHECK_MESSAGE(std::memcmp(matrix.matrix,correct_matrix,sizeof(correct_matrix)) == 0,
                   matrix.to_string());
 }
 
@@ -153,7 +153,7 @@ TEST_CASE("matrix transform return") {
          0,0,0,1};
 
       Matrix<float> matrix = matrixTransformer.matrices[0];
-      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,sizeof(correct_matrix)) == 0,
+      CHECK_MESSAGE(std::memcmp(matrix.matrix,correct_matrix,sizeof(correct_matrix)) == 0,
                     matrix.to_string());
 } 
 
@@ -178,7 +178,7 @@ TEST_CASE("Create successor node matrix"){
         1,0,0,
         1,1,0,
         1,1,1};
-      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
+      CHECK_MESSAGE(std::memcmp(matrix.matrix, correct_matrix, sizeof(correct_matrix)) == 0,
                     matrix.to_string());
 }
 
@@ -197,7 +197,7 @@ TEST_CASE("Matrix copying test"){
     
     destroy_cublas();
 
-    CHECK_MESSAGE(std::memcmp(matrixC.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
+    CHECK_MESSAGE(std::memcmp(matrixC.matrix, correct_matrix, sizeof(correct_matrix)) == 0,
             matrixC.to_string());
 }
 
@@ -227,7 +227,7 @@ TEST_CASE("Matrix multiply test"){
     
     destroy_cublas();
 
-    CHECK_MESSAGE(std::memcmp(matrixC.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
+    CHECK_MESSAGE(std::memcmp(matrixC.matrix, correct_matrix, sizeof(correct_matrix)) == 0,
             matrixC.to_string());
 }
 
@@ -255,7 +255,7 @@ TEST_CASE("Matrix vector multiply test"){
     
     destroy_cublas();
 
-    CHECK_MESSAGE(std::memcmp(matrixC.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
+    CHECK_MESSAGE(std::memcmp(matrixC.matrix, correct_matrix, sizeof(correct_matrix)) == 0,
             matrixC.to_string());
 }
 
@@ -290,7 +290,7 @@ TEST_CASE("Matrix multiply initial state with succ test"){
     
     destroy_cublas();
 
-    CHECK_MESSAGE(std::memcmp(matrixC.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
+    CHECK_MESSAGE(std::memcmp(matrixC.matrix, correct_matrix, sizeof(correct_matrix)) == 0,
             matrixC.to_string());
 }
 
@@ -317,7 +317,7 @@ TEST_CASE("Matrix multiply 5x5"){
         0,0,0,1,0
     };
 
-    CHECK_MESSAGE(std::memcmp(test_a.matrix.get(), correct_a, sizeof(correct_a)) == 0,
+    CHECK_MESSAGE(std::memcmp(test_a.matrix, correct_a, sizeof(correct_a)) == 0,
         test_a.to_string());
 
     Matrix<float> matrixB = unit_matrix<float>(5);
@@ -333,7 +333,7 @@ TEST_CASE("Matrix multiply 5x5"){
         0,0,0,0,1
     };
 
-    CHECK_MESSAGE(std::memcmp(test_b.matrix.get(), correct_b, sizeof(correct_b)) == 0,
+    CHECK_MESSAGE(std::memcmp(test_b.matrix, correct_b, sizeof(correct_b)) == 0,
             test_b.to_string());
 
     assert(sizeof(float) == 4);
@@ -357,7 +357,7 @@ TEST_CASE("Matrix multiply 5x5"){
     
     destroy_cublas();
 
-    CHECK_MESSAGE(std::memcmp(matrixC.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
+    CHECK_MESSAGE(std::memcmp(matrixC.matrix, correct_matrix, sizeof(correct_matrix)) == 0,
             matrixC.to_string());
 }
 
@@ -396,7 +396,7 @@ TEST_CASE("Matrix vector multiplication error 13 reproduction"){
         0,0,0,1};
 
     destroy_cublas();
-    CHECK_MESSAGE(std::memcmp(result.matrix.get(), correct_state, sizeof(correct_state)) == 0,
+    CHECK_MESSAGE(std::memcmp(result.matrix, correct_state, sizeof(correct_state)) == 0,
             result.to_string());
 }
 

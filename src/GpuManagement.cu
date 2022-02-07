@@ -3,6 +3,7 @@
 #include <assert.h>
 #include "GpuManagement.h"
 #include <cuda.h>
+#include "pinned_mem.h"
 
 static cublasHandle_t handle;
 
@@ -154,4 +155,16 @@ template<>
 void GpuMatrix<float>::multiply_vector(int column_index, GpuMatrix<float>& other){
     int offset = column_index * resource.rowCount;
     resource.multiply_vector_f32_to_f32(offset, other.resource);
+}
+
+template<>
+float* malloc_pinned(size_t byte_count){
+    float* x = nullptr;
+    cudaMallocHost(&x, byte_count);
+
+    return x;
+}
+
+void free_pinned(void* ptr){
+    cudaFreeHost(ptr);
 }

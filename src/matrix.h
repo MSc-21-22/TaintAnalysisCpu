@@ -3,12 +3,13 @@
 #include <memory>
 #include <algorithm>
 #include <assert.h>
+#include "pinned_mem.h"
 
 template<typename ElementType>
 class Matrix{
 
     public:
-        std::shared_ptr<ElementType[]> matrix;
+        ElementType* matrix;
         int rowCount;
         int columnCount;
         int size;
@@ -20,23 +21,26 @@ class Matrix{
         Matrix(int rowCount, int columnCount) : rowCount(rowCount), columnCount(columnCount){
             create_matrix();
         }
+        ~Matrix(){
+            free_pinned(matrix);
+        }
 
         void to_unit_matrix(){
             assert(rowCount==columnCount);
             for(int i = 0; i < rowCount; i++){
-                matrix.get()[rowCount*i+i] = 1.0f;
+                matrix[rowCount*i+i] = 1.0f;
             }
         }
 
         ElementType& operator()(int row, int column){
-            return matrix.get()[row+column*rowCount];
+            return matrix[row+column*rowCount];
         }
 
         std::string to_string(){
             std::string res;
             for(int row = 0; row<rowCount; row++){
                 for(int column = 0; column<columnCount; column++){
-                    res += std::to_string((int)(matrix.get()[row+column*rowCount]));
+                    res += std::to_string((int)(matrix[row+column*rowCount]));
                 }
                 res += "\n";
             }
@@ -46,9 +50,8 @@ class Matrix{
     private:
         void create_matrix(){
             size = rowCount*columnCount;
-            std::shared_ptr<ElementType[]> new_matrix(new ElementType[size]);
-            matrix = new_matrix;
-            std::fill(matrix.get(), matrix.get() + size, 0);
+            matrix = malloc_pinned<ElementType>(sizeof(ElementType) * size);
+            std::fill(matrix, matrix + size, 0);
         }
 };
 

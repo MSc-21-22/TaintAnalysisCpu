@@ -30,7 +30,7 @@ class GpuMatrix{
 public:
     GpuResource resource;
     
-    GpuMatrix(const Matrix<ElementType>& matrix) : resource(matrix.rowCount, matrix.columnCount, matrix.matrix.get(), sizeof(ElementType)){
+    GpuMatrix(const Matrix<ElementType>& matrix) : resource(matrix.rowCount, matrix.columnCount, matrix.matrix, sizeof(ElementType)){
     }
 
     GpuMatrix(int rows, int columns) : resource(rows, columns, sizeof(ElementType)) {}
@@ -49,7 +49,7 @@ public:
 
     Matrix<ElementType> to_matrix(){
         Matrix<ElementType> result(resource.rowCount, resource.columnCount);
-        resource.retrieve_from_gpu(result.matrix.get());
+        resource.retrieve_from_gpu(result.matrix);
         return result;
     }
 };
