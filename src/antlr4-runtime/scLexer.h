@@ -1,5 +1,5 @@
 
-// Generated from /home/nhug/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from sc.g4 by ANTLR 4.9.2
 
 #pragma once
 
@@ -13,12 +13,13 @@ class  scLexer : public antlr4::Lexer {
 public:
   enum {
     T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, T__4 = 5, T__5 = 6, T__6 = 7, 
-    T__7 = 8, T__8 = 9, T__9 = 10, INTEGER = 11, PLUS = 12, MINUS = 13, 
-    DIVISION = 14, MULTIPLICATION = 15, ASSIGN = 16, LPAREN = 17, RPAREN = 18, 
-    LEQ = 19, GEQ = 20, LT = 21, GT = 22, ID = 23, WS = 24
+    T__7 = 8, T__8 = 9, T__9 = 10, T__10 = 11, T__11 = 12, INTEGER = 13, 
+    PLUS = 14, MINUS = 15, DIVISION = 16, MULTIPLICATION = 17, ASSIGN = 18, 
+    LPAREN = 19, RPAREN = 20, LEQ = 21, GEQ = 22, LT = 23, GT = 24, ID = 25, 
+    WS = 26
   };
 
-  scLexer(antlr4::CharStream *input);
+  explicit scLexer(antlr4::CharStream *input);
   ~scLexer();
 
   virtual std::string getGrammarFileName() const override;

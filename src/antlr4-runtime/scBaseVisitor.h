@@ -1,5 +1,5 @@
 
-// Generated from /home/nhug/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from sc.g4 by ANTLR 4.9.2
 
 #pragma once
 
@@ -36,6 +36,14 @@ public:
   }
 
   virtual antlrcpp::Any visitStatementinit(scParser::StatementinitContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitStatementinitarray(scParser::StatementinitarrayContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitArrayelement(scParser::ArrayelementContext *ctx) override {
     return visitChildren(ctx);
   }
 

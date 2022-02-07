@@ -1,5 +1,5 @@
 
-// Generated from /home/nhug/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from sc.g4 by ANTLR 4.9.2
 
 #pragma once
 
@@ -13,20 +13,22 @@ class  scParser : public antlr4::Parser {
 public:
   enum {
     T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, T__4 = 5, T__5 = 6, T__6 = 7, 
-    T__7 = 8, T__8 = 9, T__9 = 10, INTEGER = 11, PLUS = 12, MINUS = 13, 
-    DIVISION = 14, MULTIPLICATION = 15, ASSIGN = 16, LPAREN = 17, RPAREN = 18, 
-    LEQ = 19, GEQ = 20, LT = 21, GT = 22, ID = 23, WS = 24
+    T__7 = 8, T__8 = 9, T__9 = 10, T__10 = 11, T__11 = 12, INTEGER = 13, 
+    PLUS = 14, MINUS = 15, DIVISION = 16, MULTIPLICATION = 17, ASSIGN = 18, 
+    LPAREN = 19, RPAREN = 20, LEQ = 21, GEQ = 22, LT = 23, GT = 24, ID = 25, 
+    WS = 26
   };
 
   enum {
     RuleProg = 0, RuleFunctionDef = 1, RuleStatements = 2, RuleStatement = 3, 
-    RuleStatementassign = 4, RuleStatementinit = 5, RuleWhileloop = 6, RuleStatementif = 7, 
-    RuleArgs = 8, RuleExpression = 9, RuleExpressionM = 10, RuleFunctionCallInit = 11, 
-    RuleFunctionCall = 12, RuleOpt_parameters = 13, RuleParameters = 14, 
-    RuleParameter = 15, RuleType = 16
+    RuleStatementassign = 4, RuleStatementinit = 5, RuleStatementinitarray = 6, 
+    RuleArrayelement = 7, RuleWhileloop = 8, RuleStatementif = 9, RuleArgs = 10, 
+    RuleExpression = 11, RuleExpressionM = 12, RuleFunctionCallInit = 13, 
+    RuleFunctionCall = 14, RuleOpt_parameters = 15, RuleParameters = 16, 
+    RuleParameter = 17, RuleType = 18
   };
 
-  scParser(antlr4::TokenStream *input);
+  explicit scParser(antlr4::TokenStream *input);
   ~scParser();
 
   virtual std::string getGrammarFileName() const override;
@@ -42,6 +44,8 @@ public:
   class StatementContext;
   class StatementassignContext;
   class StatementinitContext;
+  class StatementinitarrayContext;
+  class ArrayelementContext;
   class WhileloopContext;
   class StatementifContext;
   class ArgsContext;
@@ -111,6 +115,7 @@ public:
     StatementinitContext *statementinit();
     StatementassignContext *statementassign();
     FunctionCallInitContext *functionCallInit();
+    StatementinitarrayContext *statementinitarray();
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -125,7 +130,8 @@ public:
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ID();
     antlr4::tree::TerminalNode *ASSIGN();
-    ExpressionContext *expression();
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -149,6 +155,37 @@ public:
   };
 
   StatementinitContext* statementinit();
+
+  class  StatementinitarrayContext : public antlr4::ParserRuleContext {
+  public:
+    StatementinitarrayContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    TypeContext *type();
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    antlr4::tree::TerminalNode *ASSIGN();
+    ArrayelementContext *arrayelement();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  StatementinitarrayContext* statementinitarray();
+
+  class  ArrayelementContext : public antlr4::ParserRuleContext {
+  public:
+    ArrayelementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    ExpressionContext *expression();
+    ArrayelementContext *arrayelement();
+
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ArrayelementContext* arrayelement();
 
   class  WhileloopContext : public antlr4::ParserRuleContext {
   public:
@@ -217,7 +254,7 @@ public:
 
   class  ExpressionMContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *op = nullptr;;
+    antlr4::Token *op = nullptr;
     ExpressionMContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     ExpressionContext *expression();
