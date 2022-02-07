@@ -1,8 +1,10 @@
 #pragma once
+#include <cublas.h>
 #include "matrix.h"
 
 void create_cublas();
 void destroy_cublas();
+cublasHandle_t get_cublas();    
 
 class GpuStream
 {

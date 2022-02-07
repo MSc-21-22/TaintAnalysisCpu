@@ -44,4 +44,970 @@ void main(int j){
             z = z - 1;
         }
     }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
+    if(j){
+        int i = 5;
+        while(i){
+            int x = x + j * i;
+            int i = f(x);
+        }
+    }else{
+        int z = read_input();
+        while(z){
+            int e = is_even(z);
+            if(e){
+                while(e){
+                    int t = e / 2;
+                    int e = e - t + z;
+                }
+            }else{
+                e = z;
+            }
+            z = z - 1;
+        }
+    }
 }

@@ -8,6 +8,8 @@
 #include "digraph.h"
 #include <chrono>
 #include "timing.h"
+#include <cublas.h>
+#include <cuda.h>
 
 void set_node_states(Matrix<float>& state, std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes, const std::map<std::string, int>& variables){
     for(int i = 0; i<nodes.size(); i++){
@@ -68,15 +70,17 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
     GpuMatrix<float> next_state(initial_state.rowCount, initial_state.columnCount);
     GpuMatrix<float> result(initial_state.rowCount, initial_state.columnCount);
 
-    std::vector<GpuStream> streams(transfer_matrices.size());
+    cudaStream_t streams[32];
+    for (int i = 0; i < 32; ++i)
+        cudaStreamCreate(&streams[i]);
 
     // Allocate transfer matrices
     Stopwatch transferWatch;
     for(Matrix<float>& transfer : transfer_matrices) {
-        //streams.emplace_back();
         transfers.emplace_back(transfer);
     }
     transferWatch.print_time<Microseconds>("Transfer matrices allocation ");
+
 
     stopwatch.print_time<Microseconds>("Gpu memory alloc/copy ");
 
@@ -91,12 +95,12 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
 
 
         for(int i = 0; i < transfer_matrices.size(); ++i) {
-            //streams[i].set_as_current();
+            cublasSetStream_v2(get_cublas(), streams[i % 32]);
             next_state.multiply_vector(i, transfers[i]);
         }
-        // for(int i = 0; i < transfer_matrices.size(); ++i) {
-        //     streams[i].synchronize();
-        // }
+        for(int i = 0; i < 32; ++i) {
+            cudaStreamSynchronize(streams[i]);
+        }
         matrixStopwatch.stop();        
 
         memcmpStopwatch.start();
