@@ -5,10 +5,40 @@
 #include <assert.h>
 
 template<typename ElementType>
+class MemoryManager {
+public:
+    ElementType* memory;
+    size_t current_offset;
+    MemoryManager() {
+        memory = nullptr;
+        current_offset = 0;
+    }
+    MemoryManager(size_t max_size) {
+        memory = new ElementType[max_size];
+    }
+
+    ~MemoryManager() {
+        delete memory;
+    }
+
+    size_t allocate(ElementType*& ptr, size_t size) {
+        ptr = memory + current_offset;
+        auto old_offset = current_offset;
+        current_offset += size;
+        return old_offset;
+    }
+};
+
+void init_memory(size_t max_size);
+MemoryManager<float>& get_custom_memory();
+void free_manager();
+
+template<typename ElementType>
 class Matrix{
 
     public:
-        std::shared_ptr<ElementType[]> matrix;
+        ElementType* matrix;
+        size_t memory_offset;
         int rowCount;
         int columnCount;
         int size;
@@ -24,19 +54,19 @@ class Matrix{
         void to_unit_matrix(){
             assert(rowCount==columnCount);
             for(int i = 0; i < rowCount; i++){
-                matrix.get()[rowCount*i+i] = 1.0f;
+                matrix[rowCount*i+i] = 1.0f;
             }
         }
 
         ElementType& operator()(int row, int column){
-            return matrix.get()[row+column*rowCount];
+            return matrix[row+column*rowCount];
         }
 
         std::string to_string(){
             std::string res;
             for(int row = 0; row<rowCount; row++){
                 for(int column = 0; column<columnCount; column++){
-                    res += std::to_string((int)(matrix.get()[row+column*rowCount]));
+                    res += std::to_string((int)(matrix[row+column*rowCount]));
                 }
                 res += "\n";
             }
@@ -46,9 +76,8 @@ class Matrix{
     private:
         void create_matrix(){
             size = rowCount*columnCount;
-            std::shared_ptr<ElementType[]> new_matrix(new ElementType[size]);
-            matrix = new_matrix;
-            std::fill(matrix.get(), matrix.get() + size, 0);
+            memory_offset = get_custom_memory().allocate(matrix, size * sizeof(ElementType));
+            std::fill(matrix, matrix + size, 0);
         }
 };
 

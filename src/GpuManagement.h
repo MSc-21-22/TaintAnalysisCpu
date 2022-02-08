@@ -10,6 +10,11 @@ public:
     int rowCount, columnCount;
     size_t element_size;
 
+    bool self_freeing{true};
+
+    GpuResource(int rowCount, int columnCount, size_t element_size, void* resource) : resource(resource), rowCount(rowCount), columnCount(columnCount), element_size(element_size){
+        self_freeing = false;
+    }
     GpuResource(int rowCount, int columnCount, size_t element_size);
     GpuResource(int rowCount, int columnCount, void* data_ptr, size_t element_size);
 
@@ -30,12 +35,14 @@ class GpuMatrix{
 public:
     GpuResource resource;
     
-    GpuMatrix(const Matrix<ElementType>& matrix) : resource(matrix.rowCount, matrix.columnCount, matrix.matrix.get(), sizeof(ElementType)){
-    }
+
+    GpuMatrix(const Matrix<ElementType>& matrix) : resource(matrix.rowCount, matrix.columnCount, matrix.matrix, sizeof(ElementType)){
+        }
 
     GpuMatrix(int rows, int columns) : resource(rows, columns, sizeof(ElementType)) {}
 
     GpuMatrix(const GpuResource& resource) : resource(resource){}
+    GpuMatrix(GpuResource&& resource) : resource(resource){}
 
     GpuMatrix(const ElementType data[], int rows, int columns) : resource(rows, columns, (void*)data, sizeof(ElementType)) {}
 
@@ -49,7 +56,18 @@ public:
 
     Matrix<ElementType> to_matrix(){
         Matrix<ElementType> result(resource.rowCount, resource.columnCount);
-        resource.retrieve_from_gpu(result.matrix.get());
+        resource.retrieve_from_gpu(result.matrix);
         return result;
     }
+};
+
+template<typename ElementType>
+class GpuMemory {
+    ElementType* gpu_pointer;
+    size_t allocated_size;
+public:
+    GpuMemory(const MemoryManager<ElementType>& memory);
+    ~GpuMemory();
+
+    GpuResource as_gpu_matrix(const Matrix<ElementType>& matrix);
 };

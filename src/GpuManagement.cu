@@ -142,7 +142,9 @@ void GpuResource::multiply_vector_f32_to_f32(int offset, const GpuResource& oper
 }
 
 GpuResource::~GpuResource(){
-    cudaFree(resource);
+    if(self_freeing){
+        cudaFree(resource);
+    }
 }
 
 template<>
@@ -154,4 +156,24 @@ template<>
 void GpuMatrix<float>::multiply_vector(int column_index, GpuMatrix<float>& other){
     int offset = column_index * resource.rowCount;
     resource.multiply_vector_f32_to_f32(offset, other.resource);
+}
+
+template<>
+GpuMemory<float>::GpuMemory(const MemoryManager<float>& memory){
+    auto size = memory.current_offset * sizeof(float);
+    allocated_size = memory.current_offset;
+    if(cudaMalloc(&gpu_pointer, size) != 0){
+        std::cout << "allocation of matrix failed" << std::endl;
+    }
+    if(cudaMemcpy(gpu_pointer, memory.memory, size, cudaMemcpyHostToDevice) != 0){
+        std::cout << "Failed to copy gpu matrix to new gpu matrix" << std::endl;
+    }
+}
+template<>
+GpuMemory<float>::~GpuMemory(){
+    cudaFree(gpu_pointer);
+}
+template<>
+GpuResource GpuMemory<float>::as_gpu_matrix(const Matrix<float>& matrix){
+    return GpuResource(matrix.rowCount, matrix.columnCount, sizeof(float), gpu_pointer + matrix.memory_offset);
 }

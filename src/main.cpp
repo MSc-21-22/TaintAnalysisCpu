@@ -14,6 +14,7 @@
 #include <cubool.h>
 #include <stdio.h>
 #include "cubool/analysis.h"
+#include <cstring>
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";

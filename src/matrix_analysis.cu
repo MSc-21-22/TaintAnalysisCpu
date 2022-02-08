@@ -30,6 +30,7 @@ Matrix<float> get_initial_matrix(int var_count, int node_count){
 }
 
 void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes){
+    init_memory(500000);
     Stopwatch stopwatch;
     auto variables = get_variables(nodes);
 
@@ -50,28 +51,32 @@ void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nod
     // Set the tainted state on nodes
     time_func("Move data to cpu: ", 
         set_node_states, result_state, nodes, matrixTransformer.variables);
+    free_manager();
 }
 
 GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<float>& successor_matrix, Matrix<float>& initial_state){
 
     Stopwatch stopwatch;
     
+    GpuMemory<float> mem(get_custom_memory());
+
     std::vector<GpuMatrix<float>> transfers;
     Stopwatch succ_watch;
-    GpuMatrix<float> succ(successor_matrix);
+    GpuMatrix<float> succ(mem.as_gpu_matrix(successor_matrix));
     succ_watch.print_time<Microseconds>("Successor matrix allocation ");
 
     Stopwatch stateWatch;
-    GpuMatrix<float> state(initial_state);
+    GpuMatrix<float> state(mem.as_gpu_matrix(initial_state));
     stateWatch.print_time<Microseconds>("State matrix allocation ");
 
     GpuMatrix<float> next_state(initial_state.rowCount, initial_state.columnCount);
     GpuMatrix<float> result(initial_state.rowCount, initial_state.columnCount);
 
     // Allocate transfer matrices
+    std::cout << "transfer count " << transfer_matrices.size() << '\n';
     Stopwatch transferWatch;
     for(Matrix<float>& transfer : transfer_matrices) {
-        transfers.emplace_back(transfer);
+        transfers.emplace_back(mem.as_gpu_matrix(transfer));
     }
     transferWatch.print_time<Microseconds>("Transfer matrices allocation ");
 
