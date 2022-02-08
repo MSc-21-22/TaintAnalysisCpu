@@ -38,7 +38,7 @@ include_directories(src/
     deps/cuBool/cubool/include/cubool
     tests/)
 #link_directories(/opt/nvidia/hpc_sdk/Linux_x86_64/21.9/math_libs/11.4/targets/x86_64-linux/lib/)
-set(CMAKE_CXX_FLAGS "-Wall -Wpedantic -Wextra -O2")
+set(CMAKE_CXX_FLAGS "-Wall -Wpedantic -Wextra")
 add_library(analyze_lib src/antlr4-runtime/scBaseVisitor.cpp src/antlr4-runtime/scLexer.cpp src/antlr4-runtime/scParser.cpp src/antlr4-runtime/scVisitor.cpp 
                 src/taint_analysis.cpp src/matrix_analysis.cu src/kernel.cu src/GpuManagement.cu src/digraph.cpp src/multi_taint_analysis.cpp src/cubool/bool_matrix.cpp
                 src/cubool/GpuBoolMatrix.cpp src/cubool/cubool_analysis.cpp src/timing.cpp src/matrix.cpp src/pinned_mem.cu)
