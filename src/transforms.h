@@ -165,8 +165,9 @@ public:
                 antlrcpp::Any result = ctx->expression()->accept(this);
                 std::shared_ptr<Expression> indexExpression = result.as<std::shared_ptr<Expression>>();
                 expression = std::make_shared<ArrayExpression>(ctx->ID()->getText(), indexExpression);
+            }else{   
+                expression = std::make_shared<VariableExpression>(ctx->ID()->getText());
             }
-            expression = std::make_shared<VariableExpression>(ctx->ID()->getText());
         }else if(ctx->INTEGER() != nullptr){
             expression = std::make_shared<LiteralExpression>(ctx->INTEGER()->getText());
         }else{
