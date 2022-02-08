@@ -77,6 +77,15 @@ public:
     void visit_assignReturn(AssignReturnNode<LatticeType>& node) override {
         os << node.id << " = £return";
     }
+
+    void  visit_arrayinit(ArrayInitializerNode<LatticeType>& node) override {
+        os << node.type << node.id << "[" << node.arraySize->dotPrint() << "] = {";
+        for (auto &element : node.arrayContent)
+        {
+            os << element->dotPrint() << ", ";
+        }
+        os << "}";   
+    }
 };
 
 template <typename LatticeType>

@@ -98,6 +98,9 @@ public:
     void visit_assignReturn(AssignReturnNode<LatticeType>& node) {
         clone_node<AssignReturnNode<LatticeType>>(node);
     }
+    void visit_arrayinit(ArrayInitializerNode<LatticeType>& node){
+        clone_node<ArrayInitializerNode<LatticeType>>(node);
+    }
 };
 
 template<typename LatticeType>

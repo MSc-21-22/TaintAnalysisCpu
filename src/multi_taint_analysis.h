@@ -30,4 +30,5 @@ public:
     void visit_functionExit(FunctionExitNode<SourcedTaintState>& node);
     void visit_assignReturn(AssignReturnNode<SourcedTaintState>& node);
     void visit_arrayAssignment(ArrayAssignmentNode<SourcedTaintState>& node);
+    void visit_arrayinit(ArrayInitializerNode<SourcedTaintState>& node);
 };

@@ -278,6 +278,47 @@ public:
             return std::make_shared<BinaryOperatorExpression>(nullptr, op, rhs);
         }
     }
+
+    virtual antlrcpp::Any visitStatementinitarray(scParser::StatementinitarrayContext *ctx) override
+    {
+        if (ctx->expression().size() == 2)
+        {
+            antlrcpp::Any result = ctx->expression(0)->accept(this);
+            std::shared_ptr<Expression> indexExpression = result.as<std::shared_ptr<Expression>>();
+            std::vector<std::shared_ptr<Expression>> arrayExpressions;
+            antlrcpp::Any result1 = ctx->expression(1)->accept(this);
+            std::shared_ptr<Expression> arrayExpression = result1.as<std::shared_ptr<Expression>>();
+            if (ctx->arrayelement() != nullptr)
+            {
+                arrayExpressions.push_back(ctx->arrayelement()->accept(this));
+                arrayExpressions.push_back(arrayExpression);
+            }else{
+                arrayExpressions.push_back(arrayExpression);
+            }  
+            auto node = std::make_shared<ArrayInitializerNode<LatticeType>>(ctx->type()->getText(), ctx->ID()->getText(), indexExpression, arrayExpressions);
+            link_to_lasts(node);
+            add_node(node);
+        }
+
+        return nullptr;
+    }
+
+    virtual antlrcpp::Any visitArrayelement(scParser::ArrayelementContext *ctx) override
+    {
+        std::vector<std::shared_ptr<Expression>> expressionIndexes;
+        antlrcpp::Any result = ctx->expression()->accept(this);
+        std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
+
+        expressionIndexes.push_back(expression);
+
+        if (ctx->arrayelement() != nullptr)
+        {
+            expressionIndexes.push_back(ctx->arrayelement()->accept(this));
+        }
+
+        return expressionIndexes;
+        
+    }
 };
 
 template <typename LatticeType>

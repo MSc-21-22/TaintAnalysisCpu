@@ -34,6 +34,8 @@ template<typename LatticeType>
 class AssignReturnNode;
 template<typename LatticeType>
 class ArrayAssignmentNode;
+template<typename LatticeType>
+class ArrayInitializerNode;
 
 template<typename LatticeType>
 class CfgVisitor {
@@ -50,6 +52,7 @@ public:
     virtual void visit_functionExit(FunctionExitNode<LatticeType>& node) = 0;
     virtual void visit_assignReturn(AssignReturnNode<LatticeType>& node) = 0;
     virtual void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node) = 0;
+    virtual void visit_arrayinit(ArrayInitializerNode<LatticeType>& node) = 0;
 };
 
 template<typename LatticeType>
@@ -78,6 +81,25 @@ public:
 };
 
 template<typename LatticeType>
+class ArrayInitializerNode : public Node<LatticeType> {
+public:
+    std::string type;
+    std::string id;
+    std::shared_ptr<Expression> arraySize;
+    std::vector<std::shared_ptr<Expression>> arrayContent;
+
+    ArrayInitializerNode(std::string type,
+                        std::string id, std::shared_ptr<Expression> arraySize, 
+                        std::vector<std::shared_ptr<Expression>> arrayContent)
+                            : type(type), id(id), arraySize(arraySize), arrayContent(arrayContent){}
+    ArrayInitializerNode() = default;
+
+    void accept(CfgVisitor<LatticeType>& visitor){
+        visitor.visit_arrayinit(*this);
+    }
+};
+
+template<typename LatticeType>
 class AssignmentNode : public Node<LatticeType> {
 public:
     std::string id;
@@ -98,7 +120,10 @@ public:
     std::shared_ptr<Expression> indexExpression;
     std::shared_ptr<Expression> expression;
 
-    ArrayAssignmentNode(std::string id, std::shared_ptr<Expression> indexExpression, std::shared_ptr<Expression> expression){}
+    ArrayAssignmentNode(std::string id,
+                        std::shared_ptr<Expression> indexExpression,
+                        std::shared_ptr<Expression> expression)
+                            : id(id), indexExpression(indexExpression), expression(expression) {}
     ArrayAssignmentNode() = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){

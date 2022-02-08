@@ -33,7 +33,7 @@ statementinit
     ;
 
 statementinitarray
-    : type '[' expression ']' '=' '{' expression arrayelement '}'
+    : type ID '[' expression ']' '=' '{' expression arrayelement '}'
     ;
 
 arrayelement
