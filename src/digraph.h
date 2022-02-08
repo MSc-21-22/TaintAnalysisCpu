@@ -36,6 +36,10 @@ public:
     {
         os << node.id << " = " << node.expression->dotPrint();
     }
+    void visit_arrayAssignment(ArrayAssignmentNode<LatticeType> &node) override
+    {
+        os << node.id << "[" << node.indexExpression->dotPrint() << "] =" << node.expression->dotPrint();
+    }
     void visit_functioncall(FunctionCall<LatticeType> &node) override
     {
         os << node.type << " " << node.variableId << " = " << node.functionId << "(" << node.arguments << ")";

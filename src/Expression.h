@@ -129,3 +129,28 @@ public:
         return "("+expression->dotPrint()+")";
     }
 };
+
+class ArrayExpression : public Expression
+{
+public:
+    std::string id;
+    std::shared_ptr<Expression> indexExpression;
+
+    ArrayExpression(std::string id, std::shared_ptr<Expression> index): id(id), indexExpression(index){}
+
+    bool evaluate(std::set<std::string> &state)
+    {
+        return indexExpression->evaluate(state);
+    }
+
+    std::set<std::string> get_variables()
+    {
+        return {id};
+    }
+
+    std::string dotPrint() override
+    {
+        return id + "[" + indexExpression->dotPrint() + "]";
+    }
+
+};

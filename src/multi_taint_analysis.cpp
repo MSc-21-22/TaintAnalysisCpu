@@ -56,6 +56,10 @@ void MultiTaintAnalyzer::visit_assignment(AssignmentNode<SourcedTaintState>& nod
     node.state = join(node);
     node.state[node.id] = get_taints(node.expression, node);
 }
+void MultiTaintAnalyzer::visit_arrayAssignment(ArrayAssignmentNode<SourcedTaintState>& node){
+    node.state = join(node);
+    node.state[node.id] = get_taints(node.expression, node);
+}
 void MultiTaintAnalyzer::visit_functioncall(FunctionCall<SourcedTaintState>& node){
     node.state = join(node);
 }

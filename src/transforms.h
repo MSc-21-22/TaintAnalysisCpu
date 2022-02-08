@@ -107,13 +107,22 @@ public:
 
     virtual antlrcpp::Any visitStatementassign(scParser::StatementassignContext *ctx) override
     {
-        antlrcpp::Any result = ctx->expression()->accept(this);
+        if (ctx->expression().size() == 2)
+        {
+            antlrcpp::Any indexResult = ctx->expression(0)->accept(this);
+            std::shared_ptr<Expression> indexExpression = indexResult.as<std::shared_ptr<Expression>>();
+            antlrcpp::Any result = ctx->expression(1)->accept(this);
+            std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
+
+            auto node = std::make_shared<ArrayAssignmentNode<LatticeType>>(ctx->ID()->getText(), indexExpression, expression);
+        }else{
+        antlrcpp::Any result = ctx->expression(0)->accept(this);
         std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
         
         auto node = std::make_shared<AssignmentNode<LatticeType>>(ctx->ID()->getText(), expression);
         link_to_lasts(node);
         add_node(node);
-
+        }
         return nullptr;
     }
 
@@ -152,6 +161,11 @@ public:
     {
         std::shared_ptr<Expression> expression;
         if (ctx->ID() != nullptr){
+            if (ctx->expression() != nullptr){
+                antlrcpp::Any result = ctx->expression()->accept(this);
+                std::shared_ptr<Expression> indexExpression = result.as<std::shared_ptr<Expression>>();
+                expression = std::make_shared<ArrayExpression>(ctx->ID()->getText(), indexExpression);
+            }
             expression = std::make_shared<VariableExpression>(ctx->ID()->getText());
         }else if(ctx->INTEGER() != nullptr){
             expression = std::make_shared<LiteralExpression>(ctx->INTEGER()->getText());

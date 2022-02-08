@@ -29,4 +29,5 @@ public:
     void visit_functionEntry(FunctionEntryNode<SourcedTaintState>& node);
     void visit_functionExit(FunctionExitNode<SourcedTaintState>& node);
     void visit_assignReturn(AssignReturnNode<SourcedTaintState>& node);
+    void visit_arrayAssignment(ArrayAssignmentNode<SourcedTaintState>& node);
 };

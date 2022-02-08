@@ -49,6 +49,21 @@ void TaintAnalyzer::visit_assignment(AssignmentNode<std::set<std::string>> &node
     }
 }
 
+void TaintAnalyzer::visit_arrayAssignment(ArrayAssignmentNode<std::set<std::string>> &node)
+{
+    node.state = join(node);
+
+    if (evaluateExpression(node.expression, node.state))
+    {
+        node.state.insert(node.id);
+    }
+    else
+    {
+        node.state.erase(node.id);
+    }
+}
+
+
 void TaintAnalyzer::visit_if(IfNode<std::set<std::string>> &node){
     node.state = join(node);
 }

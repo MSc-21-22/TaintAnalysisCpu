@@ -21,4 +21,5 @@ public:
     void visit_functionEntry(FunctionEntryNode<std::set<std::string>>& node);
     void visit_functionExit(FunctionExitNode<std::set<std::string>>& node);
     void visit_assignReturn(AssignReturnNode<std::set<std::string>>& node);
+    void visit_arrayAssignment(ArrayAssignmentNode<std::set<std::string>>& node);
 };

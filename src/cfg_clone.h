@@ -58,6 +58,9 @@ public:
     void visit_assignment(AssignmentNode<LatticeType>& node){
         clone_node<AssignmentNode<LatticeType>>(node);
     }
+    void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node){
+        clone_node<ArrayAssignmentNode<LatticeType>>(node);
+    }
     void visit_if(IfNode<LatticeType>& node){
         clone_node<IfNode<LatticeType>>(node);
     }
