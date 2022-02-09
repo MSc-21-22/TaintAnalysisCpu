@@ -19,7 +19,7 @@
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
     for (auto& x : result){
-        if (x!="£"){
+        if (x!="$"){
             stream << x << " ";
         }
     }
@@ -28,7 +28,10 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
 
 void cpu_analysis(ScTransformer<std::set<std::string>> program){
     TaintAnalyzer analyzer;
-
+    for(auto& node : program.nodes)
+        {
+            node->state.insert("$");
+        }
     time_func("Analyzing: ", 
         worklist<std::set<std::string>>, program.nodes, analyzer);
 
@@ -82,10 +85,6 @@ int main(int argc, char *argv[]){
             cpu_analysis(program);
             cpu_watch.save_time<Microseconds>();
 
-            
-
-            
-
             Stopwatch::add_line();
             return 0;
         }
@@ -106,6 +105,7 @@ int main(int argc, char *argv[]){
 
                 auto program = time_func<ScTransformer<std::set<std::string>>>("Creating CFG nodes: ", 
                 parse_to_cfg_transformer<std::set<std::string>>, prog);
+
                 cpu_analysis(program);
             }
         }else{

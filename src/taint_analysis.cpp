@@ -45,17 +45,17 @@ void TaintAnalyzer::visit_arrayinit(ArrayInitializerNode<std::set<std::string>> 
     }
     else
     {
-        node.state.erase(node.id);
-    }
-    for (auto &expression : node.arrayContent)
-    {
-        if (evaluateExpression(expression, node.state))
+        for (auto &expression : node.arrayContent)
         {
-            node.state.insert(node.id);
-        }
-        else
-        {
-            node.state.erase(node.id);
+            if (evaluateExpression(expression, node.state))
+            {
+                node.state.insert(node.id);
+                break;
+            }
+            else
+            {
+                node.state.erase(node.id);
+            }
         }
     }
     
