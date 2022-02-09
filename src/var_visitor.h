@@ -28,6 +28,10 @@ class VarVisitor : public CfgVisitor<LatticeType>
             variables.insert(node.id);
         }
 
+        void visit_arrayinit(ArrayInitializerNode<LatticeType>& node){
+            variables.insert(node.id);
+        }
+
         void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node){
             variables.insert(node.id);
         }
