@@ -25,30 +25,25 @@ public:
     ~GpuResource();
 };
 
-template<typename ElementType>
 class GpuMatrix{
 public:
     GpuResource resource;
     
-    GpuMatrix(const Matrix<ElementType>& matrix) : resource(matrix.rowCount, matrix.columnCount, matrix.matrix.get(), sizeof(ElementType)){
+    GpuMatrix(const Matrix<float>& matrix) : resource(matrix.rowCount, matrix.columnCount, matrix.matrix.get(), sizeof(float)){
     }
 
-    GpuMatrix(int rows, int columns) : resource(rows, columns, sizeof(ElementType)) {}
+    GpuMatrix(int rows, int columns) : resource(rows, columns, sizeof(float)) {}
 
     GpuMatrix(const GpuResource& resource) : resource(resource){}
 
-    GpuMatrix(const ElementType data[], int rows, int columns) : resource(rows, columns, (void*)data, sizeof(ElementType)) {}
+    GpuMatrix(const float data[], int rows, int columns) : resource(rows, columns, (void*)data, sizeof(float)) {}
 
-    void multiply(GpuMatrix<float>& other, GpuMatrix<float>& result){
-        assert(false);
-    }
+    void multiply(GpuMatrix& other, GpuMatrix& result);
 
-    void multiply_vector(int column_index, GpuMatrix<ElementType>& other){
-        assert(false);
-    }
+    void multiply_vector(int column_index, GpuMatrix& other);
 
-    Matrix<ElementType> to_matrix(){
-        Matrix<ElementType> result(resource.rowCount, resource.columnCount);
+    Matrix<float> to_matrix(){
+        Matrix<float> result(resource.rowCount, resource.columnCount);
         resource.retrieve_from_gpu(result.matrix.get());
         return result;
     }

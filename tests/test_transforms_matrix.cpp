@@ -188,7 +188,7 @@ TEST_CASE("Matrix copying test"){
     Matrix<float> matrixA{2};
     matrixA(0,0) = 1;
     matrixA(1,1) = 1;
-    GpuMatrix<float> a{matrixA};
+    GpuMatrix a{matrixA};
     Matrix<float> matrixC = a.to_matrix();
 
     float correct_matrix[] {
@@ -214,9 +214,9 @@ TEST_CASE("Matrix multiply test"){
 
     assert(sizeof(float) == 4);
     
-    GpuMatrix<float> a{matrixA};
-    GpuMatrix<float> b{matrixB};
-    GpuMatrix<float> c(matrixA.rowCount, matrixB.columnCount);
+    GpuMatrix a{matrixA};
+    GpuMatrix b{matrixB};
+    GpuMatrix c(matrixA.rowCount, matrixB.columnCount);
     a.multiply(b, c);
     
     Matrix<float> matrixC = c.to_matrix();
@@ -236,11 +236,11 @@ TEST_CASE("Matrix vector multiply test"){
 
     Matrix<float> matrixA{2};
     matrixA(0,0) = 1;
-    GpuMatrix<float> a{matrixA};
+    GpuMatrix a{matrixA};
 
     Matrix<float> matrixB = unit_matrix<float>(2);
     matrixB(0,1) = 1;
-    GpuMatrix<float> b{matrixB};
+    GpuMatrix b{matrixB};
 
     assert(sizeof(float) == 4);
     
@@ -264,17 +264,17 @@ TEST_CASE("Matrix multiply initial state with succ test"){
 
     Matrix<float> succ = unit_matrix<float>(2);
     succ(0,1) = 1;
-    GpuMatrix<float> succ_gpu{succ};
+    GpuMatrix succ_gpu{succ};
 
     Matrix<float> state(5,2);
     state(3,0) = 1;
     state(3,1) = 1;
     state(0,0) = 1;
-    GpuMatrix<float> state_gpu{state};
+    GpuMatrix state_gpu{state};
 
     assert(sizeof(float) == 4);
     
-    GpuMatrix<float> c(state_gpu.resource.rowCount, succ_gpu.resource.columnCount);
+    GpuMatrix c(state_gpu.resource.rowCount, succ_gpu.resource.columnCount);
     state_gpu.multiply(succ_gpu, c);
     Matrix<float> matrixC = c.to_matrix();
 
@@ -306,7 +306,7 @@ TEST_CASE("Matrix multiply 5x5"){
     matrixA(3,2) = 1;
     matrixA(3,4) = 1;
     matrixA(4,3) = 1;
-    GpuMatrix<float> a{matrixA};
+    GpuMatrix a{matrixA};
     auto test_a = a.to_matrix();
 
     float correct_a[] = {
@@ -322,7 +322,7 @@ TEST_CASE("Matrix multiply 5x5"){
 
     Matrix<float> matrixB = unit_matrix<float>(5);
     matrixB(3,1) = 1;
-    GpuMatrix<float> b{matrixB};
+    GpuMatrix b{matrixB};
     auto test_b = b.to_matrix();
 
     float correct_b[] = {
@@ -338,7 +338,7 @@ TEST_CASE("Matrix multiply 5x5"){
 
     assert(sizeof(float) == 4);
     
-    GpuMatrix<float> c(a.resource.rowCount, b.resource.columnCount);
+    GpuMatrix c(a.resource.rowCount, b.resource.columnCount);
     a.multiply(b, c);
     Matrix<float> matrixC = c.to_matrix();
 
@@ -372,7 +372,7 @@ TEST_CASE("Matrix vector multiplication error 13 reproduction"){
     Matrix<float> assign_a = unit_matrix<float>(4);
     assign_a(0,0) = 0;
     assign_a(0,3) = 1;
-    GpuMatrix<float> transfer = assign_a;
+    GpuMatrix transfer = assign_a;
 
     // 0, 0
     // 0, 0
@@ -381,7 +381,7 @@ TEST_CASE("Matrix vector multiplication error 13 reproduction"){
     Matrix<float> state(4,2);
     state(3,0) = 1;
     state(3,1) = 1;
-    GpuMatrix<float> state_gpu = state;
+    GpuMatrix state_gpu = state;
 
     state_gpu.multiply_vector(0, transfer);
 
@@ -437,7 +437,7 @@ TEST_CASE("Run analysis"){
     float correct_state[] = {
         1,0,0,1,
         1,1,0,1};
-    GpuMatrix<float> correct_matrix(correct_state, 4, 2);
+    GpuMatrix correct_matrix(correct_state, 4, 2);
 
     CHECK_MESSAGE(gpu_mem_cmp(result.resource, correct_matrix.resource),
             result.to_matrix().to_string());
@@ -454,76 +454,10 @@ TEST_CASE("Gpu memcmp"){
     test_matrix(0,0) = 0;
     test_matrix(0,3) = 1;
 
-    GpuMatrix<float> a(test_matrix);
-    GpuMatrix<float> b(test_matrix);
+    GpuMatrix a(test_matrix);
+    GpuMatrix b(test_matrix);
 
 
     CHECK_MESSAGE(gpu_mem_cmp(a.resource, b.resource),
             "Two gpu matricies were not identical on the host device");
-}
-
-#include <cubool/bool_matrix.h>
-#include <cubool/GpuBoolMatrix.h>
-
-TEST_CASE("test cubool"){
-    BoolMatrix matrix(3,3);
-    matrix.add_safe(0,0);
-    matrix.add_safe(1,1);
-    matrix.add_safe(2,2);
-
-    BoolMatrix matrix_2(3,3);
-    matrix_2.add_safe(0,0);
-    matrix_2.add_safe(0,1);
-    matrix_2.add_safe(1,2);
-
-    create_cubool();
-
-    //Enclose in seperate scope to ensure gpu deallocation
-    //before destroy_cubool to avoid exception
-    {
-
-        GpuBoolMatrix a(matrix);
-        GpuBoolMatrix b(a);
-
-        CHECK_MESSAGE(a.resource != b.resource, "The gpu pointers should be different");
-
-        auto a_m = a.retrieve_from_gpu();
-        auto b_m = b.retrieve_from_gpu();
-
-        CHECK_MESSAGE(matrix == a_m, "a_m should be equal to the initial matrix");
-        CHECK_MESSAGE(a_m == b_m, "The copied matrix should be equal to the new matrix");
-    
-
-        GpuBoolMatrix other(matrix_2);
-        GpuBoolMatrix result(3,3);
-        result = a * other;
-
-        auto result_m = result.retrieve_from_gpu();
-
-        CHECK_MESSAGE(matrix_2 == result_m, "Multiplication with unit matrix cause no change");
-    }
-
-    destroy_cubool();
-}
-
-TEST_CASE("cubool addition bug"){
-    BoolMatrix matrix(3,3);
-    matrix.add_safe(0,0);
-
-    BoolMatrix matrix_2(3,3);
-    matrix_2.add_safe(1,0);
-
-    create_cubool();
-
-    //Enclose in seperate scope to ensure gpu deallocation
-    //before destroy_cubool to avoid exception
-    {
-        GpuBoolMatrix a(matrix);
-        GpuBoolMatrix c(matrix_2);
-
-        GpuBoolMatrix r(a);
-        a = r + c;
-    }
-
-    destroy_cubool();
 }

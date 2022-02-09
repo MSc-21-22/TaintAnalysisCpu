@@ -30,6 +30,9 @@ Matrix<float> get_initial_matrix(int var_count, int node_count){
 }
 
 void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes){
+    Stopwatch test_watch;
+    test_watch.print_time<Microseconds>("test timer ");
+
     Stopwatch stopwatch;
     auto variables = get_variables(nodes);
 
@@ -52,21 +55,21 @@ void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nod
         set_node_states, result_state, nodes, matrixTransformer.variables);
 }
 
-GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<float>& successor_matrix, Matrix<float>& initial_state){
+GpuMatrix analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<float>& successor_matrix, Matrix<float>& initial_state){
 
     Stopwatch stopwatch;
     
-    std::vector<GpuMatrix<float>> transfers;
+    std::vector<GpuMatrix> transfers;
     Stopwatch succ_watch;
-    GpuMatrix<float> succ(successor_matrix);
+    GpuMatrix succ(successor_matrix);
     succ_watch.print_time<Microseconds>("Successor matrix allocation ");
 
     Stopwatch stateWatch;
-    GpuMatrix<float> state(initial_state);
+    GpuMatrix state(initial_state);
     stateWatch.print_time<Microseconds>("State matrix allocation ");
 
-    GpuMatrix<float> next_state(initial_state.rowCount, initial_state.columnCount);
-    GpuMatrix<float> result(initial_state.rowCount, initial_state.columnCount);
+    GpuMatrix next_state(initial_state.rowCount, initial_state.columnCount);
+    GpuMatrix result(initial_state.rowCount, initial_state.columnCount);
 
     // Allocate transfer matrices
     Stopwatch transferWatch;
@@ -109,6 +112,5 @@ GpuMatrix<float> analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<f
 
     time_func("Cublas destroy: ",
         destroy_cublas);
-    
     return state;
 }
