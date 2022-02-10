@@ -28,21 +28,13 @@ public:
 
     DigraphPrinter(std::ostream &os) : os(os) {}
 
-    void visit_initializtion(InitializerNode<LatticeType> &node) override
+    void visit_propagation(PropagationNode<LatticeType> &node) override
     {
-        os << node.type << " " << node.id << " = " << node.expression->dotPrint();
+        os << node.syntax;
     }
     void visit_assignment(AssignmentNode<LatticeType> &node) override
     {
         os << node.id << " = " << node.expression->dotPrint();
-    }
-    void visit_functioncall(FunctionCall<LatticeType> &node) override
-    {
-        os << node.type << " " << node.variableId << " = " << node.functionId << "(" << node.arguments << ")";
-    }
-    void visit_functiondef(FunctionDefinition<LatticeType> &node) override
-    {
-        os << node.returnType << " " << node.functionId << "(" << node.formalParameters << ")";
     }
     void visit_return(ReturnNode<LatticeType> &node) override
     {
@@ -52,22 +44,9 @@ public:
     {
         os << "return";
     }
-    void visit_whileloop(WhileLoop<LatticeType> &node) override
-    {
-        os << "while(" << node.condition->dotPrint() << ")";
-    }
-
-    void visit_if(IfNode<LatticeType> &node) override
-    {
-        os << "if(" << node.expression->dotPrint() << ")";
-    }
 
     void visit_functionEntry(FunctionEntryNode<LatticeType>&) override {
         os << "Entry\n";
-    }
-
-    void visit_functionExit(FunctionExitNode<LatticeType>&) override {
-        os << "Exit";
     }
     
     void visit_assignReturn(AssignReturnNode<LatticeType>& node) override {
@@ -125,18 +104,14 @@ void print_digraph_subgraph(std::vector<std::shared_ptr<FunctionEntryNode<Lattic
 
     for (auto& entryNode : entryNodes)
     {
-        for (auto& succ : entryNode->successors)
-        {
-            if(auto funcDef = dynamic_cast<FunctionDefinition<LatticeType>*>(succ.get()))
+        for (auto& succ : entryNode->successors){
+            if(entryNode->function_id == analyzeFunction)
             {
-                if(funcDef->functionId == analyzeFunction)
-                {
-                    nodesToPrint.push_back(entryNode);
-                    std::set<unsigned long long int> checked = {};
-                    findFunctionEntries(succ, nodesToPrint, checked);
-                }
+                nodesToPrint.push_back(entryNode);
+                std::set<unsigned long long int> checked = {};
+                findFunctionEntries(succ, nodesToPrint, checked);
             }
-        }   
+        }  
     }
     for (auto& node : nodesToPrint)
     {
@@ -169,12 +144,15 @@ void print_digraph_subgraph_content(std::shared_ptr<Node<LatticeType>> const &no
         for (auto& succ : node->successors)
         {
             returnpath.append(connectNodes(node, succ));
-            if(dynamic_cast<FunctionExitNode<LatticeType>*>(succ.get()))
+            PropagationNode<LatticeType>* prop_node = dynamic_cast<PropagationNode<LatticeType>*>(succ.get());
+            if(prop_node)
             {
-                returnpath.append(std::to_string((unsigned long long int)succ.get())+"[label = \" Exit\"]\n");
-                for (auto exitsucc : succ->successors)
-                {
-                    returnpath.append(connectNodes(succ, exitsucc));
+                if(prop_node->syntax == "Exit"){
+                    returnpath.append(std::to_string((unsigned long long int)succ.get())+"[label = \" Exit\"]\n");
+                    for (auto exitsucc : succ->successors)
+                    {
+                        returnpath.append(connectNodes(succ, exitsucc));
+                    }
                 }
                 
             }
