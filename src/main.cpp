@@ -9,6 +9,7 @@
 #include "digraph.h"
 #include "matrix_analysis.h"
 #include "GpuManagement.h"
+#include "variable_reduction.h"
 #include <chrono>
 #include "timing.h"
 #include <stdio.h>
@@ -101,6 +102,8 @@ int main(int argc, char *argv[]){
             auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
             time_func("Cublas creation: ", 
                 create_cublas);
+            time_func("Variable reduction: ", 
+                reduce_variables<std::set<std::string>>, program.entryNodes);
             gpu_analysis(program.nodes);
             if(!timing::should_benchmark){
                 print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
