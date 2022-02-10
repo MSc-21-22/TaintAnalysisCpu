@@ -38,24 +38,16 @@ void TaintAnalyzer::visit_initializtion(InitializerNode<std::set<std::string>> &
 void TaintAnalyzer::visit_arrayinit(ArrayInitializerNode<std::set<std::string>> &node)
 {
     node.state = join(node);
-
-    if (evaluateExpression(node.arraySize, node.state))
+    for (auto &expression : node.arrayContent)
     {
-        node.state.insert(node.id);
-    }
-    else
-    {
-        for (auto &expression : node.arrayContent)
+        if (evaluateExpression(expression, node.state))
         {
-            if (evaluateExpression(expression, node.state))
-            {
-                node.state.insert(node.id);
-                break;
-            }
-            else
-            {
-                node.state.erase(node.id);
-            }
+            node.state.insert(node.id);
+            break;
+        }
+        else
+        {
+            node.state.erase(node.id);
         }
     }
     
@@ -82,6 +74,7 @@ void TaintAnalyzer::visit_arrayAssignment(ArrayAssignmentNode<std::set<std::stri
     if (evaluateExpression(node.expression, node.state))
     {
         node.state.insert(node.id);
+        node.state.insert(node.arrayid);
     }
     else
     {

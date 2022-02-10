@@ -113,8 +113,8 @@ public:
             std::shared_ptr<Expression> indexExpression = indexResult.as<std::shared_ptr<Expression>>();
             antlrcpp::Any result = ctx->expression()[1]->accept(this);
             std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
-
-            auto node = std::make_shared<ArrayAssignmentNode<LatticeType>>(ctx->ID()->getText(), indexExpression, expression);
+            std::string id = ctx->ID()->getText() + "[" + indexExpression->dotPrint() + "]";
+            auto node = std::make_shared<ArrayAssignmentNode<LatticeType>>(id, ctx->ID()->getText(), expression);
             link_to_lasts(node);
             add_node(node);
         }else{
@@ -311,6 +311,16 @@ public:
             auto node = std::make_shared<ArrayInitializerNode<LatticeType>>(ctx->type()->getText(), ctx->ID()->getText(), indexExpression, arrayExpressions);
             link_to_lasts(node);
             add_node(node);
+            int index = 0;
+            for (auto &arrayindex : arrayExpressions)
+            {
+                std::string id = ctx->ID()->getText() + "[" + std::to_string(index) + "]";
+                auto node = std::make_shared<ArrayAssignmentNode<LatticeType>>(id, ctx->ID()->getText(), arrayindex);
+                link_to_lasts(node);
+                add_node(node);
+                index++;
+            }
+            
         }
 
         return nullptr;

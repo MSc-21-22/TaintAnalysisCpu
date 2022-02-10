@@ -140,6 +140,8 @@ public:
 
     bool evaluate(std::set<std::string> &state)
     {
+        if (state.find(id) != state.end())
+            return true;
         return indexExpression->evaluate(state);
     }
 

@@ -117,13 +117,13 @@ template<typename LatticeType>
 class ArrayAssignmentNode : public Node<LatticeType> {
 public:
     std::string id;
-    std::shared_ptr<Expression> indexExpression;
+    std::string arrayid;
     std::shared_ptr<Expression> expression;
 
     ArrayAssignmentNode(std::string id,
-                        std::shared_ptr<Expression> indexExpression,
+                        std::string arrayid,
                         std::shared_ptr<Expression> expression)
-                            : id(id), indexExpression(indexExpression), expression(expression) {}
+                            : id(id), arrayid(arrayid), expression(expression) {}
     ArrayAssignmentNode() = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
