@@ -33,6 +33,8 @@ jobs:
 
       - uses: Jimver/cuda-toolkit@v0.2.5
         id: cuda-toolkit
+        with:
+          cuda: '11.6.55'
 
       - name: Compile
         run: |
