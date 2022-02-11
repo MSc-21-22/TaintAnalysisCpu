@@ -47,12 +47,12 @@ private:
         nodes.push_back(node);
     }
 
-    std::shared_ptr<FunctionEntryNode<LatticeType>> create_entry_node(std::shared_ptr<PropagationNode<LatticeType>> function_call, std::vector<std::string> parameters, std::string function_id){
-        auto entry = std::make_shared<FunctionEntryNode<LatticeType>>(parameters, function_id);
+    std::shared_ptr<FunctionEntryNode<LatticeType>> create_entry_node(std::shared_ptr<PropagationNode<LatticeType>> function_def, std::vector<std::string> parameters, std::string function_id){
+        auto entry = std::make_shared<FunctionEntryNode<LatticeType>>(function_id, parameters);
         entryNodes.push_back(entry);
         functions[function_id] = entry;
-        add_node(function_call);
-        link_to_lasts(function_call);
+        add_node(function_def);
+        link_to_lasts(function_def);
         add_node(entry);
         functionNodes.push_back(entry);
 
@@ -103,7 +103,6 @@ public:
             add_node(returnNode);
             link_to_lasts(entry->exit);
             add_node(entry->exit);
-            //functionDef->returns = {returnNode};
         }
 
 
@@ -118,7 +117,6 @@ public:
             link_to_lasts(entry->exit);
             add_node(entry->exit);
 
-            //functionDef->returns = {node};
             last = {};
         }
         return nullptr;

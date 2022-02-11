@@ -37,8 +37,8 @@ public:
 template<typename LatticeType>
 class Node {
 public:
-    std::unordered_set<std::shared_ptr<Node<LatticeType>>> predecessors;
-    std::unordered_set<std::shared_ptr<Node<LatticeType>>> successors;
+    std::set<std::shared_ptr<Node<LatticeType>>> predecessors;
+    std::set<std::shared_ptr<Node<LatticeType>>> successors;
     LatticeType state;
 
     virtual void accept(CfgVisitor<LatticeType>& visitor)=0;

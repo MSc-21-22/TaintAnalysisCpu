@@ -83,32 +83,19 @@ public:
     }
 
     void visit_functionEntry(FunctionEntryNode<LatticeType>& node){
-        // auto matrix = base_transfer_matrix<ElementType>(rowSize);
-        // if (node.successors.size() == 0)
-        //     return;
+        auto matrix = base_transfer_matrix<ElementType>(rowSize);
+        if (node.successors.size() == 0)
+            return;
 
-        // auto def = std::static_pointer_cast<FunctionDefinition<LatticeType>>(*(node.successors.begin()));
-
-
-        // for(auto& pred : node.predecessors){
-        //     auto call = std::static_pointer_cast<FunctionCall<LatticeType>>(pred);
-
-            
-        //     if (call->arguments.size() != def->formalParameters.size()){
-        //         throw "Function call " + call->functionId + " didnt match the number of arguments";
-        //     }
-
-
-        //     for(int i = 0; i < call->arguments.size(); ++i){
-        //         auto vars = call->arguments[i]->get_variables();
-        //         int param_id = variables[def->formalParameters[i]];
-        //         for(auto& var : vars) {
-        //             int arg_id = variables[var];
-        //             matrix(param_id, arg_id) = 1.0f;
-        //         }
-        //     }
-        // }
-        // matrices.push_back(matrix);
+        for(int i = 0; i < node.arguments.size(); ++i){
+            auto vars = node.arguments[i]->get_variables();
+            int param_id = variables[node.formal_parameters[i]];
+            for(auto& var : vars) {
+                int arg_id = variables[var];
+                matrix(param_id, arg_id) = 1.0f;
+            }
+        }
+        matrices.push_back(matrix);
     }
 };
 

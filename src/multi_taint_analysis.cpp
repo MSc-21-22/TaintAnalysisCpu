@@ -64,29 +64,18 @@ void MultiTaintAnalyzer::visit_emptyReturn(EmptyReturnNode<SourcedTaintState>& n
     node.state["£return"] = {};
 }
 void MultiTaintAnalyzer::visit_functionEntry(FunctionEntryNode<SourcedTaintState>& node){
-    // auto state = join(node);
+    auto state = join(node);
     
-    // if (node.successors.size() == 0)
-    // return;
+    if (node.successors.size() == 0)
+        return;
 
-    // auto def = std::static_pointer_cast<FunctionDefinition<SourcedTaintState>>(*(node.successors.begin()));
+    auto previous_node = node.predecessors.begin();
 
-
-    // for(auto& pred : node.predecessors){
-    //     auto call = std::static_pointer_cast<FunctionCall<SourcedTaintState>>(pred);
-
-        
-    //     if (call->arguments.size() != def->formalParameters.size()){
-    //         throw "Function call " + call->functionId + " didnt match the number of arguments";
-    //     }
-
-
-    //     for(size_t i = 0; i < call->arguments.size(); ++i){
-    //         auto taint_sources = get_taints(call->arguments[i], *pred);
-    //         auto parameter = def->formalParameters[i];
-    //         node.state[parameter] = taint_sources;
-    //     }
-    // }
+    for(size_t i = 0; i < node.arguments.size(); ++i){
+        auto taint_sources = get_taints(node.arguments[i], **previous_node);
+        auto parameter = node.formal_parameters[i];
+        node.state[parameter] = taint_sources;
+    }
 }
 
 void MultiTaintAnalyzer::visit_assignReturn(AssignReturnNode<SourcedTaintState>& node){
