@@ -31,7 +31,7 @@ jobs:
           cd /usr/local/lib
           sudo wget https://www.antlr.org/download/antlr-4.9.2-complete.jar
 
-      - uses: Jimver/cuda-toolkit@v0.2.5
+      - uses: NicklasHugoy/cuda-toolkit@v0.2.5
         id: cuda-toolkit
         with:
           cuda: '11.6.0'
