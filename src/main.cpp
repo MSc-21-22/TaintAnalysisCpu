@@ -13,8 +13,8 @@
 #include <chrono>
 #include "timing.h"
 #include <stdio.h>
-#include <io.h>
 #include <fcntl.h>
+#include <cstring>
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";

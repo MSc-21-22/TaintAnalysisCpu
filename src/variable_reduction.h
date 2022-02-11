@@ -28,44 +28,17 @@ class VariableReducer : public CfgVisitor<LatticeType> {
         }
     }
 
-    void visit_initializtion(InitializerNode<LatticeType>& node){
-        node.id = get_new_variable(node.id);
-        node.expression->replace_names(name_map);
-        
-        visit_children(node);
-    }
     void visit_assignment(AssignmentNode<LatticeType>& node){
         node.id = get_new_variable(node.id);
         node.expression->replace_names(name_map);
 
         visit_children(node);
     }
-    void visit_if(IfNode<LatticeType>& node){
-        node.expression->replace_names(name_map);
-
-        visit_children(node);
-    }
-    void visit_functioncall(FunctionCall<LatticeType>& node){
-        for(auto& arg: node.arguments){
-            arg->replace_names(name_map);
-        }
-
-        visit_children(node);
-    }
-    void visit_functiondef(FunctionDefinition<LatticeType>& node){
-        for(auto& param : node.formalParameters){
-            param = get_new_variable(param);
-        }
-
+    void visit_propagation(PropagationNode<LatticeType>& node){
         visit_children(node);
     }
     void visit_return(ReturnNode<LatticeType>& node){
         node.expression->replace_names(name_map);
-
-        visit_children(node);
-    }
-    void visit_whileloop(WhileLoop<LatticeType>& node){
-        node.condition->replace_names(name_map);
 
         visit_children(node);
     }
@@ -76,10 +49,15 @@ class VariableReducer : public CfgVisitor<LatticeType> {
         name_map = {};
         nodes_traversed = {};
 
-        visit_children(node);
-    }
-    void visit_functionExit(FunctionExitNode<LatticeType>& node){
+        for(auto& param : node.formal_parameters){
+            param = get_new_variable(param);
+        }
 
+        for(auto& arg: node.arguments){
+            arg->replace_names(name_map);
+        }
+
+        visit_children(node);
     }
     void visit_assignReturn(AssignReturnNode<LatticeType>& node){
         node.id = get_new_variable(node.id);
