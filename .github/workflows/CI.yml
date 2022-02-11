@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
-          
+
       - name: Install compiler tools 
         run: |
           sudo apt-get update
@@ -36,6 +36,6 @@ jobs:
 
       - name: Compile
         run: |
-          cmake -B build/ -D ANTLR_EXECUTABLE="/usr/local/lib" -D CMAKE_CUDA_ARCHITECTURES=75
+          cmake -B build/ -D ANTLR_EXECUTABLE="/usr/local/lib/antlr-4.9.2-complete.jar" -D CMAKE_CUDA_ARCHITECTURES=75
           cmake --build build/  
 
