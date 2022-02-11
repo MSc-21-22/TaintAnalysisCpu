@@ -23,13 +23,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - uses: NiccoMlt/setup-antlr4@v0.0.6
+      - name: setup ANTLR
+        run: | 
+          cd /usr/local/lib
+          sudo wget https://www.antlr.org/download/antlr-4.9.2-complete.jar
 
       - uses: Jimver/cuda-toolkit@v0.2.5
         id: cuda-toolkit
 
       - name: Compile
         run: |
-          cmake -B build/ -D ANTLR_EXECUTABLE=$Antlr4ToolPath -D CMAKE_CUDA_ARCHITECTURES=75
+          cmake -B build/ -D ANTLR_EXECUTABLE="/usr/local/lib" -D CMAKE_CUDA_ARCHITECTURES=75
           cmake --build build/  
 
