@@ -73,12 +73,11 @@ void TaintAnalyzer::visit_arrayAssignment(ArrayAssignmentNode<std::set<std::stri
 
     if (evaluateExpression(node.expression, node.state))
     {
-        node.state.insert(node.id);
         node.state.insert(node.arrayid);
     }
     else
     {
-        node.state.erase(node.id);
+        
     }
 }
 

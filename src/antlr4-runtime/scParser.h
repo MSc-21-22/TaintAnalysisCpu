@@ -1,5 +1,5 @@
 
-// Generated from sc.g4 by ANTLR 4.9.2
+// Generated from .\sc.g4 by ANTLR 4.9.2
 
 #pragma once
 
@@ -162,9 +162,9 @@ public:
     virtual size_t getRuleIndex() const override;
     TypeContext *type();
     antlr4::tree::TerminalNode *ID();
-    std::vector<ExpressionContext *> expression();
-    ExpressionContext* expression(size_t i);
+    antlr4::tree::TerminalNode *INTEGER();
     antlr4::tree::TerminalNode *ASSIGN();
+    ExpressionContext *expression();
     ArrayelementContext *arrayelement();
 
 

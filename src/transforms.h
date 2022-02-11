@@ -283,46 +283,32 @@ public:
 
     virtual antlrcpp::Any visitStatementinitarray(scParser::StatementinitarrayContext *ctx) override
     {
-        auto expressionsatarray = ctx->expression();
-        if (expressionsatarray.size() == 2)
+        std::vector<std::shared_ptr<Expression>> arrayExpressions;
+
+        
+        
+
+        antlrcpp::Any result1 = ctx->expression()->accept(this);
+        std::shared_ptr<Expression> arrayExpression = result1.as<std::shared_ptr<Expression>>();
+
+        if (ctx->arrayelement() != nullptr)
         {
-            std::vector<std::shared_ptr<Expression>> arrayExpressions;
+            antlrcpp::Any result2 = ctx->arrayelement()->accept(this);
+            std::vector<std::shared_ptr<Expression>> arrayelements = result2.as<std::vector<std::shared_ptr<Expression>>>();
 
-            antlrcpp::Any result = expressionsatarray[0]->accept(this);
-            std::shared_ptr<Expression> indexExpression = result.as<std::shared_ptr<Expression>>();
-
-            antlrcpp::Any result1 = expressionsatarray[1]->accept(this);
-            std::shared_ptr<Expression> arrayExpression = result1.as<std::shared_ptr<Expression>>();
-
-            if (ctx->arrayelement() != nullptr)
+            arrayExpressions.push_back(arrayExpression);
+            for (auto &i: arrayelements)
             {
-                antlrcpp::Any result2 = ctx->arrayelement()->accept(this);
-                std::vector<std::shared_ptr<Expression>> arrayelements = result2.as<std::vector<std::shared_ptr<Expression>>>();
-
-                arrayExpressions.push_back(arrayExpression);
-                for (auto &i: arrayelements)
-                {
-                    arrayExpressions.push_back(i);
-                }
-                
-            }else{
-                arrayExpressions.push_back(arrayExpression);
-            }  
-            auto node = std::make_shared<ArrayInitializerNode<LatticeType>>(ctx->type()->getText(), ctx->ID()->getText(), indexExpression, arrayExpressions);
-            link_to_lasts(node);
-            add_node(node);
-            int index = 0;
-            for (auto &arrayindex : arrayExpressions)
-            {
-                std::string id = ctx->ID()->getText() + "[" + std::to_string(index) + "]";
-                auto node = std::make_shared<ArrayAssignmentNode<LatticeType>>(id, ctx->ID()->getText(), arrayindex);
-                link_to_lasts(node);
-                add_node(node);
-                index++;
+                arrayExpressions.push_back(i);
             }
             
-        }
-
+        }else{
+            arrayExpressions.push_back(arrayExpression);
+        }  
+        auto node = std::make_shared<ArrayInitializerNode<LatticeType>>(ctx->type()->getText(), ctx->ID()->getText(), ctx->INTEGER()->getText(), arrayExpressions);
+        link_to_lasts(node);
+        add_node(node);
+        
         return nullptr;
     }
 

@@ -79,7 +79,7 @@ public:
     }
 
     void  visit_arrayinit(ArrayInitializerNode<LatticeType>& node) override {
-        os << node.type << " " << node.id << "[" << node.arraySize->dotPrint() << "] = {";
+        os << node.type << " " << node.id << "[" << node.arraySize << "] = {";
         for (auto &element : node.arrayContent)
         {
             os << element->dotPrint() << ", ";

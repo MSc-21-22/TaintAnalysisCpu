@@ -85,11 +85,12 @@ class ArrayInitializerNode : public Node<LatticeType> {
 public:
     std::string type;
     std::string id;
-    std::shared_ptr<Expression> arraySize;
+    std::string arraySize;
     std::vector<std::shared_ptr<Expression>> arrayContent;
 
     ArrayInitializerNode(std::string type,
-                        std::string id, std::shared_ptr<Expression> arraySize, 
+                        std::string id,
+                        std::string arraySize, 
                         std::vector<std::shared_ptr<Expression>> arrayContent)
                             : type(type), id(id), arraySize(arraySize), arrayContent(arrayContent){}
     ArrayInitializerNode() = default;

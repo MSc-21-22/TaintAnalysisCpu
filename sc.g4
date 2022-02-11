@@ -33,7 +33,7 @@ statementinit
     ;
 
 statementinitarray
-    : type ID '[' expression ']' '=' '{' expression arrayelement '}'
+    : type ID '[' INTEGER ']' '=' '{' expression arrayelement '}'
     ;
 
 arrayelement
@@ -111,6 +111,6 @@ GT                 : '>' ;
 
 // Identifiers
 ID                  : [_]*[a-z][A-Za-z0-9_]*
-                    | '$';
+                    | '£';
 
 WS : (' ' | '\t' | '\n')+ -> channel(HIDDEN);
