@@ -13,7 +13,6 @@
 #include <chrono>
 #include "timing.h"
 #include <stdio.h>
-#include <io.h>
 #include <fcntl.h>
 #include <cstring>
 
