@@ -10,12 +10,8 @@ class VarVisitor : public CfgVisitor<LatticeType>
     public:
         std::set<std::string> variables{};
 
-        void visit_initializtion(InitializerNode<LatticeType>& node){
-            variables.insert(node.id);
-        }
-
-        void visit_functiondef(FunctionDefinition<LatticeType>& node){
-           for(std::string var : node.formalParameters){
+        void visit_functionEntry(FunctionEntryNode<LatticeType>& node){
+           for(std::string var : node.formal_parameters){
                variables.insert(var);
            }
         }
@@ -27,14 +23,9 @@ class VarVisitor : public CfgVisitor<LatticeType>
         void visit_assignment(AssignmentNode<LatticeType>& node){
             variables.insert(node.id);
         }
-
-        void visit_functioncall(FunctionCall<LatticeType>&){}
-        void visit_if(IfNode<LatticeType>&){}
         void visit_return(ReturnNode<LatticeType>&){}
-        void visit_whileloop(WhileLoop<LatticeType>&){}
         void visit_emptyReturn(EmptyReturnNode<LatticeType>&){}
-        void visit_functionEntry(FunctionEntryNode<LatticeType>&){}
-        void visit_functionExit(FunctionExitNode<LatticeType>&) {}
+        void visit_propagation(PropagationNode<LatticeType>&){}
 };
 
 template<typename LatticeType>

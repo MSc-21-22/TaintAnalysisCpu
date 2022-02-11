@@ -29,6 +29,10 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
 void cpu_analysis(ScTransformer<std::set<std::string>> program){
     TaintAnalyzer analyzer;
 
+    for(auto& node : program.nodes){
+        node->state.insert("£");
+    }
+
     time_func("Analyzing: ", 
         worklist<std::set<std::string>>, program.nodes, analyzer);
 

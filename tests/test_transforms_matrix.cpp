@@ -30,7 +30,7 @@ TEST_CASE("matrix transform initilization") {
     auto b = std::make_shared<VariableExpression>("b");
     auto taint = std::make_shared<VariableExpression>("£");
     auto exp = std::make_shared<BinaryOperatorExpression>(b,"+",taint);
-    InitializerNode<int> node("int", "a", exp);
+    AssignmentNode<int> node("a", exp);
 
     MatrixTransforms<int,float> matrixTransformer({"a","b"});
     node.accept(matrixTransformer);
@@ -103,10 +103,11 @@ TEST_CASE("matrix transform function entry"){
     auto taint = std::make_shared<VariableExpression>("£");
 
     std::vector<std::shared_ptr<Expression>> args{c,taint};
-    auto funcCall = std::make_shared<FunctionCall<int>>("f", args);
+    auto funcCall = std::make_shared<PropagationNode<int>>("f(c, £)");
     std::vector<std::string> params{"a","b"};
-    auto funcEntry = std::make_shared<FunctionEntryNode<int>>();
-    auto funcDef = std::make_shared<FunctionDefinition<int>>("f", params);
+    auto funcEntry = std::make_shared<FunctionEntryNode<int>>("f", params);
+    funcEntry->arguments = args;
+    auto funcDef = std::make_shared<PropagationNode<int>>("void f(int a, int b)");
     
     funcCall->successors.insert(funcEntry);
     funcEntry->predecessors.insert(funcCall);
@@ -159,9 +160,9 @@ TEST_CASE("matrix transform return") {
 
 
 TEST_CASE("Create successor node matrix"){
-    auto node1 = std::make_shared<FunctionExitNode<int>>();
-    auto node2 = std::make_shared<FunctionExitNode<int>>();
-    auto node3 = std::make_shared<FunctionExitNode<int>>();
+    auto node1 = std::make_shared<PropagationNode<int>>("Empty");
+    auto node2 = std::make_shared<PropagationNode<int>>("Empty");
+    auto node3 = std::make_shared<PropagationNode<int>>("Empty");
 
     node1->successors.insert({node2,node3});
     node2->successors.insert(node3);
