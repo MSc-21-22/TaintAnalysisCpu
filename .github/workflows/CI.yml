@@ -33,6 +33,7 @@ jobs:
 
       - name: Compile
         run: |
+          git submodule update --init --recursive
           cmake -B build/ -D ANTLR_EXECUTABLE="/usr/local/lib" -D CMAKE_CUDA_ARCHITECTURES=75
           cmake --build build/  
 
