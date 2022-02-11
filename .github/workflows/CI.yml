@@ -20,6 +20,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install pkg-config uuid-dev cmake build-essential
+          sudo apt install gcc-8 g++-8
+          sudo apt install nvidia-cuda-toolkit
+          sudo apt install nvidia-cuda-dev 
 
       - uses: actions/setup-java@v2
         with:
@@ -30,11 +33,6 @@ jobs:
         run: | 
           cd /usr/local/lib
           sudo wget https://www.antlr.org/download/antlr-4.9.2-complete.jar
-
-      - uses: NicklasHugoy/cuda-toolkit@v0.2.6
-        id: cuda-toolkit
-        with:
-          cuda: '11.6.0'
 
       - name: Compile
         run: |
