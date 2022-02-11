@@ -18,17 +18,12 @@ class MultiTaintAnalyzer : public CfgVisitor<SourcedTaintState> {
 public:
     std::map<long long int, int> node_to_source{};
 
-    void visit_initializtion(InitializerNode<SourcedTaintState>& node);
     void visit_assignment(AssignmentNode<SourcedTaintState>& node);
-    void visit_functioncall(FunctionCall<SourcedTaintState>& node);
-    void visit_if(IfNode<SourcedTaintState>& node);
-    void visit_functiondef(FunctionDefinition<SourcedTaintState>& node);
     void visit_return(ReturnNode<SourcedTaintState>& node);
-    void visit_whileloop(WhileLoop<SourcedTaintState>& node);
     void visit_emptyReturn(EmptyReturnNode<SourcedTaintState>& node);
     void visit_functionEntry(FunctionEntryNode<SourcedTaintState>& node);
-    void visit_functionExit(FunctionExitNode<SourcedTaintState>& node);
     void visit_assignReturn(AssignReturnNode<SourcedTaintState>& node);
     void visit_arrayAssignment(ArrayAssignmentNode<SourcedTaintState>& node);
     void visit_arrayinit(ArrayInitializerNode<SourcedTaintState>& node);
+    void visit_propagation(PropagationNode<SourcedTaintState>& node);
 };

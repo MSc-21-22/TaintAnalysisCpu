@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <algorithm>
+#include <string>
 #include <assert.h>
 
 template<typename ElementType>
@@ -36,7 +37,7 @@ class Matrix{
             std::string res;
             for(int row = 0; row<rowCount; row++){
                 for(int column = 0; column<columnCount; column++){
-                    res += std::to_string((int)(matrix.get()[row+column*rowCount]));
+                    res += std::to_string((int)(matrix.get()[row+column*rowCount] > 0) );
                 }
                 res += "\n";
             }

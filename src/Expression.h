@@ -3,6 +3,7 @@
 #include "set"
 #include "string"
 #include "algorithm"
+#include <map>
 
 class Expression
 {
@@ -10,6 +11,7 @@ public:
     virtual bool evaluate(std::set<std::string> &state) = 0;
     virtual std::set<std::string> get_variables() = 0;
     virtual std::string dotPrint() = 0;
+    virtual void replace_names(std::map<std::string, std::string>& names) = 0;
 };
 
 class EmptyExpression : public Expression
@@ -31,6 +33,10 @@ public:
         std::string out;
         out.append("so empty");
         return out;
+    }
+
+    void replace_names(std::map<std::string, std::string>& names){
+
     }
 };
 
@@ -63,6 +69,11 @@ public:
         out.append(lhs->dotPrint()).append(" "+ op +" ").append(rhs->dotPrint());
         return out;
     }
+
+    void replace_names(std::map<std::string, std::string>& names){
+        lhs->replace_names(names);
+        rhs->replace_names(names);
+    }
 };
 
 class LiteralExpression : public Expression
@@ -84,6 +95,10 @@ public:
     std::string dotPrint() override
     {
         return literal;
+    }
+
+    void replace_names(std::map<std::string, std::string>& names){
+
     }
 };
 
@@ -107,6 +122,15 @@ public:
     {
         return id;
     }
+
+    void replace_names(std::map<std::string, std::string>& names){
+        auto new_id = names.find(id);
+        if(new_id != names.end()){
+            id = new_id->second;
+        }else{
+            names[id] = "v" + std::to_string(names.size());
+        }
+    }
 };
 
 class ParanthesisExpression : public Expression{
@@ -127,6 +151,10 @@ public:
     std::string dotPrint() override
     {
         return "("+expression->dotPrint()+")";
+    }
+
+    void replace_names(std::map<std::string, std::string>& names){
+        expression->replace_names(names);
     }
 };
 
@@ -155,4 +183,13 @@ public:
         return id + "[" + indexExpression->dotPrint() + "]";
     }
 
+    void replace_names(std::map<std::string, std::string>& names){
+        auto new_id = names.find(id);
+        if(new_id != names.end()){
+            id = new_id->second;
+        }else{
+            names[id] = "v" + std::to_string(names.size());
+        }
+        indexExpression->replace_names(names);
+    }
 };
