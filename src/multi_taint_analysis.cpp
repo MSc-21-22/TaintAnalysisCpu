@@ -56,7 +56,7 @@ void MultiTaintAnalyzer::visit_arrayinit(ArrayInitializerNode<SourcedTaintState>
     node.state = join(node);
     for (auto &expression : node.arrayContent)
     {
-        node.state[node.id] = get_taints(expression, node);
+        node.state[node.id] = least_upper_bound(node.state[node.id], get_taints(expression, node));
     }
 }
 
