@@ -14,3 +14,5 @@ struct Node{
     int predecessor_index[5];
     BitVector data;
 };
+
+void execute_analysis(Node* nodes, int node_count);
