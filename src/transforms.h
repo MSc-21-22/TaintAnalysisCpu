@@ -233,6 +233,7 @@ public:
         auto id = ctx->ID()->getText();
         std::shared_ptr<FunctionEntryNode<LatticeType>> functionEntry = std::static_pointer_cast<FunctionEntryNode<LatticeType>>(functions[id]);
         auto successor = clone_entry(functionEntry, &nodes);
+        successor->arguments = args;
         entryNodes.push_back(successor);
 
         std::string args_string = "(";
