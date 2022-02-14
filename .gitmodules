@@ -1,3 +1,0 @@
-[submodule "deps/cuBool"]
-	path = deps/cuBool
-	url = git@github.com:MSc-21-22/cuBool.git

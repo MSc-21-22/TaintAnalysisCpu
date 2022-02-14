@@ -10,6 +10,9 @@ std::set<std::string> least_upper_bound(const std::set<std::string>& left, const
 
 std::set<std::string> join(const Node<std::set<std::string>> &node)
 {   
+    if(node.predecessors.size() == 0)
+        return {};
+
     auto it = node.predecessors.begin();
     auto state = (*it)->state;
     it++;
@@ -19,20 +22,6 @@ std::set<std::string> join(const Node<std::set<std::string>> &node)
         it++;
     }
     return state;
-}
-
-void TaintAnalyzer::visit_initializtion(InitializerNode<std::set<std::string>> &node)
-{
-    node.state = join(node);
-
-    if (evaluateExpression(node.expression, node.state))
-    {
-        node.state.insert(node.id);
-    }
-    else
-    {
-        node.state.erase(node.id);
-    }
 }
 
 void TaintAnalyzer::visit_assignment(AssignmentNode<std::set<std::string>> &node)
@@ -49,17 +38,7 @@ void TaintAnalyzer::visit_assignment(AssignmentNode<std::set<std::string>> &node
     }
 }
 
-void TaintAnalyzer::visit_if(IfNode<std::set<std::string>> &node){
-    node.state = join(node);
-}
-
-void TaintAnalyzer::visit_functioncall(FunctionCall<std::set<std::string>> &node)
-{
-    node.state = join(node);
-}
-
-void TaintAnalyzer::visit_functiondef(FunctionDefinition<std::set<std::string>> &node)
-{
+void TaintAnalyzer::visit_propagation(PropagationNode<std::set<std::string>> &node){
     node.state = join(node);
 }
 
@@ -82,40 +61,22 @@ void TaintAnalyzer::visit_emptyReturn(EmptyReturnNode<std::set<std::string>>&)
 
 }
 
-void TaintAnalyzer::visit_whileloop(WhileLoop<std::set<std::string>> &node){
-    node.state = join(node);
-}
 
 
 void TaintAnalyzer::visit_functionEntry(FunctionEntryNode<std::set<std::string>>& node){
     if (node.successors.size() == 0)
         return;
 
-    auto def = std::static_pointer_cast<FunctionDefinition<std::set<std::string>>>(*(node.successors.begin()));
+    auto previous_state = join(node);
 
-
-    for(auto& pred : node.predecessors){
-        auto call = std::static_pointer_cast<FunctionCall<std::set<std::string>>>(pred);
-
-        
-        if (call->arguments.size() != def->formalParameters.size()){
-            throw "Function call " + call->functionId + " didnt match the number of arguments";
-        }
-
-
-        for(size_t i = 0; i < call->arguments.size(); ++i){
-            bool isTainted = call->arguments[i]->evaluate(pred->state);
-            if(isTainted){
-                auto parameter = def->formalParameters[i];
-                node.state.insert(parameter);
-            }
+    for(size_t i = 0; i < node.arguments.size(); ++i){
+        bool isTainted = node.arguments[i]->evaluate(previous_state);
+        if(isTainted){
+            auto parameter = node.formal_parameters[i];
+            node.state.insert(parameter);
         }
     }
 }
-void TaintAnalyzer::visit_functionExit(FunctionExitNode<std::set<std::string>>& node){
-    node.state = join(node);
-}
-
 
 void TaintAnalyzer::visit_assignReturn(AssignReturnNode<std::set<std::string>>& node){
     node.state = join(node);

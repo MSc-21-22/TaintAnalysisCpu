@@ -145,13 +145,12 @@ GpuResource::~GpuResource(){
     cudaFree(resource);
 }
 
-template<>
-void GpuMatrix<float>::multiply(GpuMatrix<float>& other, GpuMatrix<float>& result) {
+
+void GpuMatrix::multiply(GpuMatrix& other, GpuMatrix& result) {
     resource.multiply_f32_to_f32(other.resource, result.resource);
 }
 
-template<>
-void GpuMatrix<float>::multiply_vector(int column_index, GpuMatrix<float>& other){
+void GpuMatrix::multiply_vector(int column_index, GpuMatrix& other){
     int offset = column_index * resource.rowCount;
     resource.multiply_vector_f32_to_f32(offset, other.resource);
 }

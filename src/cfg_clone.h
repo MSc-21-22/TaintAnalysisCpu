@@ -52,26 +52,11 @@ public:
 
     Cloner(std::vector<std::shared_ptr<Node<LatticeType>>>* node_vector): node_vector(node_vector){}
 
-    void visit_initializtion(InitializerNode<LatticeType>& node){
-        clone_node<InitializerNode<LatticeType>>(node);
-    }
     void visit_assignment(AssignmentNode<LatticeType>& node){
         clone_node<AssignmentNode<LatticeType>>(node);
     }
-    void visit_if(IfNode<LatticeType>& node){
-        clone_node<IfNode<LatticeType>>(node);
-    }
-    void visit_functioncall(FunctionCall<LatticeType>& node){
-        clone_node<FunctionCall<LatticeType>>(node);
-    }
-    void visit_functiondef(FunctionDefinition<LatticeType>& node){
-        clone_node<FunctionDefinition<LatticeType>>(node);
-    }
     void visit_return(ReturnNode<LatticeType>& node){
         clone_node<ReturnNode<LatticeType>>(node);
-    }
-    void visit_whileloop(WhileLoop<LatticeType>& node){
-        clone_node<WhileLoop<LatticeType>>(node);
     }
     void visit_emptyReturn(EmptyReturnNode<LatticeType>& node){
         clone_node<EmptyReturnNode<LatticeType>>(node);
@@ -85,15 +70,15 @@ public:
         clone->predecessors = {};
         nodeConverter[&node] = clone;
 
-        clone->exit = std::static_pointer_cast<FunctionExitNode<LatticeType>>(nodeConverter.at(node.exit.get()));
+        clone->exit = std::static_pointer_cast<PropagationNode<LatticeType>>(nodeConverter.at(node.exit.get()));
         node_vector->push_back(clone);
         set_successors(clone);
     }
-    void visit_functionExit(FunctionExitNode<LatticeType>& node){
-        clone_node<FunctionExitNode<LatticeType>>(node);
-    }
     void visit_assignReturn(AssignReturnNode<LatticeType>& node) {
         clone_node<AssignReturnNode<LatticeType>>(node);
+    }
+    void visit_propagation(PropagationNode<LatticeType>& node){
+        clone_node<PropagationNode<LatticeType>>(node);
     }
 };
 
