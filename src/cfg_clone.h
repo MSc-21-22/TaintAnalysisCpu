@@ -80,9 +80,12 @@ public:
     void visit_assignReturn(AssignReturnNode<LatticeType>& node) {
         clone_node<AssignReturnNode<LatticeType>>(node);
     }
+<<<<<<< HEAD
     void visit_arrayinit(ArrayInitializerNode<LatticeType>& node){
         clone_node<ArrayInitializerNode<LatticeType>>(node);
     }
+=======
+>>>>>>> master
     void visit_propagation(PropagationNode<LatticeType>& node){
         clone_node<PropagationNode<LatticeType>>(node);
     }

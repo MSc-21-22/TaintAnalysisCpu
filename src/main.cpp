@@ -130,8 +130,6 @@ int main(int argc, char *argv[]){
             std::cout << " with cpu flag:\n";
             std::cout << "  --multi -m for multi taint analysis\n";
             std::cout << " --gpu -g for use on gpu\n";
-            std::cout << " with gpu flag:\n";
-            std::cout << "  --cubool -c to use cubool gpu library\n";
             std::cout << " --benchmark -b to enable benchmarking where possible\n";
         }
 
