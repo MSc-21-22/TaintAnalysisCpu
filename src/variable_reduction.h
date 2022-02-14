@@ -6,8 +6,18 @@
 template<typename LatticeType>
 class VariableReducer : public CfgVisitor<LatticeType> {
     std::map<std::string, std::string> name_map;
+    std::map<std::string, std::string> initial_map{};
     std::set<intptr_t> nodes_traversed;
 
+public:
+    VariableReducer() = default;
+    VariableReducer(std::vector<std::string> ignored_variables){
+        for(auto& var : ignored_variables) {
+            initial_map[var] = var;
+        }
+    }
+
+private:
     std::string get_new_variable(const std::string& variable) {
         auto new_id = name_map.find(variable);
         if(new_id != name_map.end()){
@@ -46,7 +56,7 @@ class VariableReducer : public CfgVisitor<LatticeType> {
         visit_children(node);
     }
     void visit_functionEntry(FunctionEntryNode<LatticeType>& node){
-        name_map = {};
+        name_map = initial_map;
         nodes_traversed = {};
 
         for(auto& param : node.formal_parameters){
@@ -68,7 +78,7 @@ class VariableReducer : public CfgVisitor<LatticeType> {
 
 template<typename LatticeType>
 void reduce_variables(std::vector<std::shared_ptr<FunctionEntryNode<LatticeType>>>& entry_nodes) {
-    VariableReducer<LatticeType> reducer{};
+    VariableReducer<LatticeType> reducer({"£"});
     for(auto &entry : entry_nodes){
         entry->accept(reducer);
     }
