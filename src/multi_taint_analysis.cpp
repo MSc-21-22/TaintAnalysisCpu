@@ -55,7 +55,8 @@ void MultiTaintAnalyzer::visit_arrayinit(ArrayInitializerNode<SourcedTaintState>
     node.state = join(node);
     for (auto &expression : node.arrayContent)
     {
-        node.state[node.id].merge(get_taints(expression, node));
+        std::set<int> taints = get_taints(expression, node);
+        std::set_union(node.state[node.id].begin(), node.state[node.id].end(), taints.begin(), taints.end(), std::inserter(node.state[node.id], node.state[node.id].begin()));
     }
 }
 

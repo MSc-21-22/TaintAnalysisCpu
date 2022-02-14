@@ -19,7 +19,7 @@
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
     for (auto& x : result){
-        if (x!="£"){
+        if (x!="$"){
             stream << x << " ";
         }
     }
@@ -30,7 +30,7 @@ void cpu_analysis(ScTransformer<std::set<std::string>> program){
     TaintAnalyzer analyzer;
 
     for(auto& node : program.nodes){
-        node->state.insert("£");
+        node->state.insert("$");
     }
 
     time_func("Analyzing: ", 
