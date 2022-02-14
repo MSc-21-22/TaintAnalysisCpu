@@ -103,7 +103,10 @@ public:
         std::set<std::string> expr_vars;
 
         for(auto& element : node.arrayContent){
-            expr_vars.merge(element->get_variables());
+            auto vars = element->get_variables();
+            std::set_union(expr_vars.begin(), expr_vars.end(),
+                           vars.begin(), vars.end(),
+                           std::inserter(expr_vars, expr_vars.begin()));
         }
         
         int id_index = variables[node.id];
