@@ -157,3 +157,39 @@ public:
         expression->replace_names(names);
     }
 };
+
+class ArrayExpression : public Expression
+{
+public:
+    std::string id;
+    std::shared_ptr<Expression> indexExpression;
+
+    ArrayExpression(std::string id, std::shared_ptr<Expression> index): id(id), indexExpression(index){}
+
+    bool evaluate(std::set<std::string> &state)
+    {
+        if (state.find(id) != state.end())
+            return true;
+        return indexExpression->evaluate(state);
+    }
+
+    std::set<std::string> get_variables()
+    {
+        return {id};
+    }
+
+    std::string dotPrint() override
+    {
+        return id + "[" + indexExpression->dotPrint() + "]";
+    }
+
+    void replace_names(std::map<std::string, std::string>& names){
+        auto new_id = names.find(id);
+        if(new_id != names.end()){
+            id = new_id->second;
+        }else{
+            names[id] = "v" + std::to_string(names.size());
+        }
+        indexExpression->replace_names(names);
+    }
+};

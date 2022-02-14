@@ -36,6 +36,12 @@ public:
     {
         os << node.id << " = " << node.expression->dotPrint();
     }
+    
+    void visit_arrayAssignment(ArrayAssignmentNode<LatticeType> &node) override
+    {
+        os << node.id << " = " << node.expression->dotPrint();
+    }
+
     void visit_return(ReturnNode<LatticeType> &node) override
     {
         os << "return " << node.expression->dotPrint();
@@ -51,6 +57,15 @@ public:
     
     void visit_assignReturn(AssignReturnNode<LatticeType>& node) override {
         os << node.id << " = £return";
+    }
+
+    void  visit_arrayinit(ArrayInitializerNode<LatticeType>& node) override {
+        os << node.type << " " << node.id << "[" << node.arraySize << "] = {";
+        for (auto &element : node.arrayContent)
+        {
+            os << element->dotPrint() << ", ";
+        }
+        os << "}"; 
     }
 };
 

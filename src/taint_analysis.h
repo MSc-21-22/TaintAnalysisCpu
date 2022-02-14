@@ -15,5 +15,8 @@ public:
     void visit_emptyReturn(EmptyReturnNode<std::set<std::string>>& node);
     void visit_functionEntry(FunctionEntryNode<std::set<std::string>>& node);
     void visit_assignReturn(AssignReturnNode<std::set<std::string>>& node);
+    void visit_arrayAssignment(ArrayAssignmentNode<std::set<std::string>>& node);
+    void visit_arrayinit(ArrayInitializerNode<std::set<std::string>>& node);
     void visit_propagation(PropagationNode<std::set<std::string>>& node);
+
 };

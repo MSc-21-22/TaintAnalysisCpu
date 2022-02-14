@@ -55,6 +55,9 @@ public:
     void visit_assignment(AssignmentNode<LatticeType>& node){
         clone_node<AssignmentNode<LatticeType>>(node);
     }
+    void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node){
+        clone_node<ArrayAssignmentNode<LatticeType>>(node);
+    }
     void visit_return(ReturnNode<LatticeType>& node){
         clone_node<ReturnNode<LatticeType>>(node);
     }
@@ -76,6 +79,9 @@ public:
     }
     void visit_assignReturn(AssignReturnNode<LatticeType>& node) {
         clone_node<AssignReturnNode<LatticeType>>(node);
+    }
+    void visit_arrayinit(ArrayInitializerNode<LatticeType>& node){
+        clone_node<ArrayInitializerNode<LatticeType>>(node);
     }
     void visit_propagation(PropagationNode<LatticeType>& node){
         clone_node<PropagationNode<LatticeType>>(node);

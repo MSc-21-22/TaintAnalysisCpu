@@ -74,6 +74,21 @@ private:
 
         visit_children(node);
     }
+
+    void visit_arrayinit(ArrayInitializerNode<LatticeType>& node){
+        node.id = get_new_variable(node.id);
+        for (auto& expression : node.arrayContent){
+            expression->replace_names(name_map);
+        }
+        visit_children(node);
+    }
+
+    void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node){
+        node.id = get_new_variable(node.id);
+        node.expression->replace_names(name_map);
+
+        visit_children(node);
+    }
 };
 
 template<typename LatticeType>

@@ -51,10 +51,25 @@ void MultiTaintAnalyzer::visit_propagation(PropagationNode<SourcedTaintState>& n
     node.state = join(node);
 }
 
+void MultiTaintAnalyzer::visit_arrayinit(ArrayInitializerNode<SourcedTaintState>& node){
+    node.state = join(node);
+    for (auto &expression : node.arrayContent)
+    {
+        std::set<int> taints = get_taints(expression, node);
+        std::set_union(node.state[node.id].begin(), node.state[node.id].end(), taints.begin(), taints.end(), std::inserter(node.state[node.id], node.state[node.id].begin()));
+    }
+}
+
 void MultiTaintAnalyzer::visit_assignment(AssignmentNode<SourcedTaintState>& node){
     node.state = join(node);
     node.state[node.id] = get_taints(node.expression, node);
 }
+
+void MultiTaintAnalyzer::visit_arrayAssignment(ArrayAssignmentNode<SourcedTaintState>& node){
+    node.state = join(node);
+    node.state[node.id] = get_taints(node.expression, node);
+}
+
 void MultiTaintAnalyzer::visit_return(ReturnNode<SourcedTaintState>& node){
     auto state = join(node);
 

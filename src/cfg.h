@@ -22,6 +22,10 @@ template<typename LatticeType>
 class PropagationNode;
 template<typename LatticeType>
 class AssignReturnNode;
+template<typename LatticeType>
+class ArrayAssignmentNode;
+template<typename LatticeType>
+class ArrayInitializerNode;
 
 template<typename LatticeType>
 class CfgVisitor {
@@ -31,6 +35,8 @@ public:
     virtual void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) = 0;
     virtual void visit_functionEntry(FunctionEntryNode<LatticeType>& node) = 0;
     virtual void visit_assignReturn(AssignReturnNode<LatticeType>& node) = 0;
+    virtual void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node) = 0;
+    virtual void visit_arrayinit(ArrayInitializerNode<LatticeType>& node) = 0;
     virtual void visit_propagation(PropagationNode<LatticeType>& node) = 0;
 };
 
@@ -45,6 +51,26 @@ public:
 };
 
 template<typename LatticeType>
+class ArrayInitializerNode : public Node<LatticeType> {
+public:
+    std::string type;
+    std::string id;
+    std::string arraySize;
+    std::vector<std::shared_ptr<Expression>> arrayContent;
+
+    ArrayInitializerNode(std::string type,
+                        std::string id,
+                        std::string arraySize, 
+                        std::vector<std::shared_ptr<Expression>> arrayContent)
+                            : type(type), id(id), arraySize(arraySize), arrayContent(arrayContent){}
+    ArrayInitializerNode() = default;
+
+    void accept(CfgVisitor<LatticeType>& visitor){
+        visitor.visit_arrayinit(*this);
+    }
+};
+
+template<typename LatticeType>
 class AssignmentNode : public Node<LatticeType> {
 public:
     std::string id;
@@ -55,6 +81,24 @@ public:
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_assignment(*this);
+    }
+};
+
+template<typename LatticeType>
+class ArrayAssignmentNode : public Node<LatticeType> {
+public:
+    std::string id;
+    std::string arrayid;
+    std::shared_ptr<Expression> expression;
+
+    ArrayAssignmentNode(std::string id,
+                        std::string arrayid,
+                        std::shared_ptr<Expression> expression)
+                            : id(id), arrayid(arrayid), expression(expression) {}
+    ArrayAssignmentNode() = default;
+
+    void accept(CfgVisitor<LatticeType>& visitor){
+        visitor.visit_arrayAssignment(*this);
     }
 };
 

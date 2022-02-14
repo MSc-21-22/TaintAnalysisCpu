@@ -1,5 +1,5 @@
 
-// Generated from /home/nhug/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from .\sc.g4 by ANTLR 4.9.2
 
 #pragma once
 
@@ -30,6 +30,10 @@ public:
     virtual antlrcpp::Any visitStatementassign(scParser::StatementassignContext *context) = 0;
 
     virtual antlrcpp::Any visitStatementinit(scParser::StatementinitContext *context) = 0;
+
+    virtual antlrcpp::Any visitStatementinitarray(scParser::StatementinitarrayContext *context) = 0;
+
+    virtual antlrcpp::Any visitArrayelement(scParser::ArrayelementContext *context) = 0;
 
     virtual antlrcpp::Any visitWhileloop(scParser::WhileloopContext *context) = 0;
 

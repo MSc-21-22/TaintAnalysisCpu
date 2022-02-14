@@ -24,6 +24,19 @@ std::set<std::string> join(const Node<std::set<std::string>> &node)
     return state;
 }
 
+void TaintAnalyzer::visit_arrayinit(ArrayInitializerNode<std::set<std::string>> &node)
+{
+    node.state = join(node);
+    for (auto &expression : node.arrayContent)
+    {
+        if (evaluateExpression(expression, node.state))
+        {
+            node.state.insert(node.id);
+        }
+    }
+    
+}
+
 void TaintAnalyzer::visit_assignment(AssignmentNode<std::set<std::string>> &node)
 {
     node.state = join(node);
@@ -35,6 +48,16 @@ void TaintAnalyzer::visit_assignment(AssignmentNode<std::set<std::string>> &node
     else
     {
         node.state.erase(node.id);
+    }
+}
+
+void TaintAnalyzer::visit_arrayAssignment(ArrayAssignmentNode<std::set<std::string>> &node)
+{
+    node.state = join(node);
+
+    if (evaluateExpression(node.expression, node.state))
+    {
+        node.state.insert(node.arrayid);
     }
 }
 

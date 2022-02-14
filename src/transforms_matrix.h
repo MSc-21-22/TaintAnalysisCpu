@@ -97,6 +97,45 @@ public:
         }
         matrices.push_back(matrix);
     }
+
+    void visit_arrayinit(ArrayInitializerNode<LatticeType>& node){
+        auto matrix = unit_matrix<ElementType>(rowSize);
+        std::set<std::string> expr_vars;
+
+        for(auto& element : node.arrayContent){
+            auto vars = element->get_variables();
+            std::set_union(expr_vars.begin(), expr_vars.end(),
+                           vars.begin(), vars.end(),
+                           std::inserter(expr_vars, expr_vars.begin()));
+        }
+        
+        int id_index = variables[node.id];
+        matrix(id_index,id_index) = 0.0f;
+
+        for(std::string expr_var : expr_vars){
+            if (variables.count(expr_var)){
+                matrix(id_index, variables[expr_var]) = 1.0f;
+            }
+        }     
+        
+        matrices.push_back(matrix);
+    }
+
+    void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node){
+        auto matrix = unit_matrix<ElementType>(rowSize);
+        std::set<std::string> expr_vars = node.expression->get_variables();
+        int id_index = variables[node.id];
+
+        matrix(id_index,id_index) = 0.0f;
+
+        for(std::string expr_var : expr_vars){
+            if (variables.count(expr_var)){
+                matrix(id_index, variables[expr_var]) = 1.0f;
+            }
+        }     
+
+        matrices.push_back(matrix);
+    }
 };
 
 template<typename LatticeType, typename ElementType>

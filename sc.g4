@@ -20,16 +20,27 @@ statement
     :  statementinit
     |  statementassign
     |  functionCallInit
+    |  statementinitarray
     ;
 
 statementassign
     : ID '=' expression
+    | ID '[' expression ']' '=' expression
     ;
 
 statementinit
     : type ID '=' expression
     ;
-            
+
+statementinitarray
+    : type ID '[' INTEGER ']' '=' '{' expression arrayelement '}'
+    ;
+
+arrayelement
+    : ',' expression arrayelement
+    | /* e */
+    ;
+
 whileloop
     : 'while' LPAREN expression RPAREN '{' statements '}'
     ;
@@ -47,6 +58,7 @@ expression
     : LPAREN expression RPAREN expressionM
     | INTEGER expressionM
     | ID expressionM
+    | ID '[' expression ']' expressionM
     ;
 
 expressionM

@@ -23,5 +23,7 @@ public:
     void visit_emptyReturn(EmptyReturnNode<SourcedTaintState>& node);
     void visit_functionEntry(FunctionEntryNode<SourcedTaintState>& node);
     void visit_assignReturn(AssignReturnNode<SourcedTaintState>& node);
+    void visit_arrayAssignment(ArrayAssignmentNode<SourcedTaintState>& node);
+    void visit_arrayinit(ArrayInitializerNode<SourcedTaintState>& node);
     void visit_propagation(PropagationNode<SourcedTaintState>& node);
 };
