@@ -35,11 +35,8 @@ public:
     virtual void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) = 0;
     virtual void visit_functionEntry(FunctionEntryNode<LatticeType>& node) = 0;
     virtual void visit_assignReturn(AssignReturnNode<LatticeType>& node) = 0;
-<<<<<<< HEAD
     virtual void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node) = 0;
     virtual void visit_arrayinit(ArrayInitializerNode<LatticeType>& node) = 0;
-=======
->>>>>>> master
     virtual void visit_propagation(PropagationNode<LatticeType>& node) = 0;
 };
 
@@ -54,7 +51,6 @@ public:
 };
 
 template<typename LatticeType>
-<<<<<<< HEAD
 class ArrayInitializerNode : public Node<LatticeType> {
 public:
     std::string type;
@@ -75,8 +71,6 @@ public:
 };
 
 template<typename LatticeType>
-=======
->>>>>>> master
 class AssignmentNode : public Node<LatticeType> {
 public:
     std::string id;
