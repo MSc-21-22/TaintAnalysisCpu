@@ -1,17 +1,4 @@
-struct Transfer{ // x = y + z     { x, [y, z]}
-    int x;
-    int rhs[5]; // -1 terminated
-};
-
-struct BitVector{
-    long int data;
-};
-
-struct Node{
-    Transfer transfer;
-    int predecessor_index[5];
-    BitVector data;
-};
+#include "analysis.h"
 
 __global__ void analyze(Node nodes[], bool* has_changed){
     int node_index = threadIdx.x + blockDim.x * blockIdx.x;
