@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <cstring>
+#include "bit_cuda/bit_cuda_transformer.h"
+#include "bit_cuda/analysis.h"
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -50,10 +52,16 @@ void cpu_multi_taint_analysis(ScTransformer<SourcedTaintState> program){
     }
 }
 
+void bit_cuda_analysis(ScTransformer<std::set<std::string>> program){
+    reduce_variables<std::set<std::string>>(program.entryNodes);
+    std::vector<bit_cuda::Node> nodes = transform_bit_cuda(program.nodes);
+    bit_cuda::execute_analysis(&nodes[0], nodes.size());
+}
+
 int main(int argc, char *argv[]){
     if(argc > 1){
 
-        bool gpu_flag = false, multi_taint_flag = false, cpu_flag = false, benchmark_all = false;
+        bool gpu_flag = false, multi_taint_flag = false, cpu_flag = false, benchmark_all = false, cuda_flag = false;
         for (int i = 1; i < argc; i++)
         {
             char* arg = argv[i];
@@ -64,6 +72,10 @@ int main(int argc, char *argv[]){
 
             if(strcmp(arg, "--gpu") == 0 || strcmp(arg, "-g") == 0){
                 gpu_flag = true;
+            }
+
+            if(strcmp(arg, "--cuda") == 0 || strcmp(arg, "-cu") == 0){
+                cuda_flag = true;
             }
 
             if(strcmp(arg, "--benchmark") == 0 || strcmp(arg, "-b") == 0){
@@ -112,6 +124,10 @@ int main(int argc, char *argv[]){
             if(!timing::should_benchmark){
                 print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
             }
+        }else if(cuda_flag){
+            std::cout << "Running bit-cuda analysis" << std::endl;
+            auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+            bit_cuda_analysis(program);
         }else if(cpu_flag){
             if(multi_taint_flag){
                 std::cout << "Running multi-taint analysis using CPU" << std::endl;
@@ -130,6 +146,7 @@ int main(int argc, char *argv[]){
             std::cout << " with cpu flag:\n";
             std::cout << "  --multi -m for multi taint analysis\n";
             std::cout << " --gpu -g for use on gpu\n";
+            std::cout << " --cuda -cu for bit-cuda implementation\n";
             std::cout << " --benchmark -b to enable benchmarking where possible\n";
         }
 
