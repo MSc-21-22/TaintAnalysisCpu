@@ -44,6 +44,8 @@ Then use cmake to compile the dependencies and the project
 ## Options
 --gpu | -g : run the analysis using the GPU otherwise defaults to running the analysis on the CPU
 
+--cuda | -cu : run using the bit-cuda implementation
+
 --multi | -m : run multi-coloured taint analysis (only implemented with cpu)
 
 --benchmark | -b : output execution time of the different phases of the analysis
