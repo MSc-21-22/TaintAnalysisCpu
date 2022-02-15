@@ -30,7 +30,7 @@ public:
 
     void visit_assignment(AssignmentNode<LatticeType>& node) {
         node_to_index[&node] = nodes.size();
-        struct bit_cuda::Node& node_struct = nodes.emplace_back();
+        bit_cuda::Node& node_struct = nodes.emplace_back();
 
         node_struct.transfer.x = variables[node.id];
         fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
@@ -38,7 +38,7 @@ public:
 
     void visit_return(ReturnNode<LatticeType>& node) {
         node_to_index[&node] = nodes.size();
-        struct bit_cuda::Node& node_struct = nodes.emplace_back();
+        bit_cuda::Node& node_struct = nodes.emplace_back();
 
         node_struct.transfer.x = variables[RETURN_VAR];
         fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
@@ -46,12 +46,12 @@ public:
 
     void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) {
         node_to_index[&node] = nodes.size();
-        struct bit_cuda::Node& node_struct = nodes.emplace_back();
+        bit_cuda::Node& node_struct = nodes.emplace_back();
     }
 
     void visit_functionEntry(FunctionEntryNode<LatticeType>& node) { 
         node_to_index[&node] = nodes.size();
-        struct bit_cuda::Node& node_struct = nodes.emplace_back();
+        bit_cuda::Node& node_struct = nodes.emplace_back();
 
         if(node.arguments.size() >= 1){
             bit_cuda::Transfer& last = node_struct.transfer;
@@ -70,7 +70,7 @@ public:
 
     void visit_assignReturn(AssignReturnNode<LatticeType>& node) { 
         node_to_index[&node] = nodes.size();
-        struct bit_cuda::Node& node_struct = nodes.emplace_back();
+        bit_cuda::Node& node_struct = nodes.emplace_back();
 
         node_struct.transfer.x = variables[node.id];
         node_struct.transfer.rhs[0] = variables[RETURN_VAR];
@@ -78,7 +78,7 @@ public:
 
     void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node) { 
         node_to_index[&node] = nodes.size();
-        struct bit_cuda::Node& node_struct = nodes.emplace_back();
+        bit_cuda::Node& node_struct = nodes.emplace_back();
 
         node_struct.transfer.x = variables[node.id];
         fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
@@ -86,7 +86,7 @@ public:
     
     void visit_arrayinit(ArrayInitializerNode<LatticeType>& node) { 
         node_to_index[&node] = nodes.size();
-        struct bit_cuda::Node& node_struct = nodes.emplace_back();
+        bit_cuda::Node& node_struct = nodes.emplace_back();
 
         node_struct.transfer.x = variables[node.id];
 
@@ -104,7 +104,7 @@ public:
 
     void visit_propagation(PropagationNode<LatticeType>& node) { 
         node_to_index[&node] = nodes.size();
-        struct bit_cuda::Node& node_struct = nodes.emplace_back();
+        bit_cuda::Node& node_struct = nodes.emplace_back();
     }
 
 private:
