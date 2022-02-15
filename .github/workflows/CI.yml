@@ -43,5 +43,5 @@ jobs:
 
       - name: Run multi-taint CPU analysis
         run: |
-          build/analyzer --multi prog.sc
+          build/analyzer --cpu --multi prog.sc
 
