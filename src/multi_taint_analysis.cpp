@@ -32,7 +32,7 @@ std::set<int> MultiTaintAnalyzer::get_taints(std::shared_ptr<Expression> express
 {
     std::set<int> sources;
     for (auto& var : expression->get_variables()){
-        if(var == "£"){
+        if(var == TAINT_VAR){
             if (node_to_source.find((long long int)&node) == node_to_source.end()){
                 node_to_source[(long long int)&node] = next_source++;
             }
@@ -73,10 +73,10 @@ void MultiTaintAnalyzer::visit_arrayAssignment(ArrayAssignmentNode<SourcedTaintS
 void MultiTaintAnalyzer::visit_return(ReturnNode<SourcedTaintState>& node){
     auto state = join(node);
 
-    node.state["£return"] = get_taints(node.expression, node);
+    node.state[RETURN_VAR] = get_taints(node.expression, node);
 }
 void MultiTaintAnalyzer::visit_emptyReturn(EmptyReturnNode<SourcedTaintState>& node){
-    node.state["£return"] = {};
+    node.state[RETURN_VAR] = {};
 }
 void MultiTaintAnalyzer::visit_functionEntry(FunctionEntryNode<SourcedTaintState>& node){
     auto state = join(node);
@@ -95,8 +95,8 @@ void MultiTaintAnalyzer::visit_functionEntry(FunctionEntryNode<SourcedTaintState
 
 void MultiTaintAnalyzer::visit_assignReturn(AssignReturnNode<SourcedTaintState>& node){
     node.state = join(node);
-    node.state[node.id] = node.state["£return"];
-    node.state["£return"] = {};
+    node.state[node.id] = node.state[RETURN_VAR];
+    node.state[RETURN_VAR] = {};
 }
 
 void print_taint_source(SourcedTaintState& result, std::ostream& stream){

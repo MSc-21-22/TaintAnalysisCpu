@@ -2,13 +2,13 @@ int f(int n){
     if(5){
         int a=n+2;
     }else{
-        int a=5 * £;
+        int a=5 * $;
     }
     return a;
 }
 
 int read_input(){
-    return £;
+    return $;
 }
 
 int is_even(int n){
