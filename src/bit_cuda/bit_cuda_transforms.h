@@ -8,7 +8,7 @@ template <typename LatticeType, typename ElementType>
 class BitCudaTransforms : public CfgVisitor<LatticeType>
 {
 public:
-    std::vector<Node> nodes{};
+    std::vector<bit_cuda::Node> nodes{};
     std::map<std::string, int> variables{};
 
     BitCudaTransforms(std::set<std::string> progVariables){
@@ -26,8 +26,8 @@ public:
     }
 
     void visit_assignment(AssignmentNode<LatticeType>& node) {
-        struct Node node_struct;
-        node_struct.transfer.x = variables[node.id]:
+        struct bit_cuda::Node node_struct;
+        node_struct.transfer.x = variables[node.id];
 
         fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
 
@@ -35,8 +35,8 @@ public:
     }
 
     void visit_return(ReturnNode<LatticeType>& node) {
-        struct Node node_struct;
-        node_struct.transfer.x = variables[RETURN_VAR]:
+        struct bit_cuda::Node node_struct;
+        node_struct.transfer.x = variables[RETURN_VAR];
 
         fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
 
@@ -44,34 +44,34 @@ public:
     }
 
     void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) {
-        struct Node node_struct;
+        struct bit_cuda::Node node_struct;
 
         nodes.push_back(node_struct);
     }
 
     void visit_functionEntry(FunctionEntryNode<LatticeType>& node) { 
-        struct Node node_struct;
+        struct bit_cuda::Node node_struct;
 
         //TODO: handle multiple transfer_functions
         for (int i = 0; i < node.arguments.size(); i++)
         {
             struct Transfer transfer_function;
-            fill_with_variable_indices(transfer_function.rhs, node.arguments[i])
+            fill_with_variable_indices(transfer_function.rhs, node.arguments[i]);
         }
         
         nodes.push_back(node_struct);
     }
 
     void visit_assignReturn(AssignReturnNode<LatticeType>& node) { 
-        struct Node node_struct;
+        struct bit_cuda::Node node_struct;
         node_struct.transfer.x = variables[node.id];
         node_struct.transfer.rhs[0] = variables[RETURN_VAR];
         nodes.push_back(node_struct);
     }
 
     void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node) { 
-        struct Node node_struct;
-        node_struct.transfer.x = variables[node.id]:
+        struct bit_cuda::Node node_struct;
+        node_struct.transfer.x = variables[node.id];
 
         fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
 
@@ -79,7 +79,7 @@ public:
     }
     
     void visit_arrayinit(ArrayInitializerNode<LatticeType>& node) { 
-        struct Node node_struct;
+        struct bit_cuda::Node node_struct;
         node_struct.transfer.x = variables[node.id];
 
         // Get vars from all array element expressions 
@@ -96,7 +96,7 @@ public:
     }
 
     void visit_propagation(PropagationNode<LatticeType>& node) { 
-        struct Node node_struct;
+        struct bit_cuda::Node node_struct;
 
         nodes.push_back(node_struct);
     }
