@@ -5,6 +5,8 @@
 
 #include "analysis.h"
 
+using namespace bit_cuda;
+
 __global__ void analyze(Node nodes[], bool* has_changed, int node_count){
     int node_index = threadIdx.x + blockDim.x * blockIdx.x;
 
@@ -48,7 +50,7 @@ __global__ void analyze(Node nodes[], bool* has_changed, int node_count){
 
 }
 
-void execute_analysis(Node* nodes, int node_count) {
+void bit_cuda::execute_analysis(Node* nodes, int node_count) {
     Node* dev_nodes = nullptr;
     bool* dev_has_changed = nullptr;
 
