@@ -29,36 +29,30 @@ public:
     }
 
     void visit_assignment(AssignmentNode<LatticeType>& node) {
-        struct bit_cuda::Node node_struct;
-        node_struct.transfer.x = variables[node.id];
-
-        fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
-
         node_to_index[&node] = nodes.size();
-        nodes.push_back(node_struct);
+        struct bit_cuda::Node& node_struct = nodes.emplace_back();
+
+        node_struct.transfer.x = variables[node.id];
+        fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
     }
 
     void visit_return(ReturnNode<LatticeType>& node) {
-        struct bit_cuda::Node node_struct;
-        node_struct.transfer.x = variables[RETURN_VAR];
-
-        fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
-
         node_to_index[&node] = nodes.size();
-        nodes.push_back(node_struct);
+        struct bit_cuda::Node& node_struct = nodes.emplace_back();
+
+        node_struct.transfer.x = variables[RETURN_VAR];
+        fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
     }
 
     void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) {
-        struct bit_cuda::Node node_struct;
-
         node_to_index[&node] = nodes.size();
-        nodes.push_back(node_struct);
+        struct bit_cuda::Node& node_struct = nodes.emplace_back();
     }
 
     void visit_functionEntry(FunctionEntryNode<LatticeType>& node) { 
-        struct bit_cuda::Node node_struct;
+        node_to_index[&node] = nodes.size();
+        struct bit_cuda::Node& node_struct = nodes.emplace_back();
 
-        //TODO: handle multiple transfer_functions
         if(node.arguments.size() >= 1){
             bit_cuda::Transfer& last = node_struct.transfer;
             fill_with_variable_indices(node_struct.transfer.rhs, node.arguments[0]);
@@ -72,32 +66,28 @@ public:
                 last = extra_transfers.back();
             }
         }
-        
-        node_to_index[&node] = nodes.size();
-        nodes.push_back(node_struct);
     }
 
     void visit_assignReturn(AssignReturnNode<LatticeType>& node) { 
-        struct bit_cuda::Node node_struct;
+        node_to_index[&node] = nodes.size();
+        struct bit_cuda::Node& node_struct = nodes.emplace_back();
+
         node_struct.transfer.x = variables[node.id];
         node_struct.transfer.rhs[0] = variables[RETURN_VAR];
-
-        node_to_index[&node] = nodes.size();
-        nodes.push_back(node_struct);
     }
 
     void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node) { 
-        struct bit_cuda::Node node_struct;
-        node_struct.transfer.x = variables[node.id];
-
-        fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
-
         node_to_index[&node] = nodes.size();
-        nodes.push_back(node_struct);
+        struct bit_cuda::Node& node_struct = nodes.emplace_back();
+
+        node_struct.transfer.x = variables[node.id];
+        fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
     }
     
     void visit_arrayinit(ArrayInitializerNode<LatticeType>& node) { 
-        struct bit_cuda::Node node_struct;
+        node_to_index[&node] = nodes.size();
+        struct bit_cuda::Node& node_struct = nodes.emplace_back();
+
         node_struct.transfer.x = variables[node.id];
 
         // Get vars from all array element expressions 
@@ -110,16 +100,11 @@ public:
         }
 
         fill_with_variable_indices(node_struct.transfer.rhs, expr_vars);
-
-        node_to_index[&node] = nodes.size();
-        nodes.push_back(node_struct);
     }
 
     void visit_propagation(PropagationNode<LatticeType>& node) { 
-        struct bit_cuda::Node node_struct;
-
         node_to_index[&node] = nodes.size();
-        nodes.push_back(node_struct);
+        struct bit_cuda::Node& node_struct = nodes.emplace_back();
     }
 
 private:
