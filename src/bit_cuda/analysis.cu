@@ -10,12 +10,16 @@ using namespace bit_cuda;
 __global__ void analyze(Node nodes[], bool* has_changed, int node_count){
     int node_index = threadIdx.x + blockDim.x * blockIdx.x;
 
+    if(node_index == 0)
+        *has_changed = true;
+
     if(node_index < node_count){
         nodes[node_index].data.data = 1; // Set taint constant to true
+        bool is_changed = true;
 
         while(*has_changed){
-            *has_changed = false;
-            bool is_changed = false;
+            if(node_index == 0)
+                *has_changed = false;
             long int new_data = 0;
             //Join
             {
@@ -23,27 +27,34 @@ __global__ void analyze(Node nodes[], bool* has_changed, int node_count){
                 new_data = old_data;
                 int pred_index = 0;
                 while (nodes[node_index].predecessor_index[pred_index] != -1){
+                    __syncthreads();
                     new_data |= nodes[nodes[node_index].predecessor_index[pred_index]].data.data;
                     ++pred_index;
                 }
 
-                is_changed = old_data == new_data;
+                is_changed |= old_data != new_data;
             }
 
             //Transfer
             if(is_changed){
                 int var_index = 0;
                 int next_var = nodes[node_index].transfer.rhs[var_index];
+
                 while(next_var != -1){
-                    if(nodes[node_index].data.data & (1 << next_var) > 0){
-                        nodes[node_index].data.data |= nodes[node_index].transfer.x;
+
+                    if((new_data & (1 << next_var)) != 0){
+                        new_data |= (1 << nodes[node_index].transfer.x);
                         break;
                     }
                     ++var_index;
                     next_var = nodes[node_index].transfer.rhs[var_index];
                 }
 
+                nodes[node_index].data.data = new_data;
+
                 *has_changed = true;
+                is_changed = false;
+                // __syncthreads();
             }
         }
     }
@@ -87,7 +98,7 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count) {
         fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
         goto Error;
     }
-    
+
     // cudaDeviceSynchronize waits for the kernel to finish, and returns
     // any errors encountered during the launch.
     cudaStatus = cudaDeviceSynchronize();
@@ -97,7 +108,7 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count) {
     }
 
     // Copy output vector from GPU buffer to host memory.
-    cudaStatus = cudaMemcpy(&nodes, dev_nodes, sizeof(Node)*node_count, cudaMemcpyDeviceToHost);
+    cudaStatus = cudaMemcpy(nodes, dev_nodes, sizeof(Node)*node_count, cudaMemcpyDeviceToHost);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMemcpy failed with message: %d", cudaStatus);
         goto Error;

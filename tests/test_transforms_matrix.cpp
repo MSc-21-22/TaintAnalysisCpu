@@ -5,6 +5,32 @@
 #include "../src/transforms_matrix.h"
 #include "../src/matrix_analysis.h"
 #include "../src/kernel.h"
+#include "../src/bit_cuda/analysis.h"
+
+
+
+TEST_CASE("bit cuda x=$ -> y=x") {
+    std::vector<bit_cuda::Node> nodes;
+    bit_cuda::Node node1;
+    node1.transfer.x = 1;
+    node1.transfer.rhs[0] = 0;
+    node1.transfer.rhs[1] = -1;
+    node1.predecessor_index[0] = -1;
+    nodes.push_back(node1);
+    
+    bit_cuda::Node node2;
+    node2.transfer.x = 2;
+    node2.transfer.rhs[0] = 1;
+    node2.transfer.rhs[1] = -1;
+    node2.predecessor_index[0] = 0;
+    node2.predecessor_index[1] = -1;
+    nodes.push_back(node2);
+
+    bit_cuda::execute_analysis(&nodes[0], nodes.size());
+
+    CHECK_MESSAGE(nodes[0].data.data == 3, "First node results doesnt match");
+    CHECK_MESSAGE(nodes[1].data.data == 7, "Second node results doesnt match");
+} 
 
 TEST_CASE("unit matrix") {
 
@@ -28,7 +54,7 @@ TEST_CASE("unit matrix") {
 TEST_CASE("matrix transform initilization") {
 
     auto b = std::make_shared<VariableExpression>("b");
-    auto taint = std::make_shared<VariableExpression>("£");
+    auto taint = std::make_shared<VariableExpression>("$");
     auto exp = std::make_shared<BinaryOperatorExpression>(b,"+",taint);
     AssignmentNode<int> node("a", exp);
 
@@ -53,7 +79,7 @@ TEST_CASE("matrix transform initilization") {
 
 TEST_CASE("matrix transform assignment") {
 
-    auto taint = std::make_shared<VariableExpression>("£");
+    auto taint = std::make_shared<VariableExpression>("$");
     AssignmentNode<int> node{"a", taint};
 
     MatrixTransforms<int, float> matrixTransformer({"a","b"});
@@ -100,10 +126,10 @@ TEST_CASE("matrix transform assign return") {
 TEST_CASE("matrix transform function entry"){
 
     auto c = std::make_shared<VariableExpression>("c");
-    auto taint = std::make_shared<VariableExpression>("£");
+    auto taint = std::make_shared<VariableExpression>("$");
 
     std::vector<std::shared_ptr<Expression>> args{c,taint};
-    auto funcCall = std::make_shared<PropagationNode<int>>("f(c, £)");
+    auto funcCall = std::make_shared<PropagationNode<int>>("f(c, $)");
     std::vector<std::string> params{"a","b"};
     auto funcEntry = std::make_shared<FunctionEntryNode<int>>("f", params);
     funcEntry->arguments = args;
@@ -363,7 +389,7 @@ TEST_CASE("Matrix multiply 5x5"){
 }
 
 TEST_CASE("Matrix vector multiplication error 13 reproduction"){
-    // a = £
+    // a = $
     // b = a
     create_cublas();
     // 0, 0, 0, 1
@@ -402,7 +428,7 @@ TEST_CASE("Matrix vector multiplication error 13 reproduction"){
 }
 
 TEST_CASE("Run analysis"){
-    // a = £
+    // a = $
     // b = a
 
     Matrix<float> succ = unit_matrix<float>(2);
