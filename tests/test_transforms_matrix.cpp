@@ -32,6 +32,25 @@ TEST_CASE("bit cuda x=$ -> y=x") {
     CHECK_MESSAGE(nodes[1].data.data == 7, "Second node results doesnt match");
 } 
 
+TEST_CASE("bit cuda multi transforms") {
+    std::vector<bit_cuda::Node> nodes;
+    std::vector<bit_cuda::Transfer> transfers;
+    bit_cuda::Node& node1 = nodes.emplace_back();
+    node1.transfer.x = 1;
+    node1.transfer.rhs[0] = 0;
+    node1.transfer.rhs[1] = -1;
+    node1.predecessor_index[0] = -1;
+
+    bit_cuda::Transfer& transfer = transfers.emplace_back();
+    node1.transfer.next_transfer_index = 0;
+    transfer.x = 2;
+    transfer.rhs[0] = 0;
+
+    bit_cuda::execute_analysis(&nodes[0], nodes.size(), &transfers[0], transfers.size());
+
+    CHECK_MESSAGE(nodes[0].data.data == 7, "First node results doesnt match");
+} 
+
 TEST_CASE("unit matrix") {
 
     auto matrix = unit_matrix<float>(4);

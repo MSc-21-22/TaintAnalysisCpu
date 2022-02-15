@@ -10,6 +10,7 @@ class BitCudaTransformer : public CfgVisitor<LatticeType>
 {
 public:
     std::vector<bit_cuda::Node> nodes{};
+    std::vector<bit_cuda::Transfer> extra_transfers{};
     std::map<Node<LatticeType>*, int> node_to_index{};
     std::map<std::string, int> variables{};
 
@@ -58,10 +59,18 @@ public:
         struct bit_cuda::Node node_struct;
 
         //TODO: handle multiple transfer_functions
-        for (int i = 0; i < node.arguments.size(); i++)
-        {
-            struct bit_cuda::Transfer transfer_function;
-            fill_with_variable_indices(transfer_function.rhs, node.arguments[i]);
+        if(node.arguments.size() >= 1){
+            bit_cuda::Transfer& last = node_struct.transfer;
+            fill_with_variable_indices(node_struct.transfer.rhs, node.arguments[0]);
+
+            for (int i = 1; i < node.arguments.size(); i++)
+            {
+                last.next_transfer_index = extra_transfers.size();
+
+                extra_transfers.emplace_back();
+                fill_with_variable_indices(extra_transfers.back().rhs, node.arguments[i]);
+                last = extra_transfers.back();
+            }
         }
         
         node_to_index[&node] = nodes.size();

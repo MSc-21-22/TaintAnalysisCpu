@@ -7,7 +7,7 @@
 
 using namespace bit_cuda;
 
-__global__ void analyze(Node nodes[], bool* has_changed, int node_count){
+__global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, int node_count){
     int node_index = threadIdx.x + blockDim.x * blockIdx.x;
 
     if(node_index == 0)
@@ -37,17 +37,25 @@ __global__ void analyze(Node nodes[], bool* has_changed, int node_count){
 
             //Transfer
             if(is_changed){
-                int var_index = 0;
-                int next_var = nodes[node_index].transfer.rhs[var_index];
+                Transfer* transfer = &nodes[node_index].transfer;
+                while(transfer != nullptr){
+                    int var_index = 0;
+                    int next_var = transfer->rhs[var_index];
+                    while(next_var != -1){
 
-                while(next_var != -1){
+                        if((new_data & (1 << next_var)) != 0){
+                            new_data |= (1 << transfer->x);
+                            break;
+                        }
+                        ++var_index;
+                        next_var = transfer->rhs[var_index];
+                    }
 
-                    if((new_data & (1 << next_var)) != 0){
-                        new_data |= (1 << nodes[node_index].transfer.x);
+                    if(transfer->next_transfer_index != -1){
+                        transfer = &transfers[transfer->next_transfer_index];
+                    }else{
                         break;
                     }
-                    ++var_index;
-                    next_var = nodes[node_index].transfer.rhs[var_index];
                 }
 
                 nodes[node_index].data.data = new_data;
@@ -61,9 +69,10 @@ __global__ void analyze(Node nodes[], bool* has_changed, int node_count){
 
 }
 
-void bit_cuda::execute_analysis(Node* nodes, int node_count) {
+void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers, int extra_transfer_count) {
     Node* dev_nodes = nullptr;
     bool* dev_has_changed = nullptr;
+    Transfer* dev_extra_transfers = nullptr;
 
     int block_count = node_count/128 + 1;
     dim3 threadsPerBlock(128);
@@ -80,6 +89,13 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count) {
         fprintf(stderr, "cudaMalloc failed!");
         goto Error;
     }
+    if(extra_transfer_count > 0){
+        cudaStatus = cudaMalloc((void**)&dev_extra_transfers, sizeof(Transfer)*extra_transfer_count);
+        if (cudaStatus != cudaSuccess) {
+            fprintf(stderr, "cudaMalloc failed!");
+            goto Error;
+        }
+    }
 
     dev_has_changed = (bool*) (dev_nodes + (sizeof(Node)*node_count));
 
@@ -89,8 +105,16 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count) {
         goto Error;
     }
 
+    if(extra_transfer_count > 0){
+        cudaStatus = cudaMemcpy(dev_extra_transfers, transfers, sizeof(Transfer)*extra_transfer_count, cudaMemcpyHostToDevice);
+        if (cudaStatus != cudaSuccess) {
+            fprintf(stderr, "Copy false to gpu failed");
+            goto Error;
+        }
+    }
+
     // Launch a kernel on the GPU with one thread for each element.
-    analyze<<<block_count, threadsPerBlock>>>(dev_nodes, dev_has_changed, node_count);
+    analyze<<<block_count, threadsPerBlock>>>(dev_nodes, dev_extra_transfers, dev_has_changed, node_count);
 
     // Check for any errors launching the kernel
     cudaStatus = cudaGetLastError();
@@ -116,4 +140,12 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count) {
 
 Error:
     cudaFree(dev_nodes);
+
+    if(dev_extra_transfers != nullptr){
+        cudaFree(dev_extra_transfers);
+    }
+}
+
+void bit_cuda::execute_analysis(Node* nodes, int node_count){
+    execute_analysis(nodes, node_count, nullptr, 0);
 }
