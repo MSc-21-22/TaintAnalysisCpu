@@ -1,17 +1,19 @@
-#include "../cfg.h"
+#include <cfg.h>
 #include "analysis.h"
+#include <var_visitor.h>
 
 #define RETURN_VAR "£return"
 #define TAINT_VAR "£"
 
-template <typename LatticeType, typename ElementType>
-class BitCudaTransforms : public CfgVisitor<LatticeType>
+template <typename LatticeType>
+class BitCudaTransformer : public CfgVisitor<LatticeType>
 {
 public:
     std::vector<bit_cuda::Node> nodes{};
+    std::map<Node<LatticeType>*, int> node_to_index{};
     std::map<std::string, int> variables{};
 
-    BitCudaTransforms(std::set<std::string> progVariables){
+    BitCudaTransformer(std::set<std::string> progVariables){
         int i = 0;
         variables[RETURN_VAR] = i++;
         variables[TAINT_VAR] = i++;
@@ -31,6 +33,7 @@ public:
 
         fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
 
+        node_to_index[node] = nodes.size();
         nodes.push_back(node_struct);
     }
 
@@ -40,12 +43,14 @@ public:
 
         fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
 
+        node_to_index[node] = nodes.size();
         nodes.push_back(node_struct);
     }
 
     void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) {
         struct bit_cuda::Node node_struct;
 
+        node_to_index[node] = nodes.size();
         nodes.push_back(node_struct);
     }
 
@@ -59,6 +64,7 @@ public:
             fill_with_variable_indices(transfer_function.rhs, node.arguments[i]);
         }
         
+        node_to_index[node] = nodes.size();
         nodes.push_back(node_struct);
     }
 
@@ -66,6 +72,8 @@ public:
         struct bit_cuda::Node node_struct;
         node_struct.transfer.x = variables[node.id];
         node_struct.transfer.rhs[0] = variables[RETURN_VAR];
+
+        node_to_index[node] = nodes.size();
         nodes.push_back(node_struct);
     }
 
@@ -75,6 +83,7 @@ public:
 
         fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
 
+        node_to_index[node] = nodes.size();
         nodes.push_back(node_struct);
     }
     
@@ -92,12 +101,15 @@ public:
         }
 
         fill_with_variable_indices(node_struct.transfer.rhs, expr_vars);
+
+        node_to_index[node] = nodes.size();
         nodes.push_back(node_struct);
     }
 
     void visit_propagation(PropagationNode<LatticeType>& node) { 
         struct bit_cuda::Node node_struct;
 
+        node_to_index[node] = nodes.size();
         nodes.push_back(node_struct);
     }
 
@@ -115,3 +127,21 @@ private:
         } 
     }
 };
+
+template<typename LatticeType>
+void add_predecessors(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, BitCudaTransformer<LatticeType> transformer){
+    for(int i = 0; i < nodes.size(); i++){
+        for (int j = 0; j < nodes[i].predecessors.size(); j++){
+            transformer.nodes[i].predecessor_index[j] = transformer.node_to_index[nodes[i].predecessors[j]];
+        }
+    }
+}
+
+template<typename LatticeType>
+void transform_bit_cuda(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes) {
+    auto variables = get_variables(nodes);
+    BitCudaTransformer<LatticeType> transformer(variables);
+    for(auto &node : nodes){
+        node->accept(transformer);
+    }
+}
