@@ -26,7 +26,7 @@ TEST_CASE("bit cuda x=$ -> y=x") {
     node2.predecessor_index[1] = -1;
     nodes.push_back(node2);
 
-    bit_cuda::execute_analysis(&nodes[0], nodes.size());
+    bit_cuda::execute_analysis_no_transfers(&nodes[0], nodes.size());
 
     CHECK_MESSAGE(nodes[0].data.data == 3, "First node results doesnt match");
     CHECK_MESSAGE(nodes[1].data.data == 7, "Second node results doesnt match");

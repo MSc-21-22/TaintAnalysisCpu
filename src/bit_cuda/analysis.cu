@@ -58,8 +58,8 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
                     }
                 }
 
-                nodes[node_index].data.data = new_data;
 
+                nodes[node_index].data.data = new_data;
                 *has_changed = true;
                 is_changed = false;
                 // __syncthreads();
@@ -89,6 +89,7 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
         fprintf(stderr, "cudaMalloc failed!");
         goto Error;
     }
+
     if(extra_transfer_count > 0){
         cudaStatus = cudaMalloc((void**)&dev_extra_transfers, sizeof(Transfer)*extra_transfer_count);
         if (cudaStatus != cudaSuccess) {
@@ -96,7 +97,6 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
             goto Error;
         }
     }
-
     dev_has_changed = (bool*) (dev_nodes + (sizeof(Node)*node_count));
 
     cudaStatus = cudaMemcpy(dev_nodes, nodes, sizeof(Node)*node_count, cudaMemcpyHostToDevice);
@@ -112,7 +112,6 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
             goto Error;
         }
     }
-
     // Launch a kernel on the GPU with one thread for each element.
     analyze<<<block_count, threadsPerBlock>>>(dev_nodes, dev_extra_transfers, dev_has_changed, node_count);
 
@@ -144,8 +143,10 @@ Error:
     if(dev_extra_transfers != nullptr){
         cudaFree(dev_extra_transfers);
     }
+
+std::cout << "Test1\n";
 }
 
-void bit_cuda::execute_analysis(Node* nodes, int node_count){
+void bit_cuda::execute_analysis_no_transfers(Node* nodes, int node_count){
     execute_analysis(nodes, node_count, nullptr, 0);
 }
