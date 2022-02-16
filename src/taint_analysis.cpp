@@ -71,7 +71,7 @@ void TaintAnalyzer::visit_return(ReturnNode<std::set<std::string>> &node)
 
     if (evaluateExpression(node.expression, node.state))
     {
-        node.state = {"£return"};
+        node.state = {RETURN_VAR};
     }
     else
     {
@@ -103,13 +103,13 @@ void TaintAnalyzer::visit_functionEntry(FunctionEntryNode<std::set<std::string>>
 
 void TaintAnalyzer::visit_assignReturn(AssignReturnNode<std::set<std::string>>& node){
     node.state = join(node);
-    if (node.state.find("£return") != node.state.end()){
+    if (node.state.find(RETURN_VAR) != node.state.end()){
         node.state.insert(node.id);
     }else{
         node.state.erase(node.id);
     }
 
-    node.state.erase("£return");
+    node.state.erase(RETURN_VAR);
 }
 
 bool evaluateExpression(std::shared_ptr<Expression> expression, std::set<std::string> &state)

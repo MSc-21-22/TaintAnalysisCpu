@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  push:
+    branches: [master]
   pull_request:
 
   workflow_dispatch:
@@ -36,4 +38,12 @@ jobs:
         run: |
           cmake -B build/ -D ANTLR_EXECUTABLE="/usr/local/lib/antlr-4.9.2-complete.jar" -D CMAKE_CUDA_ARCHITECTURES=75
           cmake --build build/  
+
+      - name: Run CPU analysis
+        run: | 
+          build/analyzer --cpu prog.sc
+
+      - name: Run multi-taint CPU analysis
+        run: |
+          build/analyzer --cpu --multi prog.sc
 

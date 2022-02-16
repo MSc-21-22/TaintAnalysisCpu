@@ -111,6 +111,6 @@ GT                 : '>' ;
 
 // Identifiers
 ID                  : [_]*[a-z][A-Za-z0-9_]*
-                    | '£';
+                    | '$';
 
 WS : (' ' | '\t' | '\n')+ -> channel(HIDDEN);

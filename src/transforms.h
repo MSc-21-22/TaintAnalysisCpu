@@ -214,7 +214,7 @@ public:
         antlrcpp::Any result = ctx->functionCall()->accept(this);
         auto node = result.as<std::shared_ptr<PropagationNode<LatticeType>>>();
 
-        auto expr = std::make_shared<VariableExpression>("£return");
+        auto expr = std::make_shared<VariableExpression>(RETURN_VAR);
         last.push_back(node);
         auto assign = std::make_shared<AssignReturnNode<LatticeType>>(ctx->ID()->getText());
         link_to_lasts(assign);

@@ -8,9 +8,6 @@
 #include "cfg.h"
 #include "matrix.h"
 
-#define RETURN_VAR "£return"
-#define TAINT_VAR "£"
-
 template <typename LatticeType, typename ElementType>
 class MatrixTransforms : public CfgVisitor<LatticeType>
 {

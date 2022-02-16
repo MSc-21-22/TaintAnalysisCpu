@@ -56,7 +56,7 @@ public:
     }
     
     void visit_assignReturn(AssignReturnNode<LatticeType>& node) override {
-        os << node.id << " = £return";
+        os << node.id << " = " << RETURN_VAR;
     }
 
     void  visit_arrayinit(ArrayInitializerNode<LatticeType>& node) override {
