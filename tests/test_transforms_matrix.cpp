@@ -28,7 +28,7 @@ TEST_CASE("unit matrix") {
 TEST_CASE("matrix transform initilization") {
 
     auto b = std::make_shared<VariableExpression>("b");
-    auto taint = std::make_shared<VariableExpression>("£");
+    auto taint = std::make_shared<VariableExpression>(TAINT_VAR);
     auto exp = std::make_shared<BinaryOperatorExpression>(b,"+",taint);
     AssignmentNode<int> node("a", exp);
 
@@ -53,7 +53,7 @@ TEST_CASE("matrix transform initilization") {
 
 TEST_CASE("matrix transform assignment") {
 
-    auto taint = std::make_shared<VariableExpression>("£");
+    auto taint = std::make_shared<VariableExpression>(TAINT_VAR);
     AssignmentNode<int> node{"a", taint};
 
     MatrixTransforms<int, float> matrixTransformer({"a","b"});
@@ -100,10 +100,11 @@ TEST_CASE("matrix transform assign return") {
 TEST_CASE("matrix transform function entry"){
 
     auto c = std::make_shared<VariableExpression>("c");
-    auto taint = std::make_shared<VariableExpression>("£");
+    auto taint = std::make_shared<VariableExpression>(TAINT_VAR);
 
     std::vector<std::shared_ptr<Expression>> args{c,taint};
-    auto funcCall = std::make_shared<PropagationNode<int>>("f(c, £)");
+    std::string taint_var(TAINT_VAR);
+    auto funcCall = std::make_shared<PropagationNode<int>>("f(c, "+ taint_var +")");
     std::vector<std::string> params{"a","b"};
     auto funcEntry = std::make_shared<FunctionEntryNode<int>>("f", params);
     funcEntry->arguments = args;
@@ -363,7 +364,7 @@ TEST_CASE("Matrix multiply 5x5"){
 }
 
 TEST_CASE("Matrix vector multiplication error 13 reproduction"){
-    // a = £
+    // a = $
     // b = a
     create_cublas();
     // 0, 0, 0, 1
@@ -402,7 +403,7 @@ TEST_CASE("Matrix vector multiplication error 13 reproduction"){
 }
 
 TEST_CASE("Run analysis"){
-    // a = £
+    // a = $
     // b = a
 
     Matrix<float> succ = unit_matrix<float>(2);

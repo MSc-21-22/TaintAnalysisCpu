@@ -8,6 +8,9 @@
 #include <ostream>
 #include "Expression.h"
 
+#define RETURN_VAR "$return"
+#define TAINT_VAR "$"
+
 template<typename LatticeType>
 class Node;
 template<typename LatticeType>
