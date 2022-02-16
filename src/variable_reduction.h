@@ -93,7 +93,7 @@ private:
 
 template<typename LatticeType>
 void reduce_variables(std::vector<std::shared_ptr<FunctionEntryNode<LatticeType>>>& entry_nodes) {
-    VariableReducer<LatticeType> reducer({"£"});
+    VariableReducer<LatticeType> reducer({TAINT_VAR});
     for(auto &entry : entry_nodes){
         entry->accept(reducer);
     }
