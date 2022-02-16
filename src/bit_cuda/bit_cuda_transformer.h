@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cfg.h>
 #include "analysis.h"
 #include <var_visitor.h>
@@ -133,11 +135,11 @@ void add_predecessors(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, Bi
 }
 
 template<typename LatticeType>
-std::vector<bit_cuda::Node> transform_bit_cuda(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes) {
+BitCudaTransformer<LatticeType> transform_bit_cuda(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes) {
     auto variables = get_variables(nodes);
     BitCudaTransformer<LatticeType> transformer(variables);
     for(auto &node : nodes){
         node->accept(transformer);
     }
-    return transformer.nodes;
+    return transformer;
 }

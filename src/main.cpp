@@ -17,6 +17,7 @@
 #include <cstring>
 #include "bit_cuda/bit_cuda_transformer.h"
 #include "bit_cuda/analysis.h"
+#include <bit_cuda/bit_vector_converter.h>
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -54,8 +55,9 @@ void cpu_multi_taint_analysis(ScTransformer<SourcedTaintState> program){
 
 void bit_cuda_analysis(ScTransformer<std::set<std::string>> program){
     reduce_variables<std::set<std::string>>(program.entryNodes);
-    std::vector<bit_cuda::Node> nodes = transform_bit_cuda(program.nodes);
-    bit_cuda::execute_analysis(&nodes[0], nodes.size());
+    BitCudaTransformer<std::set<std::string>> transformer = transform_bit_cuda(program.nodes);
+    bit_cuda::execute_analysis(&transformer.nodes[0], transformer.nodes.size());
+    set_bit_cuda_state(transformer, program.nodes);
 }
 
 int main(int argc, char *argv[]){
