@@ -58,6 +58,7 @@ void bit_cuda_analysis(ScTransformer<std::set<std::string>> program){
     BitCudaTransformer<std::set<std::string>> transformer = transform_bit_cuda(program.nodes);
     bit_cuda::execute_analysis(&transformer.nodes[0], transformer.nodes.size());
     set_bit_cuda_state(transformer, program.nodes);
+    print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
 }
 
 int main(int argc, char *argv[]){
