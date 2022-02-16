@@ -53,9 +53,23 @@ void cpu_multi_taint_analysis(ScTransformer<SourcedTaintState> program){
 }
 
 void bit_cuda_analysis(ScTransformer<std::set<std::string>> program){
-    reduce_variables<std::set<std::string>>(program.entryNodes);
-    std::vector<bit_cuda::Node> nodes = transform_bit_cuda(program.nodes);
-    bit_cuda::execute_analysis(&nodes[0], nodes.size());
+    time_func("Variable reduction: ", 
+                reduce_variables<std::set<std::string>>, program.entryNodes);
+    auto transformer = time_func<BitCudaTransformer<std::set<std::string>>>("Gpu structure transformation: ", 
+                transform_bit_cuda<std::set<std::string>>, program.nodes);
+
+    time_func("Least fixed point algorithm: ",
+            bit_cuda::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.extra_transfers.begin(), transformer.extra_transfers.size());
+
+    int i = 0;
+    for(auto& node : transformer.nodes){
+        std::cout << "Node " << i++ << ": " << node.transfer.x << " with " << node.transfer.rhs[0] <<", "<< node.transfer.rhs[1] <<", "<< node.transfer.rhs[2] <<", "<< node.transfer.rhs[3] <<", "<< node.transfer.rhs[4] << '\n';
+    }
+
+    for(auto& node : program.nodes){
+        node->state = { std::to_string(transformer.nodes[transformer.node_to_index[node.get()]].data.data) };
+    }
+    print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
 }
 
 int main(int argc, char *argv[]){
