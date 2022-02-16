@@ -67,8 +67,11 @@ void bit_cuda_analysis(ScTransformer<std::set<std::string>> program){
         time_func("Least fixed point algorithm: ",
                 bit_cuda::execute_analysis_no_transfers, &transformer.nodes[0], transformer.nodes.size());
     }
-    set_bit_cuda_state(transformer, program.nodes);
-    print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+    time_func("Save into nodes", 
+                set_bit_cuda_state, transformer, program.nodes);
+
+    if(!timing::should_benchmark)
+        print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
 }
 
 int main(int argc, char *argv[]){
