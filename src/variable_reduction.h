@@ -23,7 +23,7 @@ private:
         if(new_id != name_map.end()){
             return new_id->second;
         }else{
-            name_map[variable] = "v" + std::to_string(name_map.size());
+            name_map[variable] = "v" + std::to_string(name_map.size() - 1);
             return name_map[variable];
         }
     }
@@ -93,7 +93,7 @@ private:
 
 template<typename LatticeType>
 void reduce_variables(std::vector<std::shared_ptr<FunctionEntryNode<LatticeType>>>& entry_nodes) {
-    VariableReducer<LatticeType> reducer({TAINT_VAR});
+    VariableReducer<LatticeType> reducer({TAINT_VAR, RETURN_VAR});
     for(auto &entry : entry_nodes){
         entry->accept(reducer);
     }

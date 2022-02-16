@@ -4,8 +4,8 @@
 #include "analysis.h"
 #include <var_visitor.h>
 
-#define RETURN_VAR "£return"
-#define TAINT_VAR "£"
+#define RETURN_VAR "$return"
+#define TAINT_VAR "$"
 
 template <typename LatticeType>
 class BitCudaTransformer : public CfgVisitor<LatticeType>
@@ -18,13 +18,17 @@ public:
 
     BitCudaTransformer(std::set<std::string> progVariables){
         int i = 0;
-        variables[RETURN_VAR] = i++;
         variables[TAINT_VAR] = i++;
+        variables[RETURN_VAR] = i++;
+
+        std::cout << TAINT_VAR << " -> " << variables[TAINT_VAR] << " : " << (1 << variables[TAINT_VAR])  <<'\n';
+        std::cout << RETURN_VAR << " -> " << variables[RETURN_VAR] << " : " << (1 << variables[RETURN_VAR])  <<'\n';
 
         std::set<std::string>::iterator it;
         for (it=progVariables.begin(); it!=progVariables.end(); it++){
             if(*it != TAINT_VAR && *it != RETURN_VAR){
                 variables[*it] = i++;
+                std::cout << *it << " -> " << variables[*it] << " : " << (1 << variables[*it])  <<'\n';
             }
         }
 
@@ -126,10 +130,11 @@ private:
 };
 
 template<typename LatticeType>
-void add_predecessors(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, BitCudaTransformer<LatticeType> transformer){
+void add_predecessors(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, BitCudaTransformer<LatticeType>& transformer){
     for(int i = 0; i < nodes.size(); i++){
-        for (int j = 0; j < nodes[i].predecessors.size(); j++){
-            transformer.nodes[i].predecessor_index[j] = transformer.node_to_index[&(nodes[i].predecessors[j])];
+        int j = 0;
+        for (auto pred_it = nodes[i]->predecessors.begin(); pred_it != nodes[i]->predecessors.end(); ++pred_it){
+            transformer.nodes[i].predecessor_index[j++] = transformer.node_to_index[pred_it->get()];
         }
     }
 }
@@ -141,5 +146,6 @@ BitCudaTransformer<LatticeType> transform_bit_cuda(std::vector<std::shared_ptr<N
     for(auto &node : nodes){
         node->accept(transformer);
     }
+    add_predecessors(nodes, transformer);
     return transformer;
 }
