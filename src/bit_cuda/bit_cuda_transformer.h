@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cfg.h>
 #include "analysis.h"
 #include <var_visitor.h>

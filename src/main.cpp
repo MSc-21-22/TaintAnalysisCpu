@@ -17,6 +17,7 @@
 #include <cstring>
 #include "bit_cuda/bit_cuda_transformer.h"
 #include "bit_cuda/analysis.h"
+#include <bit_cuda/bit_vector_converter.h>
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -66,15 +67,11 @@ void bit_cuda_analysis(ScTransformer<std::set<std::string>> program){
         time_func("Least fixed point algorithm: ",
                 bit_cuda::execute_analysis_no_transfers, &transformer.nodes[0], transformer.nodes.size());
     }
-    int i = 0;
-    for(auto& node : transformer.nodes){
-        std::cout << "Node " << i++ << ": " << node.transfer.x << " with " << node.transfer.rhs[0] <<", "<< node.transfer.rhs[1] <<", "<< node.transfer.rhs[2] <<", "<< node.transfer.rhs[3] <<", "<< node.transfer.rhs[4] << '\n';
-    }
+    time_func("Save into nodes", 
+                set_bit_cuda_state, transformer, program.nodes);
 
-    for(auto& node : program.nodes){
-        node->state = { std::to_string(transformer.nodes[transformer.node_to_index[node.get()]].data.data) };
-    }
-    print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+    if(!timing::should_benchmark)
+        print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
 }
 
 int main(int argc, char *argv[]){
