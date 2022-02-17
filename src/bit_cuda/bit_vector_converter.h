@@ -10,7 +10,7 @@ void set_bit_cuda_state(BitCudaTransformer<std::set<std::string>>& transformer,
     {
         for (auto& [var_name, var_index] : transformer.variables)
         {
-            if((transformer.nodes[i].data.data >> var_index) & 1){
+            if((transformer.nodes[i].data >> var_index) & 1){
                 nodes[i]->state.insert(var_name);
             }
         }                
