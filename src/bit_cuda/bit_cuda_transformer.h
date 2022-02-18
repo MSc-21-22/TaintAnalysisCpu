@@ -4,9 +4,6 @@
 #include "analysis.h"
 #include <var_visitor.h>
 
-#define RETURN_VAR "$return"
-#define TAINT_VAR "$"
-
 template <typename LatticeType>
 class BitCudaTransformer : public CfgVisitor<LatticeType>
 {
@@ -21,14 +18,10 @@ public:
         variables[TAINT_VAR] = i++;
         variables[RETURN_VAR] = i++;
 
-        std::cout << TAINT_VAR << " -> " << variables[TAINT_VAR] << " : " << (1 << variables[TAINT_VAR])  <<'\n';
-        std::cout << RETURN_VAR << " -> " << variables[RETURN_VAR] << " : " << (1 << variables[RETURN_VAR])  <<'\n';
-
         std::set<std::string>::iterator it;
         for (it=progVariables.begin(); it!=progVariables.end(); it++){
             if(*it != TAINT_VAR && *it != RETURN_VAR){
                 variables[*it] = i++;
-                std::cout << *it << " -> " << variables[*it] << " : " << (1 << variables[*it])  <<'\n';
             }
         }
 

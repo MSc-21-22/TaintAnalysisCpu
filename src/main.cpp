@@ -62,7 +62,7 @@ void bit_cuda_analysis(ScTransformer<std::set<std::string>> program){
 
     if(transformer.extra_transfers.size() >0 ){
         time_func("Least fixed point algorithm: ",
-                bit_cuda::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.extra_transfers.begin(), transformer.extra_transfers.size());
+                bit_cuda::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &transformer.extra_transfers[0], transformer.extra_transfers.size());
     }else{
         time_func("Least fixed point algorithm: ",
                 bit_cuda::execute_analysis_no_transfers, &transformer.nodes[0], transformer.nodes.size());

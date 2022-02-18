@@ -147,8 +147,6 @@ Error:
     if(dev_extra_transfers != nullptr){
         cudaFree(dev_extra_transfers);
     }
-
-std::cout << "Test1\n";
 }
 
 void bit_cuda::execute_analysis_no_transfers(Node* nodes, int node_count){
