@@ -59,14 +59,9 @@ void bit_cuda_analysis(ScTransformer<std::set<std::string>> program){
     auto transformer = time_func<BitCudaTransformer<std::set<std::string>>>("Gpu structure transformation: ", 
                 transform_bit_cuda<std::set<std::string>>, program.nodes);
     
+    time_func("Least fixed point algorithm: ",
+            bit_cuda::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.transfer_functions.begin(), transformer.transfer_functions.size());
 
-    if(transformer.extra_transfers.size() >0 ){
-        time_func("Least fixed point algorithm: ",
-                bit_cuda::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &transformer.extra_transfers[0], transformer.extra_transfers.size());
-    }else{
-        time_func("Least fixed point algorithm: ",
-                bit_cuda::execute_analysis_no_transfers, &transformer.nodes[0], transformer.nodes.size());
-    }
     time_func("Save into nodes", 
                 set_bit_cuda_state, transformer, program.nodes);
 

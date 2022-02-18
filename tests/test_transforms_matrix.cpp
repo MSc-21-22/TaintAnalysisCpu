@@ -11,22 +11,28 @@
 
 TEST_CASE("bit cuda x=$ -> y=x") {
     std::vector<bit_cuda::Node> nodes;
+    std::vector<bit_cuda::Transfer> transfer_functions{};
+
     bit_cuda::Node node1;
-    node1.transfer.x = 1;
-    node1.transfer.rhs[0] = 0;
-    node1.transfer.rhs[1] = -1;
+    node1.first_transfer_index = 0;
+    bit_cuda::Transfer& transfer1 = transfer_functions.emplace_back();
+    transfer1.x = 1;
+    transfer1.rhs[0] = 0;
+    transfer1.rhs[1] = -1;
     node1.predecessor_index[0] = -1;
     nodes.push_back(node1);
     
     bit_cuda::Node node2;
-    node2.transfer.x = 2;
-    node2.transfer.rhs[0] = 1;
-    node2.transfer.rhs[1] = -1;
+    node2.first_transfer_index = 1;
+    bit_cuda::Transfer& transfer2 = transfer_functions.emplace_back();
+    transfer2.x = 2;
+    transfer2.rhs[0] = 1;
+    transfer2.rhs[1] = -1;
     node2.predecessor_index[0] = 0;
     node2.predecessor_index[1] = -1;
     nodes.push_back(node2);
 
-    bit_cuda::execute_analysis_no_transfers(&nodes[0], nodes.size());
+    bit_cuda::execute_analysis(&nodes[0], nodes.size(), &transfer_functions[0], transfer_functions.size());
 
     CHECK_MESSAGE(nodes[0].data == 3, "First node results doesnt match");
     CHECK_MESSAGE(nodes[1].data == 7, "Second node results doesnt match");
@@ -36,13 +42,16 @@ TEST_CASE("bit cuda multi transforms") {
     std::vector<bit_cuda::Node> nodes;
     std::vector<bit_cuda::Transfer> transfers;
     bit_cuda::Node& node1 = nodes.emplace_back();
-    node1.transfer.x = 1;
-    node1.transfer.rhs[0] = 0;
-    node1.transfer.rhs[1] = -1;
+
+    bit_cuda::Transfer& transfer1 = transfers.emplace_back();
+    node1.first_transfer_index = 0;
+    transfer1.x = 1;
+    transfer1.rhs[0] = 0;
+    transfer1.rhs[1] = -1;
     node1.predecessor_index[0] = -1;
 
     bit_cuda::Transfer& transfer = transfers.emplace_back();
-    node1.transfer.next_transfer_index = 0;
+    transfer.next_transfer_index = 1;
     transfer.x = 2;
     transfer.rhs[0] = 0;
 

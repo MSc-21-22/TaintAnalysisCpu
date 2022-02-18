@@ -12,7 +12,7 @@ struct Transfer{ // x = y + z     { x, [y, z]}
 using BitVector = int32_t;
 
 struct Node{
-    Transfer transfer;
+    int first_transfer_index = -1;
     int predecessor_index[5] = {-1,-1,-1,-1,-1};
     BitVector join_mask = INT32_MAX;
     BitVector data;
