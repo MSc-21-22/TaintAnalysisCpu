@@ -56,18 +56,13 @@ public:
         node_struct.join_mask = 0;
 
         if(node.arguments.size() >= 1){
-            bit_cuda::Transfer* last;
-            int last_index;
+            node_struct.first_transfer_index = add_transfer_function(node.formal_parameters[0], node.arguments[0]);
+            bit_cuda::Transfer& last = transfer_functions[node_struct.first_transfer_index];
             
-            for (int i = 0; i < node.arguments.size(); i++)
+            for (int i = 1; i < node.arguments.size(); i++)
             {
-                last_index = add_transfer_function(node.formal_parameters[i], node.arguments[i]);
-                if(i == 0){
-                    node_struct.first_transfer_index = last_index;
-                }else{
-                    last = &transfer_functions[last_index];
-                    last->next_transfer_index = add_transfer_function(node.formal_parameters[0], node.arguments[i]);
-                }
+                last.next_transfer_index = add_transfer_function(node.formal_parameters[0], node.arguments[i]);
+                last = &transfer_functions[last.next_transfer_index];
             }
         }
     }
