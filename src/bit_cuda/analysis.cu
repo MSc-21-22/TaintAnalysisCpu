@@ -37,8 +37,11 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
 
             //Transfer
             if(is_changed){
-                Transfer* transfer = &nodes[node_index].transfer;
-                while(transfer != nullptr){
+                Transfer* transfer;
+                int transfer_index = nodes[node_index].first_transfer_index;
+
+                while(transfer_index != -1){
+                    transfer = &transfers[transfer_index];
                     int var_index = 0;
                     int next_var = transfer->rhs[var_index];
                     while(next_var != -1){
@@ -50,14 +53,8 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
                         ++var_index;
                         next_var = transfer->rhs[var_index];
                     }
-
-                    if(transfer->next_transfer_index != -1){
-                        transfer = &transfers[transfer->next_transfer_index];
-                    }else{
-                        break;
-                    }
+                    transfer_index = transfer->next_transfer_index;
                 }
-
 
                 nodes[node_index].data.data = new_data;
                 *has_changed = true;
@@ -69,7 +66,7 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
 
 }
 
-void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers, int extra_transfer_count) {
+void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers, int transfer_count) {
     Node* dev_nodes = nullptr;
     bool* dev_has_changed = nullptr;
     Transfer* dev_extra_transfers = nullptr;
@@ -90,8 +87,8 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
         goto Error;
     }
 
-    if(extra_transfer_count > 0){
-        cudaStatus = cudaMalloc((void**)&dev_extra_transfers, sizeof(Transfer)*extra_transfer_count);
+    if(transfer_count > 0){
+        cudaStatus = cudaMalloc((void**)&dev_extra_transfers, sizeof(Transfer)*transfer_count);
         if (cudaStatus != cudaSuccess) {
             fprintf(stderr, "cudaMalloc failed!");
             goto Error;
@@ -105,8 +102,8 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
         goto Error;
     }
 
-    if(extra_transfer_count > 0){
-        cudaStatus = cudaMemcpy(dev_extra_transfers, transfers, sizeof(Transfer)*extra_transfer_count, cudaMemcpyHostToDevice);
+    if(transfer_count > 0){
+        cudaStatus = cudaMemcpy(dev_extra_transfers, transfers, sizeof(Transfer)*transfer_count, cudaMemcpyHostToDevice);
         if (cudaStatus != cudaSuccess) {
             fprintf(stderr, "Copy false to gpu failed");
             goto Error;
@@ -145,8 +142,4 @@ Error:
     }
 
 std::cout << "Test1\n";
-}
-
-void bit_cuda::execute_analysis_no_transfers(Node* nodes, int node_count){
-    execute_analysis(nodes, node_count, nullptr, 0);
 }

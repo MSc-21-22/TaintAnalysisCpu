@@ -13,7 +13,7 @@ struct BitVector{
 };
 
 struct Node{
-    Transfer transfer;
+    int first_transfer_index = -1;
     int predecessor_index[5] = {-1,-1,-1,-1,-1};
     BitVector data;
 };

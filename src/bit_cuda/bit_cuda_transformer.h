@@ -12,7 +12,7 @@ class BitCudaTransformer : public CfgVisitor<LatticeType>
 {
 public:
     std::vector<bit_cuda::Node> nodes{};
-    std::vector<bit_cuda::Transfer> extra_transfers{};
+    std::vector<bit_cuda::Transfer> transfer_functions{};
     std::map<Node<LatticeType>*, int> node_to_index{};
     std::map<std::string, int> variables{};
 
@@ -38,16 +38,14 @@ public:
         node_to_index[&node] = nodes.size();
         bit_cuda::Node& node_struct = nodes.emplace_back();
 
-        node_struct.transfer.x = variables[node.id];
-        fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
+        node_struct.first_transfer_index = add_transfer_function(node.id, node.expression);
     }
 
     void visit_return(ReturnNode<LatticeType>& node) {
         node_to_index[&node] = nodes.size();
         bit_cuda::Node& node_struct = nodes.emplace_back();
 
-        node_struct.transfer.x = variables[RETURN_VAR];
-        fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
+        node_struct.first_transfer_index = add_transfer_function(RETURN_VAR, node.expression);
     }
 
     void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) {
@@ -59,17 +57,20 @@ public:
         node_to_index[&node] = nodes.size();
         bit_cuda::Node& node_struct = nodes.emplace_back();
 
+
         if(node.arguments.size() >= 1){
-            bit_cuda::Transfer& last = node_struct.transfer;
-            fill_with_variable_indices(node_struct.transfer.rhs, node.arguments[0]);
-
-            for (int i = 1; i < node.arguments.size(); i++)
+            bit_cuda::Transfer* last;
+            int last_index;
+            
+            for (int i = 0; i < node.arguments.size(); i++)
             {
-                last.next_transfer_index = extra_transfers.size();
-
-                extra_transfers.emplace_back();
-                fill_with_variable_indices(extra_transfers.back().rhs, node.arguments[i]);
-                last = extra_transfers.back();
+                last_index = add_transfer_function(node.formal_parameters[i], node.arguments[i]);
+                if(i == 0){
+                    node_struct.first_transfer_index = last_index;
+                }else{
+                    last = &transfer_functions[last_index];
+                    last->next_transfer_index = add_transfer_function(node.formal_parameters[0], node.arguments[i]);
+                }
             }
         }
     }
@@ -78,23 +79,19 @@ public:
         node_to_index[&node] = nodes.size();
         bit_cuda::Node& node_struct = nodes.emplace_back();
 
-        node_struct.transfer.x = variables[node.id];
-        node_struct.transfer.rhs[0] = variables[RETURN_VAR];
+        node_struct.first_transfer_index = add_transfer_function(node.id, {RETURN_VAR});
     }
 
     void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node) { 
         node_to_index[&node] = nodes.size();
         bit_cuda::Node& node_struct = nodes.emplace_back();
 
-        node_struct.transfer.x = variables[node.id];
-        fill_with_variable_indices(node_struct.transfer.rhs, node.expression);
+        node_struct.first_transfer_index = add_transfer_function(node.id, node.expression);
     }
     
     void visit_arrayinit(ArrayInitializerNode<LatticeType>& node) { 
         node_to_index[&node] = nodes.size();
         bit_cuda::Node& node_struct = nodes.emplace_back();
-
-        node_struct.transfer.x = variables[node.id];
 
         // Get vars from all array element expressions 
         std::set<std::string> expr_vars;
@@ -105,7 +102,7 @@ public:
                            std::inserter(expr_vars, expr_vars.begin()));
         }
 
-        fill_with_variable_indices(node_struct.transfer.rhs, expr_vars);
+        node_struct.first_transfer_index = add_transfer_function(node.id, expr_vars);
     }
 
     void visit_propagation(PropagationNode<LatticeType>& node) { 
@@ -114,9 +111,21 @@ public:
     }
 
 private:
-    void fill_with_variable_indices(int* arr, std::shared_ptr<Expression>& expression){
-        auto variables = expression->get_variables();
-        fill_with_variable_indices(arr, variables);
+    int add_transfer_function(std::string x, std::set<std::string>& vars){
+        int index = transfer_functions.size();
+        bit_cuda::Transfer& current_transfer = transfer_functions.emplace_back();
+        current_transfer.x = variables[x];
+        fill_with_variable_indices(current_transfer.rhs, vars);
+        return index;
+    }
+
+    int add_transfer_function(std::string x, std::set<std::string>&& vars){
+        return add_transfer_function(x, vars);
+    }
+
+    int add_transfer_function(std::string x, std::shared_ptr<Expression>& expression){
+        auto vars = expression->get_variables();
+        return add_transfer_function(x, vars);
     }
 
     void fill_with_variable_indices(int* arr, std::set<std::string>& vars){
