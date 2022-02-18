@@ -14,25 +14,27 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
         *has_changed = true;
 
     if(node_index < node_count){
-        nodes[node_index].data.data = 1; // Set taint constant to true
+        nodes[node_index].data = 1; // Set taint constant to true
+        
         bool is_changed = true;
+        BitVector last_joined = 0;
+        BitVector current = nodes[node_index].data;
 
         while(*has_changed){
             if(node_index == 0)
                 *has_changed = false;
-            long int new_data = 0;
+            BitVector joined_data = 0;
             //Join
             {
-                long int old_data = nodes[node_index].data.data;
-                new_data = old_data;
                 int pred_index = 0;
                 while (nodes[node_index].predecessor_index[pred_index] != -1){
-                    __syncthreads();
-                    new_data |= nodes[nodes[node_index].predecessor_index[pred_index]].data.data;
+                    joined_data |= nodes[nodes[node_index].predecessor_index[pred_index]].data;
                     ++pred_index;
                 }
 
-                is_changed |= old_data != new_data;
+                is_changed |= last_joined != joined_data;
+                last_joined = joined_data;
+                current |= joined_data & nodes[node_index].join_mask;
             }
 
             //Transfer
@@ -46,8 +48,8 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
                     int next_var = transfer->rhs[var_index];
                     while(next_var != -1){
 
-                        if((new_data & (1 << next_var)) != 0){
-                            new_data |= (1 << transfer->x);
+                        if((joined_data & (1 << next_var)) != 0){
+                            current |= (1 << transfer->x);
                             break;
                         }
                         ++var_index;
@@ -56,11 +58,13 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
                     transfer_index = transfer->next_transfer_index;
                 }
 
-                nodes[node_index].data.data = new_data;
+                nodes[node_index].data = current;
                 *has_changed = true;
                 is_changed = false;
                 // __syncthreads();
             }
+            __syncthreads();
+            __threadfence();
         }
     }
 
@@ -140,6 +144,4 @@ Error:
     if(dev_extra_transfers != nullptr){
         cudaFree(dev_extra_transfers);
     }
-
-std::cout << "Test1\n";
 }

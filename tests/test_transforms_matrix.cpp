@@ -34,8 +34,8 @@ TEST_CASE("bit cuda x=$ -> y=x") {
 
     bit_cuda::execute_analysis(&nodes[0], nodes.size(), &transfer_functions[0], transfer_functions.size());
 
-    CHECK_MESSAGE(nodes[0].data.data == 3, "First node results doesnt match");
-    CHECK_MESSAGE(nodes[1].data.data == 7, "Second node results doesnt match");
+    CHECK_MESSAGE(nodes[0].data == 3, "First node results doesnt match");
+    CHECK_MESSAGE(nodes[1].data == 7, "Second node results doesnt match");
 } 
 
 TEST_CASE("bit cuda multi transforms") {
@@ -57,7 +57,7 @@ TEST_CASE("bit cuda multi transforms") {
 
     bit_cuda::execute_analysis(&nodes[0], nodes.size(), &transfers[0], transfers.size());
 
-    CHECK_MESSAGE(nodes[0].data.data == 7, "First node results doesnt match");
+    CHECK_MESSAGE(nodes[0].data == 7, "First node results doesnt match");
 } 
 
 TEST_CASE("unit matrix") {

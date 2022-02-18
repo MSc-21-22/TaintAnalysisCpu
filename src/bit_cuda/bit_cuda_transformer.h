@@ -4,9 +4,6 @@
 #include "analysis.h"
 #include <var_visitor.h>
 
-#define RETURN_VAR "$return"
-#define TAINT_VAR "$"
-
 template <typename LatticeType>
 class BitCudaTransformer : public CfgVisitor<LatticeType>
 {
@@ -21,14 +18,10 @@ public:
         variables[TAINT_VAR] = i++;
         variables[RETURN_VAR] = i++;
 
-        std::cout << TAINT_VAR << " -> " << variables[TAINT_VAR] << " : " << (1 << variables[TAINT_VAR])  <<'\n';
-        std::cout << RETURN_VAR << " -> " << variables[RETURN_VAR] << " : " << (1 << variables[RETURN_VAR])  <<'\n';
-
         std::set<std::string>::iterator it;
         for (it=progVariables.begin(); it!=progVariables.end(); it++){
             if(*it != TAINT_VAR && *it != RETURN_VAR){
                 variables[*it] = i++;
-                std::cout << *it << " -> " << variables[*it] << " : " << (1 << variables[*it])  <<'\n';
             }
         }
 
@@ -39,6 +32,7 @@ public:
         bit_cuda::Node& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(node.id, node.expression);
+        node_struct.join_mask ^= 1 << variables[node.id];
     }
 
     void visit_return(ReturnNode<LatticeType>& node) {
@@ -46,17 +40,20 @@ public:
         bit_cuda::Node& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(RETURN_VAR, node.expression);
+        node_struct.join_mask = 0;
     }
 
     void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) {
         node_to_index[&node] = nodes.size();
         bit_cuda::Node& node_struct = nodes.emplace_back();
+        node_struct.join_mask = 0;
     }
 
     void visit_functionEntry(FunctionEntryNode<LatticeType>& node) { 
         node_to_index[&node] = nodes.size();
         bit_cuda::Node& node_struct = nodes.emplace_back();
 
+        node_struct.join_mask = 0;
 
         if(node.arguments.size() >= 1){
             bit_cuda::Transfer* last;
@@ -80,6 +77,8 @@ public:
         bit_cuda::Node& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(node.id, {RETURN_VAR});
+        node_struct.join_mask ^= 1 << variables[node.id];
+        node_struct.join_mask ^= 1 << variables[RETURN_VAR];
     }
 
     void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node) { 
@@ -87,11 +86,14 @@ public:
         bit_cuda::Node& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(node.id, node.expression);
+        node_struct.join_mask ^= 1 << variables[node.id];
     }
     
     void visit_arrayinit(ArrayInitializerNode<LatticeType>& node) { 
         node_to_index[&node] = nodes.size();
         bit_cuda::Node& node_struct = nodes.emplace_back();
+
+        node_struct.join_mask ^= 1 << variables[node.id];
 
         // Get vars from all array element expressions 
         std::set<std::string> expr_vars;
