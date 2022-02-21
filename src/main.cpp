@@ -18,6 +18,7 @@
 #include "bit_cuda/bit_cuda_transformer.h"
 #include "bit_cuda/analysis.h"
 #include <bit_cuda/bit_vector_converter.h>
+#include "divided_bit_cuda/divisor.h"
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -72,7 +73,7 @@ void bit_cuda_analysis(ScTransformer<std::set<std::string>> program){
 int main(int argc, char *argv[]){
     if(argc > 1){
 
-        bool gpu_flag = false, multi_taint_flag = false, cpu_flag = false, benchmark_all = false, cuda_flag = false;
+        bool gpu_flag = false, multi_taint_flag = false, cpu_flag = false, benchmark_all = false, cuda_flag = false, duda_flag = false;
         for (int i = 1; i < argc; i++)
         {
             char* arg = argv[i];
@@ -87,6 +88,11 @@ int main(int argc, char *argv[]){
 
             if(strcmp(arg, "--cuda") == 0 || strcmp(arg, "-cu") == 0){
                 cuda_flag = true;
+            }
+
+            if(strcmp(arg, "--duda") == 0 || strcmp(arg, "-du") == 0){
+                duda_flag = true;
+                std::cout << "DUDAAAA\n";
             }
 
             if(strcmp(arg, "--benchmark") == 0 || strcmp(arg, "-b") == 0){
@@ -139,6 +145,14 @@ int main(int argc, char *argv[]){
             std::cout << "Running bit-cuda analysis" << std::endl;
             auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
             bit_cuda_analysis(program);
+        }else if(duda_flag){
+            std::cout << "Running divided bit-cuda analysis" << std::endl;
+            auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+            std::vector<std::vector<std::shared_ptr<Node<std::set<std::string>>>>> functions = split_by_function<std::set<std::string>>(program.functionNodes);
+            for(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes_vec : functions){
+                std::cout << "Function has " << nodes_vec.size() << " nodes\n";
+            }
+
         }else if(cpu_flag){
             if(multi_taint_flag){
                 std::cout << "Running multi-taint analysis using CPU" << std::endl;

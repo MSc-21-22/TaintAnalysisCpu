@@ -67,6 +67,9 @@ public:
                         std::vector<std::shared_ptr<Expression>> arrayContent)
                             : type(type), id(id), arraySize(arraySize), arrayContent(arrayContent){}
     ArrayInitializerNode() = default;
+    ArrayInitializerNode(ArrayInitializerNode<LatticeType>&& node) = default;
+    ArrayInitializerNode(const ArrayInitializerNode<LatticeType>& node) = default;
+    ArrayInitializerNode& operator=(const ArrayInitializerNode<LatticeType>& node) = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_arrayinit(*this);
@@ -79,8 +82,11 @@ public:
     std::string id;
     std::shared_ptr<Expression> expression;
 
+    AssignmentNode(AssignmentNode<LatticeType>&& node) = default;
     AssignmentNode(std::string id, std::shared_ptr<Expression> expression) : id(id), expression(expression){}
     AssignmentNode() = default;
+    AssignmentNode(const AssignmentNode<LatticeType>& node) = default;
+    AssignmentNode& operator=(const AssignmentNode<LatticeType>& node) = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_assignment(*this);
@@ -94,11 +100,14 @@ public:
     std::string arrayid;
     std::shared_ptr<Expression> expression;
 
+    ArrayAssignmentNode(ArrayAssignmentNode<LatticeType>&& node) = default;
     ArrayAssignmentNode(std::string id,
                         std::string arrayid,
                         std::shared_ptr<Expression> expression)
                             : id(id), arrayid(arrayid), expression(expression) {}
     ArrayAssignmentNode() = default;
+    ArrayAssignmentNode(const ArrayAssignmentNode<LatticeType>& node) = default;
+    ArrayAssignmentNode& operator=(const ArrayAssignmentNode<LatticeType>& node) = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_arrayAssignment(*this);
@@ -111,8 +120,11 @@ public:
     std::shared_ptr<Expression> expression;
     std::string functionId;
 
+    ReturnNode(ReturnNode<LatticeType>&& node) = default;
     ReturnNode(std::shared_ptr<Expression> expr, std::string functionId) : expression(expr), functionId(functionId) {}
     ReturnNode() = default;
+    ReturnNode(const ReturnNode<LatticeType>& node) = default;
+    ReturnNode& operator=(const ReturnNode<LatticeType>& node) = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_return(*this);
@@ -125,8 +137,11 @@ class EmptyReturnNode : public Node<LatticeType> {
 public:
     std::string functionId;
 
+    EmptyReturnNode(EmptyReturnNode<LatticeType>&& node) = default;
     EmptyReturnNode(std::string functionId) : functionId(functionId) {}
     EmptyReturnNode() = default;
+    EmptyReturnNode(const EmptyReturnNode<LatticeType>& node) = default;
+    EmptyReturnNode& operator=(const EmptyReturnNode<LatticeType>& node) = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_emptyReturn(*this);
@@ -144,6 +159,9 @@ public:
     FunctionEntryNode(std::string function_id, std::vector<std::string> formal_parameters) : function_id(function_id), formal_parameters(formal_parameters) {
         exit = std::make_shared<PropagationNode<LatticeType>>("Exit");
     }
+    FunctionEntryNode(FunctionEntryNode<LatticeType>&& node) = default;
+    FunctionEntryNode(const FunctionEntryNode<LatticeType>& node) = default;
+    FunctionEntryNode& operator=(const FunctionEntryNode<LatticeType>& node) = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_functionEntry(*this);
@@ -155,8 +173,11 @@ class AssignReturnNode : public Node<LatticeType> {
 public:
     std::string id;
 
+    AssignReturnNode(AssignReturnNode<LatticeType>&& node) = default;
     AssignReturnNode(std::string id) : id(id) {}
     AssignReturnNode() = default;
+    AssignReturnNode(const AssignReturnNode<LatticeType>& node) = default;
+    AssignReturnNode& operator=(const AssignReturnNode<LatticeType>& node) = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_assignReturn(*this);
@@ -170,6 +191,9 @@ public:
 
     PropagationNode(std::string syntax) : syntax(syntax) {}
     PropagationNode() = default;
+    PropagationNode(PropagationNode<LatticeType>&& node) = default;
+    PropagationNode(const PropagationNode<LatticeType>& node) = default;
+    PropagationNode& operator=(const PropagationNode<LatticeType>& node) = default;
 
     void accept(CfgVisitor<LatticeType>& visitor){
         visitor.visit_propagation(*this);
