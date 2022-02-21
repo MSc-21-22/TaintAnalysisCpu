@@ -1,5 +1,5 @@
 
-// Generated from /home/nhug/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from .\sc.g4 by ANTLR 4.9.2
 
 #pragma once
 
@@ -28,7 +28,7 @@ public:
     RuleParameter = 17, RuleType = 18
   };
 
-  scParser(antlr4::TokenStream *input);
+  explicit scParser(antlr4::TokenStream *input);
   ~scParser();
 
   virtual std::string getGrammarFileName() const override;
@@ -255,7 +255,7 @@ public:
 
   class  ExpressionMContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *op = nullptr;;
+    antlr4::Token *op = nullptr;
     ExpressionMContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     ExpressionContext *expression();

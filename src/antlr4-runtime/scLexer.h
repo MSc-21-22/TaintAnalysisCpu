@@ -1,5 +1,5 @@
 
-// Generated from /home/nhug/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from .\sc.g4 by ANTLR 4.9.2
 
 #pragma once
 
@@ -19,7 +19,7 @@ public:
     WS = 26
   };
 
-  scLexer(antlr4::CharStream *input);
+  explicit scLexer(antlr4::CharStream *input);
   ~scLexer();
 
   virtual std::string getGrammarFileName() const override;

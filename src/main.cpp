@@ -15,6 +15,9 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <cstring>
+#include "bit_cuda/bit_cuda_transformer.h"
+#include "bit_cuda/analysis.h"
+#include <bit_cuda/bit_vector_converter.h>
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -29,6 +32,7 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
 void cpu_analysis(ScTransformer<std::set<std::string>> program){
     TaintAnalyzer analyzer;
 
+    reduce_variables<std::set<std::string>>(program.entryNodes);
     for(auto& node : program.nodes){
         node->state.insert("$");
     }
@@ -50,10 +54,26 @@ void cpu_multi_taint_analysis(ScTransformer<SourcedTaintState> program){
     }
 }
 
+void bit_cuda_analysis(ScTransformer<std::set<std::string>> program){
+    time_func("Variable reduction: ", 
+                reduce_variables<std::set<std::string>>, program.entryNodes);
+    auto transformer = time_func<BitCudaTransformer<std::set<std::string>>>("Gpu structure transformation: ", 
+                transform_bit_cuda<std::set<std::string>>, program.nodes);
+    
+    time_func("Least fixed point algorithm: ",
+            bit_cuda::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.transfer_functions.begin(), transformer.transfer_functions.size());
+
+    time_func("Save into nodes", 
+                set_bit_cuda_state, transformer, program.nodes);
+
+    if(!timing::should_benchmark)
+        print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+}
+
 int main(int argc, char *argv[]){
     if(argc > 1){
 
-        bool gpu_flag = false, multi_taint_flag = false, cpu_flag = false, benchmark_all = false;
+        bool gpu_flag = false, multi_taint_flag = false, cpu_flag = false, benchmark_all = false, cuda_flag = false;
         for (int i = 1; i < argc; i++)
         {
             char* arg = argv[i];
@@ -64,6 +84,10 @@ int main(int argc, char *argv[]){
 
             if(strcmp(arg, "--gpu") == 0 || strcmp(arg, "-g") == 0){
                 gpu_flag = true;
+            }
+
+            if(strcmp(arg, "--cuda") == 0 || strcmp(arg, "-cu") == 0){
+                cuda_flag = true;
             }
 
             if(strcmp(arg, "--benchmark") == 0 || strcmp(arg, "-b") == 0){
@@ -112,6 +136,10 @@ int main(int argc, char *argv[]){
             if(!timing::should_benchmark){
                 print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
             }
+        }else if(cuda_flag){
+            std::cout << "Running bit-cuda analysis" << std::endl;
+            auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+            bit_cuda_analysis(program);
         }else if(cpu_flag){
             if(multi_taint_flag){
                 std::cout << "Running multi-taint analysis using CPU" << std::endl;
@@ -130,6 +158,7 @@ int main(int argc, char *argv[]){
             std::cout << " with cpu flag:\n";
             std::cout << "  --multi -m for multi taint analysis\n";
             std::cout << " --gpu -g for use on gpu\n";
+            std::cout << " --cuda -cu for bit-cuda implementation\n";
             std::cout << " --benchmark -b to enable benchmarking where possible\n";
         }
 
