@@ -4,6 +4,7 @@
 #include "string"
 #include "algorithm"
 #include <map>
+#include <iostream>
 
 class Expression
 {
@@ -12,6 +13,7 @@ public:
     virtual std::set<std::string> get_variables() = 0;
     virtual std::string dotPrint() = 0;
     virtual void replace_names(std::map<std::string, std::string>& names) = 0;
+    virtual std::shared_ptr<Expression> deep_copy() = 0;
 };
 
 class EmptyExpression : public Expression
@@ -37,6 +39,10 @@ public:
 
     void replace_names(std::map<std::string, std::string>& names){
 
+    }
+
+    std::shared_ptr<Expression> deep_copy(){
+        return std::make_shared<EmptyExpression>();
     }
 };
 
@@ -74,6 +80,10 @@ public:
         lhs->replace_names(names);
         rhs->replace_names(names);
     }
+
+    std::shared_ptr<Expression> deep_copy(){
+        return std::make_shared<BinaryOperatorExpression>(lhs->deep_copy(), op, rhs->deep_copy());
+    }
 };
 
 class LiteralExpression : public Expression
@@ -99,6 +109,10 @@ public:
 
     void replace_names(std::map<std::string, std::string>& names){
 
+    }
+
+    std::shared_ptr<Expression> deep_copy(){
+        return std::make_shared<LiteralExpression>(literal);
     }
 };
 
@@ -128,8 +142,13 @@ public:
         if(new_id != names.end()){
             id = new_id->second;
         }else{
-            names[id] = "v" + std::to_string(names.size());
+            names[id] = "v" + std::to_string(names.size() - 1);
+            id = names[id];
         }
+    }
+
+    std::shared_ptr<Expression> deep_copy(){
+        return std::make_shared<VariableExpression>(id);
     }
 };
 
@@ -155,6 +174,10 @@ public:
 
     void replace_names(std::map<std::string, std::string>& names){
         expression->replace_names(names);
+    }
+
+    std::shared_ptr<Expression> deep_copy(){
+        return std::make_shared<ParanthesisExpression>(expression->deep_copy());
     }
 };
 
@@ -191,5 +214,9 @@ public:
             names[id] = "v" + std::to_string(names.size());
         }
         indexExpression->replace_names(names);
+    }
+
+    std::shared_ptr<Expression> deep_copy(){
+        return std::make_shared<ArrayExpression>(id, indexExpression->deep_copy());
     }
 };

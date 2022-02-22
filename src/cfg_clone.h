@@ -53,13 +53,16 @@ public:
     Cloner(std::vector<std::shared_ptr<Node<LatticeType>>>* node_vector): node_vector(node_vector){}
 
     void visit_assignment(AssignmentNode<LatticeType>& node){
-        clone_node<AssignmentNode<LatticeType>>(node);
+        auto new_node =clone_node<AssignmentNode<LatticeType>>(node);
+        new_node->expression = node.expression->deep_copy();
     }
     void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node){
-        clone_node<ArrayAssignmentNode<LatticeType>>(node);
+        auto new_node = clone_node<ArrayAssignmentNode<LatticeType>>(node);
+        new_node->expression = node.expression->deep_copy();
     }
     void visit_return(ReturnNode<LatticeType>& node){
-        clone_node<ReturnNode<LatticeType>>(node);
+        auto new_node = clone_node<ReturnNode<LatticeType>>(node);
+        new_node->expression = node.expression->deep_copy();
     }
     void visit_emptyReturn(EmptyReturnNode<LatticeType>& node){
         clone_node<EmptyReturnNode<LatticeType>>(node);
@@ -73,15 +76,23 @@ public:
         clone->predecessors = {};
         nodeConverter[&node] = clone;
 
+        for(std::shared_ptr<Expression>& arg : clone->arguments){
+            arg = arg->deep_copy();
+        }
+
         clone->exit = std::static_pointer_cast<PropagationNode<LatticeType>>(nodeConverter.at(node.exit.get()));
         node_vector->push_back(clone);
         set_successors(clone);
+
     }
     void visit_assignReturn(AssignReturnNode<LatticeType>& node) {
         clone_node<AssignReturnNode<LatticeType>>(node);
     }
     void visit_arrayinit(ArrayInitializerNode<LatticeType>& node){
-        clone_node<ArrayInitializerNode<LatticeType>>(node);
+        auto new_node = clone_node<ArrayInitializerNode<LatticeType>>(node);
+        for(std::shared_ptr<Expression>& arg : new_node->arrayContent) {
+            arg = arg->deep_copy();
+        }
     }
     void visit_propagation(PropagationNode<LatticeType>& node){
         clone_node<PropagationNode<LatticeType>>(node);
