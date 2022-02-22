@@ -2,7 +2,7 @@
 #include "cfg.h"
 #include <map>
 #include <vector>
-
+#include <iostream>
 template<typename LatticeType>
 class Cloner : public CfgVisitor<LatticeType> {
 public:
@@ -53,16 +53,22 @@ public:
     Cloner(std::vector<std::shared_ptr<Node<LatticeType>>>* node_vector): node_vector(node_vector){}
 
     void visit_assignment(AssignmentNode<LatticeType>& node){
-        auto new_node =clone_node<AssignmentNode<LatticeType>>(node);
-        new_node->expression = node.expression->deep_copy();
+        auto new_node = clone_node<AssignmentNode<LatticeType>>(node);
+        if(new_node.get() != nullptr){
+            new_node->expression = node.expression->deep_copy();
+        }
     }
     void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node){
         auto new_node = clone_node<ArrayAssignmentNode<LatticeType>>(node);
-        new_node->expression = node.expression->deep_copy();
+        if(new_node.get() != nullptr){
+            new_node->expression = node.expression->deep_copy();
+        }
     }
     void visit_return(ReturnNode<LatticeType>& node){
         auto new_node = clone_node<ReturnNode<LatticeType>>(node);
-        new_node->expression = node.expression->deep_copy();
+        if(new_node.get() != nullptr){
+            new_node->expression = node.expression->deep_copy();
+        }
     }
     void visit_emptyReturn(EmptyReturnNode<LatticeType>& node){
         clone_node<EmptyReturnNode<LatticeType>>(node);
@@ -90,8 +96,10 @@ public:
     }
     void visit_arrayinit(ArrayInitializerNode<LatticeType>& node){
         auto new_node = clone_node<ArrayInitializerNode<LatticeType>>(node);
-        for(std::shared_ptr<Expression>& arg : new_node->arrayContent) {
-            arg = arg->deep_copy();
+        if(new_node.get() != nullptr){
+            for(std::shared_ptr<Expression>& arg : new_node->arrayContent) {
+                arg = arg->deep_copy();
+            }
         }
     }
     void visit_propagation(PropagationNode<LatticeType>& node){
