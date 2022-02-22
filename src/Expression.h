@@ -4,7 +4,6 @@
 #include "string"
 #include "algorithm"
 #include <map>
-#include <iostream>
 
 class Expression
 {

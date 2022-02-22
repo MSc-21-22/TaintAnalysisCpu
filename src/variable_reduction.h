@@ -100,7 +100,6 @@ template<typename LatticeType>
 void reduce_variables(std::vector<std::shared_ptr<FunctionEntryNode<LatticeType>>>& entry_nodes) {
     VariableReducer<LatticeType> reducer({TAINT_VAR, RETURN_VAR});
     for(auto &entry : entry_nodes){
-        std::cout << entry->function_id << " - " << (intptr_t)entry.get() <<  "\n";
         entry->accept(reducer);
     }
 }
