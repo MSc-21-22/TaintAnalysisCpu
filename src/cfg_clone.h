@@ -2,7 +2,6 @@
 #include "cfg.h"
 #include <map>
 #include <vector>
-#include <iostream>
 template<typename LatticeType>
 class Cloner : public CfgVisitor<LatticeType> {
 public:
