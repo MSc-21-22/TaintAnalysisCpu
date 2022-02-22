@@ -2,7 +2,6 @@
 #include "cfg.h"
 #include "Expression.h"
 #include <map>
-#include "helpers.h"
 
 template<typename LatticeType>
 class VariableReducer : public CfgVisitor<LatticeType> {
