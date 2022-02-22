@@ -211,7 +211,8 @@ public:
         if(new_id != names.end()){
             id = new_id->second;
         }else{
-            names[id] = "v" + std::to_string(names.size());
+            names[id] = "v" + std::to_string(names.size() - 1);
+            id = names[id];
         }
         indexExpression->replace_names(names);
     }
