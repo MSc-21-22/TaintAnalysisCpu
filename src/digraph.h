@@ -51,8 +51,16 @@ public:
         os << "return";
     }
 
-    void visit_functionEntry(FunctionEntryNode<LatticeType>&) override {
+    void visit_functionEntry(FunctionEntryNode<LatticeType>& node) override {
         os << "Entry\n";
+        auto iter = node.arguments.begin();
+        
+        for (auto& i : node.formal_parameters)
+        {
+            os << i << " = " << iter->get()->dotPrint();
+            ++iter;
+        }
+        
     }
     
     void visit_assignReturn(AssignReturnNode<LatticeType>& node) override {
