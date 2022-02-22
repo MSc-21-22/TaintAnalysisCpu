@@ -61,7 +61,7 @@ public:
             
             for (int i = 1; i < node.arguments.size(); i++)
             {
-                last.next_transfer_index = add_transfer_function(node.formal_parameters[0], node.arguments[i]);
+                last.next_transfer_index = add_transfer_function(node.formal_parameters[i], node.arguments[i]);
                 last = transfer_functions[last.next_transfer_index];
             }
         }
