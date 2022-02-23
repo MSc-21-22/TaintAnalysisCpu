@@ -57,7 +57,7 @@ public:
         
         for (auto& i : node.formal_parameters)
         {
-            os << i << " = " << iter->get()->dotPrint();
+            os << i << " = " << iter->get()->dotPrint() << "\n";
             ++iter;
         }
         

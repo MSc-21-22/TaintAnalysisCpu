@@ -42,7 +42,7 @@ int takingmanyparams(int a, int b, int c, int d, int e){
         value = 0;
     }
     int value = detour(a+b+c);
-    int value = detour(d+e);
+    int value1 = detour(d+e);
     int something = 0;
     int comb = 0;
     if(value){
