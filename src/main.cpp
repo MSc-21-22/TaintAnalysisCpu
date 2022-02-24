@@ -18,6 +18,7 @@
 #include "bit_cuda/bit_cuda_transformer.h"
 #include "bit_cuda/analysis.h"
 #include <bit_cuda/bit_vector_converter.h>
+#include "cuda_worklist/cuda_worklist_transformer.h"
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -64,6 +65,16 @@ void bit_cuda_analysis(ScTransformer<std::set<std::string>> program){
 
     time_func("Save into nodes", 
                 set_bit_cuda_state, transformer, program.nodes);
+
+    if(!timing::should_benchmark)
+        print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+}
+
+void bit_cuda_worklist_analysis(ScTransformer<std::set<std::string>> program){
+    time_func("Variable reduction: ", 
+                reduce_variables<std::set<std::string>>, program.entryNodes);
+    auto transformer = time_func<CudaWorklistTransformer<std::set<std::string>>>("Gpu structure transformation: ", 
+                transform_cuda_worklist<std::set<std::string>>, program.nodes);
 
     if(!timing::should_benchmark)
         print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
