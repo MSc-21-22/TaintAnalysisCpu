@@ -58,9 +58,7 @@ void bit_cuda_analysis(ScTransformer<std::set<std::string>> program){
                 reduce_variables<std::set<std::string>>, program.entryNodes);
     auto transformer = time_func<BitCudaTransformer<std::set<std::string>>>("Gpu structure transformation: ", 
                 transform_bit_cuda<std::set<std::string>>, program.nodes);
-    
-    std::vector<int> taintnodesid = taint_source_ids(transformer); 
-    
+        
     time_func("Least fixed point algorithm: ",
             bit_cuda::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.transfer_functions.begin(), transformer.transfer_functions.size());
 
