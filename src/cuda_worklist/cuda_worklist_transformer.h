@@ -135,6 +135,7 @@ private:
     }
 };
 
+
 template<typename LatticeType>
 void add_neighbours(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, CudaWorklistTransformer<LatticeType>& transformer){
     for(int i = 0; i < nodes.size(); i++){
@@ -145,7 +146,7 @@ void add_neighbours(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, Cuda
 
         int succ_index = 0;
         for(auto& succ : nodes[i]->successors){
-            transformer.nodes[i].successor_index[succ_index++] = transformer.node_to_index(succ.get());
+            transformer.nodes[i].successor_index[succ_index++] = transformer.node_to_index[succ.get()];
         }
     }
 }
