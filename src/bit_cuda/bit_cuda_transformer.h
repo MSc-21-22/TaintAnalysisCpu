@@ -155,3 +155,23 @@ BitCudaTransformer<LatticeType> transform_bit_cuda(std::vector<std::shared_ptr<N
     add_predecessors(nodes, transformer);
     return transformer;
 }
+
+template<typename LatticeType>
+std::vector<int> taint_source_ids(BitCudaTransformer<LatticeType>& transformer){
+    std::vector<int> taint_node_ids;
+    int nodeindex = 0;
+
+    for(auto& node : transformer.nodes){
+        if(node.first_transfer_index != -1){
+            bit_cuda::Transfer transfer = transformer.transfer_functions[node.first_transfer_index];
+            for (auto& vars : transfer.rhs){
+                if(vars == transformer.variables[TAINT_VAR]){
+                    taint_node_ids.push_back(nodeindex);
+                    break;
+                }
+            }
+        }
+        ++nodeindex;
+    }
+    return taint_node_ids;
+}
