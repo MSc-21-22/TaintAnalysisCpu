@@ -40,7 +40,7 @@ __global__ void analyze(Node nodes[], int** work_columns, int work_column_count,
         if(node_index == 0)
             *work_to_do = false;
 
-        if(node_index < node_count){
+        if(node_index < node_count || work_column[node_index] == -1){
             Node& current_node = nodes[work_column[node_index]];
             current_node.data = 1; // Set taint constant to true
             
