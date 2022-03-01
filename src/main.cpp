@@ -75,6 +75,9 @@ void bit_cuda_worklist_analysis(ScTransformer<std::set<std::string>> program){
                 reduce_variables<std::set<std::string>>, program.entryNodes);
     auto transformer = time_func<CudaWorklistTransformer<std::set<std::string>>>("Gpu structure transformation: ", 
                 transform_cuda_worklist<std::set<std::string>>, program.nodes);
+    
+    time_func("Least fixed point algorithm: ",
+            cuda_worklist::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.transfer_functions.begin(), transformer.transfer_functions.size());
 
     if(!timing::should_benchmark)
         print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
@@ -83,7 +86,7 @@ void bit_cuda_worklist_analysis(ScTransformer<std::set<std::string>> program){
 int main(int argc, char *argv[]){
     if(argc > 1){
 
-        bool gpu_flag = false, multi_taint_flag = false, cpu_flag = false, benchmark_all = false, cuda_flag = false;
+        bool gpu_flag = false, multi_taint_flag = false, cpu_flag = false, benchmark_all = false, cuda_flag = false, cuda_worklist_flag = false;
         for (int i = 1; i < argc; i++)
         {
             char* arg = argv[i];
@@ -98,6 +101,10 @@ int main(int argc, char *argv[]){
 
             if(strcmp(arg, "--cuda") == 0 || strcmp(arg, "-cu") == 0){
                 cuda_flag = true;
+            }
+
+            if(strcmp(arg, "--cuda-worklist") == 0 || strcmp(arg, "-cw") == 0){
+                cuda_worklist_flag = true;
             }
 
             if(strcmp(arg, "--benchmark") == 0 || strcmp(arg, "-b") == 0){
@@ -150,6 +157,10 @@ int main(int argc, char *argv[]){
             std::cout << "Running bit-cuda analysis" << std::endl;
             auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
             bit_cuda_analysis(program);
+        }else if(cuda_worklist_flag){
+            std::cout << "Running bit-cuda analysis using worklists" << std::endl;
+            auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+            bit_cuda_worklist_analysis(program);
         }else if(cpu_flag){
             if(multi_taint_flag){
                 std::cout << "Running multi-taint analysis using CPU" << std::endl;
@@ -169,6 +180,7 @@ int main(int argc, char *argv[]){
             std::cout << "  --multi -m for multi taint analysis\n";
             std::cout << " --gpu -g for use on gpu\n";
             std::cout << " --cuda -cu for bit-cuda implementation\n";
+            std::cout << " --cuda-worklist -cw for bit-cuda implementation using worklist\n";
             std::cout << " --benchmark -b to enable benchmarking where possible\n";
         }
 
