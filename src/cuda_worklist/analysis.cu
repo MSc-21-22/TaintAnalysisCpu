@@ -26,7 +26,7 @@ __device__ void add_sucessors_to_worklist(int* successors, int* work_list, Node*
 }
 
 
-__global__ void analyze(Node nodes[], int** work_columns, int work_column_count, Transfer transfers[], int node_count, bool* work_to_do){
+__global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work_column_count, Transfer transfers[], int node_count, bool* work_to_do){
     int node_index = threadIdx.x + blockDim.x * blockIdx.x;
     int i = 0;
     int* work_column = work_columns[i];
@@ -168,7 +168,7 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
         }
     }
     // Launch a kernel on the GPU with one thread for each element.
-    analyze<<<block_count, threadsPerBlock>>>(dev_nodes, dev_worklists, work_column_count, dev_transfers, node_count, work_to_do);
+    analyze<<<block_count, threadsPerBlock>>>(dev_nodes, (int(*)[THREAD_COUNT])dev_worklists, work_column_count, dev_transfers, node_count, work_to_do);
 
     // Check for any errors launching the kernel
     cudaStatus = cudaGetLastError();
