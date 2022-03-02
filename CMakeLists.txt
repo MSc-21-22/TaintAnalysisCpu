@@ -47,3 +47,7 @@ target_link_libraries(analyzer antlr4_static analyze_lib gpu_lib)
 add_executable(test tests/test_transforms_matrix.cpp)
 add_dependencies(test analyze_lib gpu_lib)
 target_link_libraries(test analyze_lib gpu_lib)
+
+add_executable(test-cpu tests/test_cpu.cpp)
+add_dependencies(test-cpu analyze_lib gpu_lib)
+target_link_libraries(test-cpu analyze_lib gpu_lib)
