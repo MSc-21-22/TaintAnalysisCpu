@@ -145,8 +145,8 @@ void add_neighbours(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, Cuda
         }
 
         int succ_index = 0;
-        for(auto& succ : nodes[i]->successors){
-            transformer.nodes[i].successor_index[succ_index++] = transformer.node_to_index[succ.get()];
+        for (auto succ = nodes[i]->successors.begin(); succ != nodes[i]->successors.end(); ++succ){
+            transformer.nodes[i].successor_index[succ_index++] = transformer.node_to_index[succ->get()];
         }
     }
 }

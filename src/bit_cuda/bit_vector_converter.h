@@ -4,14 +4,15 @@
 #include "bit_cuda_transformer.h"
 #include <cfg.h>
 
-void set_bit_cuda_state(BitCudaTransformer<std::set<std::string>>& transformer, 
-                   std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes){     
-    for (int i = 0; i < nodes.size(); i++)
+template<typename NodeType>
+void set_bit_cuda_state(std::vector<NodeType>& nodes, std::map<std::string, int>& variables, 
+                   std::vector<std::shared_ptr<Node<std::set<std::string>>>>& cfg_nodes){     
+    for (int i = 0; i < cfg_nodes.size(); i++)
     {
-        for (auto& [var_name, var_index] : transformer.variables)
+        for (auto& [var_name, var_index] : variables)
         {
-            if((transformer.nodes[i].data >> var_index) & 1){
-                nodes[i]->state.insert(var_name);
+            if((nodes[i].data >> var_index) & 1){
+                cfg_nodes[i]->state.insert(var_name);
             }
         }                
     }   
