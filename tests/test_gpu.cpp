@@ -17,8 +17,6 @@ TEST_CASE("bit cuda x=$ -> y=x") {
     Transfer& transfer1 = transfer_functions.emplace_back();
     transfer1.x = 1;
     transfer1.rhs[0] = 0;
-    transfer1.rhs[1] = -1;
-    node1.predecessor_index[0] = -1;
     nodes.push_back(node1);
     
     bit_cuda::Node node2;
@@ -26,9 +24,7 @@ TEST_CASE("bit cuda x=$ -> y=x") {
     Transfer& transfer2 = transfer_functions.emplace_back();
     transfer2.x = 2;
     transfer2.rhs[0] = 1;
-    transfer2.rhs[1] = -1;
     node2.predecessor_index[0] = 0;
-    node2.predecessor_index[1] = -1;
     nodes.push_back(node2);
 
     bit_cuda::execute_analysis(&nodes[0], nodes.size(), &transfer_functions[0], transfer_functions.size());
@@ -46,8 +42,6 @@ TEST_CASE("worklist cuda x=$ -> y=x") {
     Transfer& transfer1 = transfer_functions.emplace_back();
     transfer1.x = 1;
     transfer1.rhs[0] = 0;
-    transfer1.rhs[1] = -1;
-    node1.predecessor_index[0] = -1;
     nodes.push_back(node1);
     
     cuda_worklist::Node node2;
@@ -55,9 +49,7 @@ TEST_CASE("worklist cuda x=$ -> y=x") {
     Transfer& transfer2 = transfer_functions.emplace_back();
     transfer2.x = 2;
     transfer2.rhs[0] = 1;
-    transfer2.rhs[1] = -1;
     node2.predecessor_index[0] = 0;
-    node2.predecessor_index[1] = -1;
     nodes.push_back(node2);
 
     cuda_worklist::execute_analysis(&nodes[0], nodes.size(), &transfer_functions[0], transfer_functions.size());
@@ -76,8 +68,6 @@ TEST_CASE("worklist cuda multi transforms") {
     node1.first_transfer_index = 0;
     transfer1.x = 1;
     transfer1.rhs[0] = 0;
-    transfer1.rhs[1] = -1;
-    node1.predecessor_index[0] = -1;
 
     Transfer& transfer = transfers.emplace_back();
     transfer.next_transfer_index = 1;
@@ -89,27 +79,25 @@ TEST_CASE("worklist cuda multi transforms") {
     CHECK_MESSAGE(nodes[0].data == 7, "First node results doesnt match");
 } 
 
-TEST_CASE("bit cuda multi transforms") {
-    std::vector<bit_cuda::Node> nodes;
-    std::vector<Transfer> transfers;
-    bit_cuda::Node& node1 = nodes.emplace_back();
+// TEST_CASE("bit cuda multi transforms") {
+//     std::vector<bit_cuda::Node> nodes;
+//     std::vector<Transfer> transfers;
+//     bit_cuda::Node& node1 = nodes.emplace_back();
 
-    Transfer& transfer1 = transfers.emplace_back();
-    node1.first_transfer_index = 0;
-    transfer1.x = 1;
-    transfer1.rhs[0] = 0;
-    transfer1.rhs[1] = -1;
-    node1.predecessor_index[0] = -1;
+//     Transfer& transfer1 = transfers.emplace_back();
+//     node1.first_transfer_index = 0;
+//     transfer1.x = 1;
+//     transfer1.rhs[0] = 0;
 
-    Transfer& transfer = transfers.emplace_back();
-    transfer.next_transfer_index = 1;
-    transfer.x = 2;
-    transfer.rhs[0] = 0;
+//     Transfer& transfer = transfers.emplace_back();
+//     transfer.next_transfer_index = 1;
+//     transfer.x = 2;
+//     transfer.rhs[0] = 0;
 
-    bit_cuda::execute_analysis(&nodes[0], nodes.size(), &transfers[0], transfers.size());
+//     bit_cuda::execute_analysis(&nodes[0], nodes.size(), &transfers[0], transfers.size());
 
-    CHECK_MESSAGE(nodes[0].data == 7, "First node results doesnt match");
-} 
+//     CHECK_MESSAGE(nodes[0].data == 7, "First node results doesnt match");
+// } 
 
 TEST_CASE("Matrix copying test"){
     create_cublas();

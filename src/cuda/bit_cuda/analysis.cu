@@ -23,7 +23,7 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
         while(*has_changed){
             if(node_index == 0)
                 *has_changed = false;
-            BitVector joined_data = 0;
+            BitVector joined_data = 1;
             //Join
             {
                 int pred_index = 0;
@@ -57,7 +57,7 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
                     }
                     transfer_index = transfer->next_transfer_index;
                 }
-
+                printf("[%d] [%d] (%d)\n", current, last_joined, node_index);
                 nodes[node_index].data = current;
                 *has_changed = true;
                 is_changed = false;
@@ -77,7 +77,6 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
 
     int block_count = node_count/128 + 1;
     dim3 threadsPerBlock(128);
-
     auto cudaStatus = cudaSetDevice(0);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");

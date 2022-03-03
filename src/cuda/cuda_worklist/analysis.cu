@@ -39,7 +39,7 @@ __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work
         BitVector last = current_node.data;
         BitVector current = current_node.data;
 
-        BitVector joined_data = 0;
+        BitVector joined_data = 1;
         //Join
         {
             int pred_index = 0;
