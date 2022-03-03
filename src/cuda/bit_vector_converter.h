@@ -1,7 +1,6 @@
 #pragma once
 
-#include "analysis.h"
-#include "bit_cuda_transformer.h"
+#include "cuda_data.h"
 #include <cfg.h>
 
 template<typename NodeType>

@@ -1,7 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 #include "../src/cfg.h"
-#include "../src/cuda_worklist/cuda_worklist_transformer.h"
+#include "../src/cuda/cuda_transformer.h"
 #include "../src/transforms_matrix.h"
 
 
@@ -16,7 +16,7 @@ TEST_CASE("cuda-worklist transforms successor"){
     funcDef->predecessors.insert(funcEntry);
 
     std::vector<std::shared_ptr<Node<int>>> nodes = {funcCall, funcEntry, funcDef};
-    CudaWorklistTransformer<int> transformer = transform_cuda_worklist<int>(nodes);
+    CudaTransformer<int, cuda_worklist::Node> transformer = transform_cuda_worklist<int>(nodes);
 
     CHECK_MESSAGE(transformer.nodes[0].successor_index[0] == 1, "Function call should have function entry as successor");
     CHECK_MESSAGE(transformer.nodes[1].successor_index[0] == 2, "Function entry should have function definition as successor");
