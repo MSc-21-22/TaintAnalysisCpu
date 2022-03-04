@@ -53,7 +53,8 @@ TEST_CASE("worklist cuda x=$ -> y=x") {
     node2.predecessor_index[0] = 0;
     nodes.push_back(node2);
 
-    cuda_worklist::execute_analysis(&nodes[0], nodes.size(), &transfer_functions[0], transfer_functions.size());
+    std::set<int> taint_sources = {0};
+    cuda_worklist::execute_analysis(&nodes[0], nodes.size(), &transfer_functions[0], transfer_functions.size(), taint_sources);
 
     CHECK_MESSAGE(nodes[0].data == 3, "First node results doesnt match");
     CHECK_MESSAGE(nodes[1].data == 7, "Second node results doesnt match");
@@ -75,7 +76,8 @@ TEST_CASE("worklist cuda multi transforms") {
     transfer2.x = 2;
     transfer2.rhs[0] = 0;
 
-    cuda_worklist::execute_analysis(&nodes[0], nodes.size(), &transfers[0], transfers.size());
+    std::set<int> taint_sources = {0};
+    cuda_worklist::execute_analysis(&nodes[0], nodes.size(), &transfers[0], transfers.size(), taint_sources);
 
     CHECK_MESSAGE(nodes[0].data == 7, "First node results doesnt match");
 } 

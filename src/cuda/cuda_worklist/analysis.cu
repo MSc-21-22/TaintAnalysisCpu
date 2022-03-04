@@ -86,7 +86,7 @@ void error(Node* dev_nodes, Transfer* dev_transfers){
     }
 }
 
-void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* transfers, int transfer_count) {
+void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* transfers, int transfer_count, std::set<int>& taint_sources) {
     Node* dev_nodes = nullptr;
     bool* dev_work_to_do = nullptr;
     Transfer* dev_transfers = nullptr;
@@ -103,11 +103,14 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
 
     std::vector<std::array<int, THREAD_COUNT>> worklists{};
     
+
+    std::set<int>::iterator it = taint_sources.begin();
     for(int i = 0; i < work_column_count; i++){
         worklists.emplace_back(); 
         for(int j = 0; j < THREAD_COUNT; j++){
-            if(i*THREAD_COUNT + j < node_count) {
-                worklists[i][j] = i*THREAD_COUNT + j;
+            if(it != taint_sources.end()) {
+                worklists[i][j] = *it;
+                it++;
             }else{
                 worklists[i][j] = -1;
             }

@@ -1,5 +1,6 @@
 #pragma once
 #include "../cuda_data.h"
+#include <set>
 
 using BitVector = int32_t;
 
@@ -12,5 +13,5 @@ namespace cuda_worklist{
         BitVector data = 1;
     };
 
-    void execute_analysis(Node* nodes, int node_count, Transfer* transfers, int extra_transfer_count);
+    void execute_analysis(Node* nodes, int node_count, Transfer* transfers, int transfer_count, std::set<int>& taint_sources);
 };
