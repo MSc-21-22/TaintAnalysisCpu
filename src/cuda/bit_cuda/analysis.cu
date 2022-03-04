@@ -74,7 +74,7 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
 void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers, int transfer_count) {
     Node* dev_nodes = nullptr;
     bool* dev_has_changed = nullptr;
-    Transfer* dev_extra_transfers = nullptr;
+    Transfer* dev_transfers = nullptr;
 
     int block_count = node_count/128 + 1;
     dim3 threadsPerBlock(128);
@@ -88,13 +88,13 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
     cuda_allocate_memory((void**)&dev_nodes, sizeof(Node)*node_count + 1);
     cuda_copy_to_device(dev_nodes, nodes, sizeof(Node)*node_count);
 
-    cuda_allocate_memory((void**)&dev_extra_transfers, sizeof(Transfer)*transfer_count);
-    cuda_copy_to_device(dev_extra_transfers, transfers, sizeof(Transfer)*transfer_count);
+    cuda_allocate_memory((void**)&dev_transfers, sizeof(Transfer)*transfer_count);
+    cuda_copy_to_device(dev_transfers, transfers, sizeof(Transfer)*transfer_count);
     
     dev_has_changed = (bool*) (dev_nodes + (sizeof(Node)*node_count));
 
     // Launch a kernel on the GPU with one thread for each element.
-    analyze<<<block_count, threadsPerBlock>>>(dev_nodes, dev_extra_transfers, dev_has_changed, node_count);
+    analyze<<<block_count, threadsPerBlock>>>(dev_nodes, dev_transfers, dev_has_changed, node_count);
 
     // Check for any errors launching the kernel
     cudaStatus = cudaGetLastError();
@@ -113,4 +113,7 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
 
     // Copy output vector from GPU buffer to host memory.
     cuda_copy_to_host(nodes, dev_nodes, sizeof(Node)*node_count);
+
+    cuda_free(dev_nodes);
+    cuda_free(dev_transfers);
 }

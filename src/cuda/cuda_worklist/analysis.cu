@@ -162,4 +162,8 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
 
     // Copy output vector from GPU buffer to host memory.
     cuda_copy_to_host(nodes, dev_nodes, sizeof(Node)*node_count);
+
+    cuda_free(dev_nodes);
+    cuda_free(dev_transfers);
+    cuda_free(dev_worklists);
 }

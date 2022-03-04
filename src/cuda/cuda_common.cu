@@ -23,3 +23,11 @@ void cuda_copy_to_host(void *dst, const void *src, size_t size){
         exit(1);
     }
 }
+
+void cuda_free(void* devPtr){
+    auto cudaStatus = cudaFree(devPtr);
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaFree failed: %s\n", cudaGetErrorString(cudaStatus));
+        exit(1);
+    }
+}
