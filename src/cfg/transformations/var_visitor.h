@@ -2,7 +2,7 @@
 
 #include <string>
 #include <set>
-#include "cfg.h"
+#include <cfg/cfg.h>
 
 class VarVisitor : public CfgVisitor
 {

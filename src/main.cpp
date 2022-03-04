@@ -2,14 +2,14 @@
 #include <string>
 #include "antlr4-runtime/scLexer.h"
 #include "antlr4-runtime/scParser.h"
-#include "transforms.h"
+#include <cfg/sc_transformer.h>
 #include "worklist.h"
 #include "taint_analysis.h"
 #include "multi_taint_analysis.h"
-#include "digraph.h"
+#include <cfg/digraph.h>
 #include "matrix_analysis.h"
 #include "GpuManagement.h"
-#include "variable_reduction.h"
+#include "cfg/transformations/variable_reduction.h"
 #include <chrono>
 #include "timing.h"
 #include <stdio.h>

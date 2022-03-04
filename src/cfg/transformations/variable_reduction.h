@@ -1,6 +1,5 @@
 #pragma once
-#include "cfg.h"
-#include "Expression.h"
+#include <cfg/cfg.h>
 #include <map>
 
 class VariableReducer : public CfgVisitor {

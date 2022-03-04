@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cfg.h"
+#include <cfg/cfg.h>
 #include <ostream>
 
 template<typename T>

@@ -2,7 +2,7 @@
 
 #include "analysis.h"
 #include "bit_cuda_transformer.h"
-#include <cfg.h>
+#include <cfg/cfg.h>
 
 void set_bit_cuda_state(BitCudaTransformer& transformer, 
                    std::vector<StatefulNode<std::set<std::string>>>& nodes){     

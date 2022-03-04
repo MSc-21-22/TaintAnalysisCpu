@@ -2,7 +2,7 @@
 
 #include "matrix.h"
 #include <vector>
-#include "cfg.h"
+#include <cfg/cfg.h>
 #include "GpuManagement.h"
 
 

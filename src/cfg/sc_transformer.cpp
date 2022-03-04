@@ -1,6 +1,6 @@
-#include "transforms.h"
-#include "antlr4-runtime.h"
-#include "antlr4-runtime/scLexer.h"
+#include <cfg/sc_transformer.h>
+#include <antlr4-runtime.h>
+#include <antlr4-runtime/scLexer.h>
 
 std::string stringify_parameters(std::vector<std::string> content){
     std::string result = "(";

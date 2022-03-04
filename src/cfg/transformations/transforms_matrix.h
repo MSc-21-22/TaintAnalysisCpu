@@ -5,7 +5,7 @@
 #include <memory>
 #include <algorithm>
 #include <map>
-#include "cfg.h"
+#include <cfg/cfg.h>
 #include "matrix.h"
 
 template <typename ElementType>

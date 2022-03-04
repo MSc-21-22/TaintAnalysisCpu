@@ -1,6 +1,6 @@
-#include "var_visitor.h"
-#include "variable_reduction.h"
-#include "cfg_clone.h"
+#include <cfg/transformations/var_visitor.h>
+#include <cfg/transformations/variable_reduction.h>
+#include <cfg/transformations/cfg_clone.h>
 
 std::set<std::string> get_variables(std::vector<std::shared_ptr<Node>>& nodes){
     VarVisitor varAnalyzer;

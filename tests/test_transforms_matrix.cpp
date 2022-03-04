@@ -1,11 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
-#include "../src/cfg.h"
+#include <cfg/cfg.h>
 #include <memory>
-#include "../src/transforms_matrix.h"
-#include "../src/matrix_analysis.h"
-#include "../src/kernel.h"
-#include "../src/bit_cuda/analysis.h"
+#include <cfg/transformations/transforms_matrix.h>
+#include <matrix_analysis.h>
+#include <kernel.h>
+#include <bit_cuda/analysis.h>
 
 
 

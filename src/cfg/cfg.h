@@ -11,7 +11,6 @@
 #define RETURN_VAR "$return"
 #define TAINT_VAR "$"
 
-
 class Node;
 class AssignmentNode;
 class ReturnNode;

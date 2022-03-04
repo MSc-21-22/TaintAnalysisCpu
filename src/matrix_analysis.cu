@@ -3,9 +3,9 @@
 #include "GpuManagement.h"
 #include "kernel.h"
 #include <map>
-#include "transforms_matrix.h"
-#include "var_visitor.h"
-#include "digraph.h"
+#include <cfg/transformations/transforms_matrix.h>
+#include <cfg/transformations/var_visitor.h>
+#include <cfg/digraph.h>
 #include <chrono>
 #include "timing.h"
 

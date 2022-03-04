@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "cfg.h"
+#include <cfg/cfg.h>
 
 template<typename LatticeType>
 void worklist(std::vector<StatefulNode<LatticeType>> worklist, CfgStateVisitor<LatticeType>& transferFunction){

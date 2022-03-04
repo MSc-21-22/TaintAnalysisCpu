@@ -1,4 +1,4 @@
-#include "digraph.h"
+#include <cfg/digraph.h>
 
 std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Expression>& arg){
     os << arg->dotPrint();

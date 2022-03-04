@@ -3,12 +3,11 @@
 #include "antlr4-runtime/scBaseVisitor.h"
 #include <memory>
 #include "antlr4-runtime/scParser.h"
-#include "cfg.h"
+#include <cfg/cfg.h>
 #include <vector>
-#include "Expression.h"
 #include <iostream>
 #include <map>
-#include "cfg_clone.h"
+#include <cfg/transformations/cfg_clone.h>
 #include <algorithm>
 
 std::string stringify_parameters(std::vector<std::string> content);

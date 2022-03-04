@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cfg.h>
+#include <cfg/cfg.h>
 #include "analysis.h"
-#include <var_visitor.h>
+#include <cfg/transformations/var_visitor.h>
 
 class BitCudaTransformer : public CfgVisitor
 {
