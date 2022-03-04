@@ -82,11 +82,27 @@ __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work
     }
 }
 
-void error(Node* dev_nodes, Transfer* dev_transfers){
-    cudaFree(dev_nodes);
+void cuda_allocate_memory(void **devPtr, size_t size){
+    auto cudaStatus = cudaMalloc(devPtr, size);
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMalloc failed: %s\n", cudaGetErrorString(cudaStatus));
+        exit(1);
+    }
+}
 
-    if(dev_transfers != nullptr){
-        cudaFree(dev_transfers);
+void cuda_copy_to_device(void *dst, const void *src, size_t size){
+    auto cudaStatus = cudaMemcpy(dst, src, size, cudaMemcpyHostToDevice);
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMemcpy to gpu failed: %s\n", cudaGetErrorString(cudaStatus));
+        exit(1);
+    }
+}
+
+void cuda_copy_to_host(void *dst, const void *src, size_t size){
+    auto cudaStatus = cudaMemcpy(dst, src, size, cudaMemcpyDeviceToHost);
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMemcpy to host failed: %s\n", cudaGetErrorString(cudaStatus));
+        exit(1);
     }
 }
 
@@ -106,7 +122,6 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
     int work_column_count = (node_count + THREAD_COUNT - 1)/THREAD_COUNT;
 
     std::vector<std::array<int, THREAD_COUNT>> worklists{};
-    
 
     std::set<int>::iterator it = taint_sources.begin();
     for(int i = 0; i < work_column_count; i++){
@@ -124,70 +139,28 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
     auto cudaStatus = cudaSetDevice(0);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
-        error(dev_nodes, dev_transfers);
         return;
     }
 
     // Allocate work columns
-    cudaStatus = cudaMalloc((void**)&dev_worklists, sizeof(int) * THREAD_COUNT * (work_column_count + 1));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        error(dev_nodes, dev_transfers);
-        return;
-    }
-
+    cuda_allocate_memory((void**)&dev_worklists, sizeof(int) * THREAD_COUNT * (work_column_count + 1));
     cudaMemset(dev_worklists, -1, sizeof(int) * THREAD_COUNT * (work_column_count + 1));
+    cuda_copy_to_device(dev_worklists, &worklists[0], sizeof(int) * THREAD_COUNT * work_column_count);
 
-    // Allocate GPU buffers for three vectors (two input, one output)    .
-    cudaStatus = cudaMalloc((void**)&dev_nodes, sizeof(Node)*node_count + 1);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        error(dev_nodes, dev_transfers);
-        return;
-    }
+    // Allocate GPU buffers for three vectors (two input, one output)  
+    cuda_allocate_memory((void**)&dev_nodes, sizeof(Node)*node_count + 1);
+    cuda_copy_to_device(dev_nodes, nodes, sizeof(Node)*node_count);
 
-
-    if(transfer_count > 0){
-        cudaStatus = cudaMalloc((void**)&dev_transfers, sizeof(Transfer)*transfer_count);
-        if (cudaStatus != cudaSuccess) {
-            fprintf(stderr, "cudaMalloc failed!");
-            error(dev_nodes, dev_transfers);
-            return;
-        }
-    }
     dev_work_to_do = (bool*) (dev_nodes + node_count);
 
-    cudaStatus = cudaMemcpy(dev_worklists, &worklists[0], sizeof(int) * THREAD_COUNT * work_column_count, cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "Copy worklists to gpu failed");
-        error(dev_nodes, dev_transfers);
-        return;
-    }
-
-    cudaStatus = cudaMemcpy(dev_nodes, nodes, sizeof(Node)*node_count, cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "Copy nodes to gpu failed");
-        error(dev_nodes, dev_transfers);
-        return;
-    }
-
-    if(transfer_count > 0){
-        cudaStatus = cudaMemcpy(dev_transfers, transfers, sizeof(Transfer)*transfer_count, cudaMemcpyHostToDevice);
-        if (cudaStatus != cudaSuccess) {
-            fprintf(stderr, "Copy transfer functions to gpu failed");
-            error(dev_nodes, dev_transfers);
-            return;
-        }
-    }
-    
+    // Allocate transfer function
+    cuda_allocate_memory((void**)&dev_transfers, sizeof(Transfer)*transfer_count);
+    cuda_copy_to_device(dev_transfers, transfers, sizeof(Transfer)*transfer_count);
+  
     int i = 0;
     while(work_to_do){
         work_to_do = false;
-        cudaStatus = cudaMemcpy(dev_work_to_do, &work_to_do, 1, cudaMemcpyHostToDevice);
-        if (cudaStatus != cudaSuccess) {
-            fprintf(stderr, "cudaMemset failed: %s\n", cudaGetErrorString(cudaStatus));
-            goto Error;
-        }
+        cuda_copy_to_device(dev_work_to_do, &work_to_do, 1);
 
         // Launch a kernel on the GPU with one thread for each element.
         analyze<<<block_count, threadsPerBlock>>>(dev_nodes, (int(*)[THREAD_COUNT])dev_worklists, work_column_count+1, dev_transfers, node_count, dev_work_to_do, i);
@@ -196,7 +169,6 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
         cudaStatus = cudaGetLastError();
         if (cudaStatus != cudaSuccess) {
             fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
-            goto Error;
         }
 
         // cudaDeviceSynchronize waits for the kernel to finish, and returns
@@ -204,25 +176,13 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
         cudaStatus = cudaDeviceSynchronize();
         if (cudaStatus != cudaSuccess) {
             fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
-            goto Error;
         }
         
-        cudaStatus = cudaMemcpy((void*)&work_to_do, dev_work_to_do, sizeof(bool), cudaMemcpyDeviceToHost);
+        cuda_copy_to_host((void*)&work_to_do, dev_work_to_do, sizeof(bool));
         i = (i+1) % (work_column_count+1);
     }
 
 
     // Copy output vector from GPU buffer to host memory.
-    cudaStatus = cudaMemcpy(nodes, dev_nodes, sizeof(Node)*node_count, cudaMemcpyDeviceToHost);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed with message: %d", cudaStatus);
-        goto Error;
-    }
-
-Error:
-    cudaFree(dev_nodes);
-
-    if(dev_transfers != nullptr){
-        cudaFree(dev_transfers);
-    }
+    cuda_copy_to_host(nodes, dev_nodes, sizeof(Node)*node_count);
 }
