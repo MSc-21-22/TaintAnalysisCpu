@@ -88,10 +88,6 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
     Transfer* dev_transfers = nullptr;
     int** dev_worklists = nullptr;
 
-    for(int i = 0; i < node_count; i++){
-        nodes[i].data = 1;
-    }
-    
     bool work_to_do = true;
     int threadsPerBlock = 128;
     int block_count = THREAD_COUNT/threadsPerBlock;    
