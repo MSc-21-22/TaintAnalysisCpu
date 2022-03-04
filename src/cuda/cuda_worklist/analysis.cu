@@ -13,7 +13,6 @@
 using namespace cuda_worklist;
 
 __device__ void add_sucessors_to_worklist(int* successors, int* work_list, Node* nodes){
-    int node_index = threadIdx.x + blockDim.x * blockIdx.x;
     for(int i = 0; i < 5; i++){
         int succ_index = successors[i];
         if (succ_index == -1)
