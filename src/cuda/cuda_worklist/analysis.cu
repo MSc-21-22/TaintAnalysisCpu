@@ -28,6 +28,34 @@ __device__ void add_sucessors_to_worklist(int* successors, int* work_list, Node*
     }
 }
 
+__device__ void join(int predecessors[], BitVector& joined_data, Node nodes[]){
+        int pred_index = 0;
+        while (predecessors[pred_index] != -1){
+            joined_data |= nodes[predecessors[pred_index]].data;
+            ++pred_index;
+        }
+}
+
+__device__ void transfer_function(int first_transfer_index, Transfer transfers[], BitVector& joined_data, BitVector& current){
+    Transfer* transfer;
+    int transfer_index = first_transfer_index;
+
+    while(transfer_index != -1){
+        transfer = &transfers[transfer_index];
+        int var_index = 0;
+        int next_var = transfer->rhs[var_index];
+        while(next_var != -1){
+
+            if((joined_data & (1 << next_var)) != 0){
+                current |= (1 << transfer->x);
+                break;
+            }
+            ++var_index;
+            next_var = transfer->rhs[var_index];
+        }
+        transfer_index = transfer->next_transfer_index;
+    }
+}
 
 __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work_column_count, Transfer transfers[], int node_count, bool* work_to_do, int i){
     int node_index = threadIdx.x + blockDim.x * blockIdx.x;
@@ -40,35 +68,10 @@ __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work
         BitVector current = current_node.data;
 
         BitVector joined_data = 1;
-        //Join
-        {
-            int pred_index = 0;
-            while (current_node.predecessor_index[pred_index] != -1){
-                joined_data |= nodes[current_node.predecessor_index[pred_index]].data;
-                ++pred_index;
-            }
-            current |= joined_data & current_node.join_mask;
-        }
+        join(current_node.predecessor_index, joined_data, nodes);
+        current |= joined_data & current_node.join_mask;
 
-        //Transfer
-        Transfer* transfer;
-        int transfer_index = current_node.first_transfer_index;
-
-        while(transfer_index != -1){
-            transfer = &transfers[transfer_index];
-            int var_index = 0;
-            int next_var = transfer->rhs[var_index];
-            while(next_var != -1){
-
-                if((joined_data & (1 << next_var)) != 0){
-                    current |= (1 << transfer->x);
-                    break;
-                }
-                ++var_index;
-                next_var = transfer->rhs[var_index];
-            }
-            transfer_index = transfer->next_transfer_index;
-        }
+        transfer_function(current_node.first_transfer_index, transfers, joined_data, current);
 
         if(last != current){
             current_node.data = current;
