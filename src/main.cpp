@@ -75,7 +75,7 @@ void bit_cuda_worklist_analysis(ScTransformer<std::set<std::string>> program){
                 transform_cuda_worklist<std::set<std::string>>, program.nodes);
     
     time_func("Least fixed point algorithm: ",
-            cuda_worklist::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.transfer_functions.begin(), transformer.transfer_functions.size());
+            cuda_worklist::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.transfer_functions.begin(), transformer.transfer_functions.size(), transformer.taint_sources);
 
     time_func("Save into nodes", 
                 set_bit_cuda_state<cuda_worklist::Node>, transformer.nodes, transformer.variables, program.nodes);
