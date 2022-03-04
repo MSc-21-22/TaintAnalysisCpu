@@ -4,13 +4,12 @@
 #include "analysis.h"
 #include <var_visitor.h>
 
-template <typename LatticeType>
-class BitCudaTransformer : public CfgVisitor<LatticeType>
+class BitCudaTransformer : public CfgVisitor
 {
 public:
     std::vector<bit_cuda::Node> nodes{};
     std::vector<bit_cuda::Transfer> transfer_functions{};
-    std::map<Node<LatticeType>*, int> node_to_index{};
+    std::map<Node*, int> node_to_index{};
     std::map<std::string, int> variables{};
     std::set<int> taint_sources{};
 
@@ -28,7 +27,7 @@ public:
 
     }
 
-    void visit_assignment(AssignmentNode<LatticeType>& node) {
+    void visit_assignment(AssignmentNode& node) {
         int id = nodes.size();
         node_to_index[&node] = id;
         bit_cuda::Node& node_struct = nodes.emplace_back();
@@ -38,7 +37,7 @@ public:
         node_struct.join_mask ^= 1 << variables[node.id];
     }
 
-    void visit_return(ReturnNode<LatticeType>& node) {
+    void visit_return(ReturnNode& node) {
         int id = nodes.size();
         node_to_index[&node] = id;
         bit_cuda::Node& node_struct = nodes.emplace_back();
@@ -48,13 +47,13 @@ public:
         node_struct.join_mask = 0;
     }
 
-    void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) {
+    void visit_emptyReturn(EmptyReturnNode& node) {
         node_to_index[&node] = nodes.size();
         bit_cuda::Node& node_struct = nodes.emplace_back();
         node_struct.join_mask = 0;
     }
 
-    void visit_functionEntry(FunctionEntryNode<LatticeType>& node) { 
+    void visit_functionEntry(FunctionEntryNode& node) { 
         int id = nodes.size();
         node_to_index[&node] = id;
         bit_cuda::Node& node_struct = nodes.emplace_back();
@@ -75,7 +74,7 @@ public:
         }
     }
 
-    void visit_assignReturn(AssignReturnNode<LatticeType>& node) { 
+    void visit_assignReturn(AssignReturnNode& node) { 
         int id = nodes.size();
         node_to_index[&node] = id;
         bit_cuda::Node& node_struct = nodes.emplace_back();
@@ -86,7 +85,7 @@ public:
         node_struct.join_mask ^= 1 << variables[RETURN_VAR];
     }
 
-    void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node) { 
+    void visit_arrayAssignment(ArrayAssignmentNode& node) { 
         int id = nodes.size();
         node_to_index[&node] = id;
         bit_cuda::Node& node_struct = nodes.emplace_back();
@@ -96,7 +95,7 @@ public:
         node_struct.join_mask ^= 1 << variables[node.id];
     }
     
-    void visit_arrayinit(ArrayInitializerNode<LatticeType>& node) { 
+    void visit_arrayinit(ArrayInitializerNode& node) { 
         int id = nodes.size();
         node_to_index[&node] = id;
         bit_cuda::Node& node_struct = nodes.emplace_back();
@@ -116,7 +115,7 @@ public:
         add_taint_source(id, transfer_functions[node_struct.first_transfer_index].rhs);
     }
 
-    void visit_propagation(PropagationNode<LatticeType>& node) { 
+    void visit_propagation(PropagationNode& node) { 
         node_to_index[&node] = nodes.size();
         bit_cuda::Node& node_struct = nodes.emplace_back();
     }
@@ -158,8 +157,7 @@ private:
     }
 };
 
-template<typename LatticeType>
-void add_predecessors(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, BitCudaTransformer<LatticeType>& transformer){
+void add_predecessors(std::vector<std::shared_ptr<Node>>& nodes, BitCudaTransformer& transformer){
     for(int i = 0; i < nodes.size(); i++){
         int j = 0;
         for (auto pred_it = nodes[i]->predecessors.begin(); pred_it != nodes[i]->predecessors.end(); ++pred_it){
@@ -168,10 +166,9 @@ void add_predecessors(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, Bi
     }
 }
 
-template<typename LatticeType>
-BitCudaTransformer<LatticeType> transform_bit_cuda(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes) {
+BitCudaTransformer transform_bit_cuda(std::vector<std::shared_ptr<Node>>& nodes) {
     auto variables = get_variables(nodes);
-    BitCudaTransformer<LatticeType> transformer(variables);
+    BitCudaTransformer transformer(variables);
     for(auto &node : nodes){
         node->accept(transformer);
     }

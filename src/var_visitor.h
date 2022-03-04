@@ -4,44 +4,36 @@
 #include <set>
 #include "cfg.h"
 
-template <typename LatticeType>
-class VarVisitor : public CfgVisitor<LatticeType>
+class VarVisitor : public CfgVisitor
 {
     public:
         std::set<std::string> variables{};
 
-        void visit_functionEntry(FunctionEntryNode<LatticeType>& node){
+        void visit_functionEntry(FunctionEntryNode& node){
            for(std::string var : node.formal_parameters){
                variables.insert(var);
            }
         }
         
-        void visit_assignReturn(AssignReturnNode<LatticeType>& node){
+        void visit_assignReturn(AssignReturnNode& node){
             variables.insert(node.id);
         }
 
-        void visit_assignment(AssignmentNode<LatticeType>& node){
+        void visit_assignment(AssignmentNode& node){
             variables.insert(node.id);
         }
 
-        void visit_arrayinit(ArrayInitializerNode<LatticeType>& node){
+        void visit_arrayinit(ArrayInitializerNode& node){
             variables.insert(node.id);
         }
 
-        void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node){
+        void visit_arrayAssignment(ArrayAssignmentNode& node){
             variables.insert(node.arrayid);
         }
 
-        void visit_return(ReturnNode<LatticeType>&){}
-        void visit_emptyReturn(EmptyReturnNode<LatticeType>&){}
-        void visit_propagation(PropagationNode<LatticeType>&){}
+        void visit_return(ReturnNode&){}
+        void visit_emptyReturn(EmptyReturnNode&){}
+        void visit_propagation(PropagationNode&){}
 };
 
-template<typename LatticeType>
-std::set<std::string> get_variables(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes){
-    VarVisitor<LatticeType> varAnalyzer;
-    for(auto& node : nodes){
-        (*node).accept(varAnalyzer);
-    }
-    return varAnalyzer.variables;
-}
+std::set<std::string> get_variables(std::vector<std::shared_ptr<Node>>& nodes);

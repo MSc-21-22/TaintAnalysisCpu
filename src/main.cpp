@@ -29,44 +29,44 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "}";
 }
 
-void cpu_analysis(ScTransformer<std::set<std::string>> program){
+void cpu_analysis(ScTransformer program){
     TaintAnalyzer analyzer;
 
-    for(auto& node : program.nodes){
-        node->state.insert("$");
-    }
 
+    std::vector<StatefulNode<std::set<std::string>>> nodes = create_states<std::set<std::string>>(program.nodes, {TAINT_VAR});
     time_func("Analyzing: ", 
-        worklist<std::set<std::string>>, program.nodes, analyzer);
+        worklist<std::set<std::string>>, nodes, analyzer);
 
     if(!timing::should_benchmark) {
-        print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+        print_digraph_with_result(nodes, std::cout, print_result);
     }
 }
 
-void cpu_multi_taint_analysis(ScTransformer<SourcedTaintState> program){
+void cpu_multi_taint_analysis(ScTransformer program){
     MultiTaintAnalyzer analyzer;
-    worklist(program.nodes, analyzer);
+    std::vector<StatefulNode<SourcedTaintState>> nodes = create_states<SourcedTaintState>(program.nodes);
+    worklist<SourcedTaintState>(nodes, analyzer);
 
     if(!timing::should_benchmark) {
-        print_digraph_subgraph(program.entryNodes, std::cout, print_taint_source, "main");
+        print_digraph_with_result(nodes, std::cout, print_taint_source);
     }
 }
 
-void bit_cuda_analysis(ScTransformer<std::set<std::string>> program){
+void bit_cuda_analysis(ScTransformer program){
     time_func("Variable reduction: ", 
-                reduce_variables<std::set<std::string>>, program.entryNodes);
-    auto transformer = time_func<BitCudaTransformer<std::set<std::string>>>("Gpu structure transformation: ", 
-                transform_bit_cuda<std::set<std::string>>, program.nodes);
+                reduce_variables, program.entryNodes);
+    auto transformer = time_func<BitCudaTransformer>("Gpu structure transformation: ", 
+                transform_bit_cuda, program.nodes);
         
     time_func("Least fixed point algorithm: ",
             bit_cuda::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.transfer_functions.begin(), transformer.transfer_functions.size());
 
+    std::vector<StatefulNode<std::set<std::string>>> nodes = create_states<std::set<std::string>>(program.nodes);
     time_func("Save into nodes", 
-                set_bit_cuda_state, transformer, program.nodes);
+                set_bit_cuda_state, transformer, nodes);
 
     if(!timing::should_benchmark)
-        print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+        print_digraph_with_result(nodes, std::cout, print_result);
 }
 
 int main(int argc, char *argv[]){
@@ -109,7 +109,7 @@ int main(int argc, char *argv[]){
         if(benchmark_all){
 
             std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
-            auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+            auto program = parse_to_cfg_transformer(prog);
             Stopwatch cpu_watch;
             cpu_analysis(program);
             cpu_watch.save_time<Microseconds>();
@@ -126,29 +126,29 @@ int main(int argc, char *argv[]){
 
         if(gpu_flag){
             std::cout << "Running analysis using cuBLAS on GPU" << std::endl;
-            auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+            auto program = parse_to_cfg_transformer(prog);
             time_func("Cublas creation: ", 
                 create_cublas);
             time_func("Variable reduction: ", 
-                reduce_variables<std::set<std::string>>, program.entryNodes);
-            gpu_analysis(program.nodes);
+                reduce_variables, program.entryNodes);
+            auto stateful_nodes = gpu_analysis(program.nodes);
             if(!timing::should_benchmark){
-                print_digraph_subgraph(program.entryNodes, std::cout, print_result, "main");
+                print_digraph_with_result(stateful_nodes, std::cout, print_result);
             }
         }else if(cuda_flag){
             std::cout << "Running bit-cuda analysis" << std::endl;
-            auto program = parse_to_cfg_transformer<std::set<std::string>>(prog);
+            auto program = parse_to_cfg_transformer(prog);
             bit_cuda_analysis(program);
         }else if(cpu_flag){
             if(multi_taint_flag){
                 std::cout << "Running multi-taint analysis using CPU" << std::endl;
-                auto program = parse_to_cfg_transformer<SourcedTaintState>(prog);
+                auto program = parse_to_cfg_transformer(prog);
                 cpu_multi_taint_analysis(program);
             }else{
                 std::cout << "Running analysis using CPU" << std::endl;
 
-                auto program = time_func<ScTransformer<std::set<std::string>>>("Creating CFG nodes: ", 
-                parse_to_cfg_transformer<std::set<std::string>>, prog);
+                auto program = time_func<ScTransformer>("Creating CFG nodes: ", 
+                parse_to_cfg_transformer, prog);
                 cpu_analysis(program);
             }
         }else{
