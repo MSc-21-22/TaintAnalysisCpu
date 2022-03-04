@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <vector>
 #include <array>
+#include "../cuda_common.cuh"
 
 #include "analysis.h"
 
@@ -79,30 +80,6 @@ __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work
             *work_to_do = true;
         }
         work_column[node_index] = -1;   
-    }
-}
-
-void cuda_allocate_memory(void **devPtr, size_t size){
-    auto cudaStatus = cudaMalloc(devPtr, size);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed: %s\n", cudaGetErrorString(cudaStatus));
-        exit(1);
-    }
-}
-
-void cuda_copy_to_device(void *dst, const void *src, size_t size){
-    auto cudaStatus = cudaMemcpy(dst, src, size, cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy to gpu failed: %s\n", cudaGetErrorString(cudaStatus));
-        exit(1);
-    }
-}
-
-void cuda_copy_to_host(void *dst, const void *src, size_t size){
-    auto cudaStatus = cudaMemcpy(dst, src, size, cudaMemcpyDeviceToHost);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy to host failed: %s\n", cudaGetErrorString(cudaStatus));
-        exit(1);
     }
 }
 

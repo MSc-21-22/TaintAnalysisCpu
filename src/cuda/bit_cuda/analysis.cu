@@ -2,6 +2,7 @@
 #include "device_launch_parameters.h"
 #include <iostream>
 #include <stdio.h>
+#include "../cuda_common.cuh"
 
 #include "analysis.h"
 
@@ -80,38 +81,18 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
     auto cudaStatus = cudaSetDevice(0);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
-        goto Error;
+        exit(1);
     }
 
-    // Allocate GPU buffers for three vectors (two input, one output)    .
-    cudaStatus = cudaMalloc((void**)&dev_nodes, sizeof(Node)*node_count + 1);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
+    // Allocate GPU buffers for three vectors (two input, one output)
+    cuda_allocate_memory((void**)&dev_nodes, sizeof(Node)*node_count + 1);
+    cuda_copy_to_device(dev_nodes, nodes, sizeof(Node)*node_count);
 
-    if(transfer_count > 0){
-        cudaStatus = cudaMalloc((void**)&dev_extra_transfers, sizeof(Transfer)*transfer_count);
-        if (cudaStatus != cudaSuccess) {
-            fprintf(stderr, "cudaMalloc failed!");
-            goto Error;
-        }
-    }
+    cuda_allocate_memory((void**)&dev_extra_transfers, sizeof(Transfer)*transfer_count);
+    cuda_copy_to_device(dev_extra_transfers, transfers, sizeof(Transfer)*transfer_count);
+    
     dev_has_changed = (bool*) (dev_nodes + (sizeof(Node)*node_count));
 
-    cudaStatus = cudaMemcpy(dev_nodes, nodes, sizeof(Node)*node_count, cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "Copy false to gpu failed");
-        goto Error;
-    }
-
-    if(transfer_count > 0){
-        cudaStatus = cudaMemcpy(dev_extra_transfers, transfers, sizeof(Transfer)*transfer_count, cudaMemcpyHostToDevice);
-        if (cudaStatus != cudaSuccess) {
-            fprintf(stderr, "Copy false to gpu failed");
-            goto Error;
-        }
-    }
     // Launch a kernel on the GPU with one thread for each element.
     analyze<<<block_count, threadsPerBlock>>>(dev_nodes, dev_extra_transfers, dev_has_changed, node_count);
 
@@ -119,7 +100,7 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
     cudaStatus = cudaGetLastError();
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
-        goto Error;
+        exit(1);
     }
 
     // cudaDeviceSynchronize waits for the kernel to finish, and returns
@@ -127,20 +108,9 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
     cudaStatus = cudaDeviceSynchronize();
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
-        goto Error;
+        exit(1);
     }
 
     // Copy output vector from GPU buffer to host memory.
-    cudaStatus = cudaMemcpy(nodes, dev_nodes, sizeof(Node)*node_count, cudaMemcpyDeviceToHost);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed with message: %d", cudaStatus);
-        goto Error;
-    }
-
-Error:
-    cudaFree(dev_nodes);
-
-    if(dev_extra_transfers != nullptr){
-        cudaFree(dev_extra_transfers);
-    }
+    cuda_copy_to_host(nodes, dev_nodes, sizeof(Node)*node_count);
 }
