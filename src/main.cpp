@@ -38,7 +38,7 @@ void cpu_analysis(ScTransformer program){
         worklist<std::set<std::string>>, nodes, analyzer);
 
     if(!timing::should_benchmark) {
-        print_digraph_with_result(nodes, std::cout, print_result);
+        print_digraph_subgraph(nodes, std::cout, print_result, "main");
     }
 }
 
@@ -48,7 +48,7 @@ void cpu_multi_taint_analysis(ScTransformer program){
     worklist<SourcedTaintState>(nodes, analyzer);
 
     if(!timing::should_benchmark) {
-        print_digraph_with_result(nodes, std::cout, print_taint_source);
+        print_digraph_subgraph(nodes, std::cout, print_taint_source, "main");
     }
 }
 
@@ -66,7 +66,7 @@ void bit_cuda_analysis(ScTransformer program){
                 set_bit_cuda_state, transformer, nodes);
 
     if(!timing::should_benchmark)
-        print_digraph_with_result(nodes, std::cout, print_result);
+        print_digraph_subgraph(nodes, std::cout, print_result, "main");
 }
 
 int main(int argc, char *argv[]){

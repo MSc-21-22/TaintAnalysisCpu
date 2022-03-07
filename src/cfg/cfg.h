@@ -60,7 +60,7 @@ public:
         
     }
 
-    std::vector<StatefulNode<LatticeType>> get_successors() const{
+    std::vector<StatefulNode<LatticeType>> get_successors() {
         std::vector<StatefulNode<LatticeType>> nodes;
         for(std::shared_ptr<Node> succ : node->successors){
             nodes.emplace_back(succ, states);
@@ -68,7 +68,7 @@ public:
         return nodes;
     }
 
-    std::vector<StatefulNode<LatticeType>> get_predecessors() const{
+    std::vector<StatefulNode<LatticeType>> get_predecessors() {
         std::vector<StatefulNode<LatticeType>> nodes;
         for(std::shared_ptr<Node> succ : node->predecessors){
             nodes.emplace_back(succ, states);
@@ -98,6 +98,10 @@ public:
         }else if(auto node_ptr = dynamic_cast<ArrayInitializerNode*>(node.get()); node_ptr){
             visitor.visit_arrayinit(*node_ptr, *states);
         }
+    }
+
+    void accept(CfgVisitor& visitor) {
+        node->accept(visitor);
     }
 };
 

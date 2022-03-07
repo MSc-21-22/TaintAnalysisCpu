@@ -62,21 +62,7 @@ void print_digraph(std::vector<std::shared_ptr<Node>> &nodes, std::ostream &stre
     }
 }
 
-void findFunctionEntries(std::shared_ptr<Node> const &node, std::vector<std::shared_ptr<Node>> &nodesToPrint, std::set<unsigned long long int> &checked)
-{
-    for (auto& succ : node->successors)
-    {
-         if(checked.find((unsigned long long int)succ.get()) == checked.end())
-         {
-            if (dynamic_cast<FunctionEntryNode*>(succ.get()))
-            {
-                nodesToPrint.push_back(succ);
-            }
-            checked.insert((unsigned long long int)succ.get());
-            findFunctionEntries(succ, nodesToPrint, checked);
-        }
-    }
-}
+
 
 std::string connectNodes(std::shared_ptr<Node> const &pred, std::shared_ptr<Node> const &succ)
 {
