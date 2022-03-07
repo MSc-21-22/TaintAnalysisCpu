@@ -17,6 +17,7 @@
 #include <cstring>
 #include "cuda/bit_vector_converter.h"
 #include "cuda/cuda_transformer.h"
+#include <cfg/transformations/get_taint_sources.h>
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -31,10 +32,11 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
 void cpu_analysis(ScTransformer program){
     TaintAnalyzer analyzer;
 
-
     std::vector<StatefulNode<std::set<std::string>>> nodes = create_states<std::set<std::string>>(program.nodes, {TAINT_VAR});
+    auto taint_sources = time_func<std::vector<StatefulNode<std::set<std::string>>>>("Finding taint sources", 
+        get_taint_sources<std::set<std::string>>, nodes);
     time_func("Analyzing: ", 
-        worklist<std::set<std::string>>, nodes, analyzer);
+        worklist<std::set<std::string>>, taint_sources, analyzer);
 
     if(!timing::should_benchmark) {
         print_digraph_subgraph(nodes, std::cout, print_result, "main");
