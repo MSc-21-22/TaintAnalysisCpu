@@ -28,12 +28,14 @@ __device__ void add_sucessors_to_worklist(int* successors, int* work_list, Node*
     }
 }
 
-__device__ void join(int predecessors[], BitVector& joined_data, Node nodes[]){
+__device__ BitVector join(int predecessors[], Node nodes[]){
+        BitVector joined_data = 1;
         int pred_index = 0;
         while (predecessors[pred_index] != -1){
             joined_data |= nodes[predecessors[pred_index]].data;
             ++pred_index;
         }
+        return joined_data;
 }
 
 __device__ void transfer_function(int first_transfer_index, Transfer transfers[], BitVector& joined_data, BitVector& current){
@@ -67,8 +69,7 @@ __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work
         BitVector last = current_node.data;
         BitVector current = current_node.data;
 
-        BitVector joined_data = 1;
-        join(current_node.predecessor_index, joined_data, nodes);
+        BitVector joined_data = join(current_node.predecessor_index, nodes);
         current |= joined_data & current_node.join_mask;
 
         transfer_function(current_node.first_transfer_index, transfers, joined_data, current);
