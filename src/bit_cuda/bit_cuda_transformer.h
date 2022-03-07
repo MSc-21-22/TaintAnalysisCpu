@@ -34,7 +34,7 @@ public:
         bit_cuda::Node& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(node.id, node.expression);
-        add_taint_source(id, transfer_functions[node_struct.first_transfer_index].rhs);
+        add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
         node_struct.join_mask ^= 1 << variables[node.id];
     }
 
@@ -44,7 +44,7 @@ public:
         bit_cuda::Node& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(RETURN_VAR, node.expression);
-        add_taint_source(id, transfer_functions[node_struct.first_transfer_index].rhs);
+        add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
         node_struct.join_mask = 0;
     }
 
@@ -63,13 +63,13 @@ public:
 
         if(node.arguments.size() >= 1){
             node_struct.first_transfer_index = add_transfer_function(node.formal_parameters[0], node.arguments[0]);
-            add_taint_source(id, transfer_functions[node_struct.first_transfer_index].rhs);
+            add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
             bit_cuda::Transfer& last = transfer_functions[node_struct.first_transfer_index];
             
             for (int i = 1; i < node.arguments.size(); i++)
             {
                 last.next_transfer_index = add_transfer_function(node.formal_parameters[i], node.arguments[i]);
-                add_taint_source(id, transfer_functions[last.next_transfer_index].rhs);
+                add_taint_source(id, transfer_functions[last.next_transfer_index]);
                 last = transfer_functions[last.next_transfer_index];
             }
         }
@@ -81,7 +81,7 @@ public:
         bit_cuda::Node& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(node.id, {RETURN_VAR});
-        add_taint_source(id, transfer_functions[node_struct.first_transfer_index].rhs);
+        add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
         node_struct.join_mask ^= 1 << variables[node.id];
         node_struct.join_mask ^= 1 << variables[RETURN_VAR];
     }
@@ -92,7 +92,7 @@ public:
         bit_cuda::Node& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(node.id, node.expression);
-        add_taint_source(id, transfer_functions[node_struct.first_transfer_index].rhs);
+        add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
         node_struct.join_mask ^= 1 << variables[node.id];
     }
     
@@ -113,7 +113,7 @@ public:
         }
 
         node_struct.first_transfer_index = add_transfer_function(node.id, expr_vars);
-        add_taint_source(id, transfer_functions[node_struct.first_transfer_index].rhs);
+        add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
     }
 
     void visit_propagation(PropagationNode<LatticeType>& node) { 
@@ -147,10 +147,11 @@ private:
             }
         } 
     }
-    void add_taint_source(int nodeIndex, int transfer[]){
-        int size = sizeof(transfer)/sizeof(transfer[0]);
+
+    void add_taint_source(int nodeIndex, bit_cuda::Transfer& transfer){
+        int size = sizeof(transfer.rhs)/sizeof(transfer.rhs[0]);
         for (int i = 0; i < size; i++){
-            if(transfer[i] == variables[TAINT_VAR]){
+            if(transfer.rhs[i] == variables[TAINT_VAR]){
                 taint_sources.insert(nodeIndex);
                 break;
             }
