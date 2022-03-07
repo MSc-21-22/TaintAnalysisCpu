@@ -106,11 +106,6 @@ public:
 };
 
 template<typename LatticeType>
-StatefulNode<LatticeType> create_state(std::shared_ptr<std::shared_ptr<Node>> node) {
-    return StatefulNode<LatticeType>(node);
-}
-
-template<typename LatticeType>
 std::vector<StatefulNode<LatticeType>> create_states(std::vector<std::shared_ptr<Node>>& nodes, const LatticeType default_state = {}){
     std::vector<StatefulNode<LatticeType>> stateful_nodes;
     
