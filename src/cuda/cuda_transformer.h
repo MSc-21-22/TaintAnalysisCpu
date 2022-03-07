@@ -1,18 +1,18 @@
 #pragma once
 
-#include <cfg.h>
 #include "cuda_data.h"
-#include <var_visitor.h>
 #include "bit_cuda/analysis.h"
 #include "cuda_worklist/analysis.h"
+#include <cfg/cfg.h>
+#include <cfg/transformations/var_visitor.h>
 
-template <typename LatticeType, typename NodeType>
-class CudaTransformer : public CfgVisitor<LatticeType>
+template <typename NodeType>
+class CudaTransformer : public CfgVisitor
 {
 public:
     std::vector<NodeType> nodes{};
     std::vector<Transfer> transfer_functions{};
-    std::map<Node<LatticeType>*, int> node_to_index{};
+    std::map<Node*, int> node_to_index{};
     std::map<std::string, int> variables{};
     std::set<int> taint_sources{};
 
@@ -30,7 +30,7 @@ public:
 
     }
 
-    void visit_assignment(AssignmentNode<LatticeType>& node) {
+    void visit_assignment(AssignmentNode& node) {
         int id = nodes.size();
         node_to_index[&node] = id;
         NodeType& node_struct = nodes.emplace_back();
@@ -40,7 +40,7 @@ public:
         node_struct.join_mask ^= 1 << variables[node.id];
     }
 
-    void visit_return(ReturnNode<LatticeType>& node) {
+    void visit_return(ReturnNode& node) {
         int id = nodes.size();
         node_to_index[&node] = id;
         NodeType& node_struct = nodes.emplace_back();
@@ -50,13 +50,13 @@ public:
         node_struct.join_mask = 0;
     }
 
-    void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) {
+    void visit_emptyReturn(EmptyReturnNode& node) {
         node_to_index[&node] = nodes.size();
         NodeType& node_struct = nodes.emplace_back();
         node_struct.join_mask = 0;
     }
 
-    void visit_functionEntry(FunctionEntryNode<LatticeType>& node) { 
+    void visit_functionEntry(FunctionEntryNode& node) { 
         int id = nodes.size();
         node_to_index[&node] = id;
         NodeType& node_struct = nodes.emplace_back();
@@ -77,7 +77,7 @@ public:
         }
     }
 
-    void visit_assignReturn(AssignReturnNode<LatticeType>& node) { 
+    void visit_assignReturn(AssignReturnNode& node) { 
         int id = nodes.size();
         node_to_index[&node] = id;
         NodeType& node_struct = nodes.emplace_back();
@@ -88,7 +88,7 @@ public:
         node_struct.join_mask ^= 1 << variables[RETURN_VAR];
     }
 
-    void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node) { 
+    void visit_arrayAssignment(ArrayAssignmentNode& node) { 
         int id = nodes.size();
         node_to_index[&node] = id;
         NodeType& node_struct = nodes.emplace_back();
@@ -98,7 +98,7 @@ public:
         node_struct.join_mask ^= 1 << variables[node.id];
     }
     
-    void visit_arrayinit(ArrayInitializerNode<LatticeType>& node) { 
+    void visit_arrayinit(ArrayInitializerNode& node) { 
         int id = nodes.size();
         node_to_index[&node] = id;
         NodeType& node_struct = nodes.emplace_back();
@@ -118,7 +118,7 @@ public:
         add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
     }
 
-    void visit_propagation(PropagationNode<LatticeType>& node) { 
+    void visit_propagation(PropagationNode& node) { 
         node_to_index[&node] = nodes.size();
         NodeType& node_struct = nodes.emplace_back();
     }
@@ -161,8 +161,8 @@ private:
     }
 };
 
-template<typename LatticeType, typename NodeType>
-void add_predecessors(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, CudaTransformer<LatticeType, NodeType>& transformer){
+template<typename NodeType>
+void add_predecessors(std::vector<std::shared_ptr<Node>>& nodes, CudaTransformer<NodeType>& transformer){
     for(int i = 0; i < nodes.size(); i++){
         int j = 0;
         for (auto pred_it = nodes[i]->predecessors.begin(); pred_it != nodes[i]->predecessors.end(); ++pred_it){
@@ -171,8 +171,8 @@ void add_predecessors(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, Cu
     }
 }
 
-template<typename LatticeType, typename NodeType>
-void add_neighbours(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, CudaTransformer<LatticeType, NodeType>& transformer){
+template<typename NodeType>
+void add_neighbours(std::vector<std::shared_ptr<Node>>& nodes, CudaTransformer<NodeType>& transformer){
     for(int i = 0; i < nodes.size(); i++){
         int j = 0;
         for (auto pred_it = nodes[i]->predecessors.begin(); pred_it != nodes[i]->predecessors.end(); ++pred_it){
@@ -186,10 +186,9 @@ void add_neighbours(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, Cuda
     }
 }
 
-template<typename LatticeType>
-CudaTransformer<LatticeType, bit_cuda::Node> transform_bit_cuda(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes) {
+CudaTransformer<bit_cuda::Node> transform_bit_cuda(std::vector<std::shared_ptr<Node>>& nodes) {
     auto variables = get_variables(nodes);
-    CudaTransformer<LatticeType, bit_cuda::Node> transformer(variables);
+    CudaTransformer<bit_cuda::Node> transformer(variables);
     for(auto &node : nodes){
         node->accept(transformer);
     }
@@ -197,10 +196,9 @@ CudaTransformer<LatticeType, bit_cuda::Node> transform_bit_cuda(std::vector<std:
     return transformer;
 }
 
-template<typename LatticeType>
-CudaTransformer<LatticeType, cuda_worklist::Node> transform_cuda_worklist(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes) {
+CudaTransformer<cuda_worklist::Node> transform_cuda_worklist(std::vector<std::shared_ptr<Node>>& nodes) {
     auto variables = get_variables(nodes);
-    CudaTransformer<LatticeType, cuda_worklist::Node> transformer(variables);
+    CudaTransformer<cuda_worklist::Node> transformer(variables);
     for(auto &node : nodes){
         node->accept(transformer);
     }

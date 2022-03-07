@@ -5,11 +5,11 @@
 #include <memory>
 #include <algorithm>
 #include <map>
-#include "cfg.h"
+#include <cfg/cfg.h>
 #include "matrix.h"
 
-template <typename LatticeType, typename ElementType>
-class MatrixTransforms : public CfgVisitor<LatticeType>
+template <typename ElementType>
+class MatrixTransforms : public CfgVisitor
 {
 public:
     std::map<std::string, int> variables{};
@@ -31,7 +31,7 @@ public:
         variables[TAINT_VAR] = i++;
     }
     
-    void visit_assignReturn(AssignReturnNode<LatticeType>& node){
+    void visit_assignReturn(AssignReturnNode& node){
         auto matrix = unit_matrix<ElementType>(rowSize);
         int id_index = variables[node.id];
 
@@ -42,7 +42,7 @@ public:
         matrices.push_back(matrix);
     }
 
-    void visit_assignment(AssignmentNode<LatticeType>& node){
+    void visit_assignment(AssignmentNode& node){
         auto matrix = unit_matrix<ElementType>(rowSize);
         std::set<std::string> expr_vars = node.expression->get_variables();
         int id_index = variables[node.id];
@@ -59,11 +59,11 @@ public:
         matrices.push_back(matrix);
     }
 
-    void visit_propagation(PropagationNode<LatticeType>& node){
+    void visit_propagation(PropagationNode& node){
         matrices.push_back(unit_matrix<ElementType>(rowSize));
     }
 
-    void visit_return(ReturnNode<LatticeType>& node){
+    void visit_return(ReturnNode& node){
         auto matrix = base_transfer_matrix<ElementType>(rowSize);
         std::set<std::string> expr_vars = node.expression->get_variables();
 
@@ -75,11 +75,11 @@ public:
         matrices.push_back(matrix);
     }
 
-    void visit_emptyReturn(EmptyReturnNode<LatticeType>& node){
+    void visit_emptyReturn(EmptyReturnNode& node){
         matrices.push_back(unit_matrix<ElementType>(rowSize));
     }
 
-    void visit_functionEntry(FunctionEntryNode<LatticeType>& node){
+    void visit_functionEntry(FunctionEntryNode& node){
         auto matrix = base_transfer_matrix<ElementType>(rowSize);
         if (node.successors.size() == 0)
             return;
@@ -95,7 +95,7 @@ public:
         matrices.push_back(matrix);
     }
 
-    void visit_arrayinit(ArrayInitializerNode<LatticeType>& node){
+    void visit_arrayinit(ArrayInitializerNode& node){
         auto matrix = unit_matrix<ElementType>(rowSize);
         std::set<std::string> expr_vars;
 
@@ -118,7 +118,7 @@ public:
         matrices.push_back(matrix);
     }
 
-    void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node){
+    void visit_arrayAssignment(ArrayAssignmentNode& node){
         auto matrix = unit_matrix<ElementType>(rowSize);
         std::set<std::string> expr_vars = node.expression->get_variables();
         int id_index = variables[node.id];
@@ -135,10 +135,10 @@ public:
     }
 };
 
-template<typename LatticeType, typename ElementType>
-Matrix<ElementType> get_successor_matrix(std::vector<std::shared_ptr<Node<LatticeType>>> nodes){
+template<typename ElementType>
+Matrix<ElementType> get_successor_matrix(std::vector<std::shared_ptr<Node>> nodes){
     Matrix<ElementType> matrix = unit_matrix<ElementType>(nodes.size());
-    std::map<std::shared_ptr<Node<LatticeType>>, int> node_map{};
+    std::map<std::shared_ptr<Node>, int> node_map{};
 
     int i = 0;
     for(auto node : nodes){

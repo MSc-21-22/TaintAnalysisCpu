@@ -3,13 +3,13 @@
 #include "GpuManagement.h"
 #include "kernel.h"
 #include <map>
-#include "transforms_matrix.h"
-#include "var_visitor.h"
-#include "digraph.h"
+#include <cfg/transformations/transforms_matrix.h>
+#include <cfg/transformations/var_visitor.h>
+#include <cfg/digraph.h>
 #include <chrono>
 #include "timing.h"
 
-void set_node_states(Matrix<float>& state, std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes, const std::map<std::string, int>& variables){
+void set_node_states(Matrix<float>& state, std::vector<StatefulNode<std::set<std::string>>>& nodes, const std::map<std::string, int>& variables){
     for(int i = 0; i<nodes.size(); i++){
         std::set<std::string> taint_state;
         for (auto it = variables.begin(); it != variables.end(); it++){
@@ -17,7 +17,7 @@ void set_node_states(Matrix<float>& state, std::vector<std::shared_ptr<Node<std:
                 taint_state.insert(it->first);
             }
         }
-        nodes[i]->state = taint_state;
+        nodes[i].get_state() = taint_state;
     }
 }
 
@@ -29,30 +29,32 @@ Matrix<float> get_initial_matrix(int var_count, int node_count){
     return init_state;
 }
 
-void gpu_analysis(std::vector<std::shared_ptr<Node<std::set<std::string>>>>& nodes){
+std::vector<StatefulNode<std::set<std::string>>> gpu_analysis(std::vector<std::shared_ptr<Node>>& cfg_nodes){
     Stopwatch test_watch;
     test_watch.print_time<Microseconds>("test timer ");
 
     Stopwatch stopwatch;
-    auto variables = get_variables(nodes);
+    auto variables = get_variables(cfg_nodes);
 
     // Create transfer matrices
-    MatrixTransforms<std::set<std::string>, float> matrixTransformer{variables};
-    for(auto& node : nodes){
+    MatrixTransforms<float> matrixTransformer{variables};
+    for(auto& node : cfg_nodes){
         (*node).accept(matrixTransformer);
     }
     
     // Create successor matrix
-    auto successor_matrix = get_successor_matrix<std::set<std::string>, float>(nodes);
+    auto successor_matrix = get_successor_matrix<float>(cfg_nodes);
     
-    Matrix<float> init_state = get_initial_matrix(matrixTransformer.variables.size(), nodes.size());
+    Matrix<float> init_state = get_initial_matrix(matrixTransformer.variables.size(), cfg_nodes.size());
     stopwatch.print_time<Microseconds>("Matrix creation ");
 
     auto result_state = analyse(matrixTransformer.matrices, successor_matrix, init_state).to_matrix();
 
+    std::vector<StatefulNode<std::set<std::string>>> nodes = create_states<std::set<std::string>>(cfg_nodes);
     // Set the tainted state on nodes
     time_func("Move data to cpu: ", 
         set_node_states, result_state, nodes, matrixTransformer.variables);
+    return nodes;
 }
 
 GpuMatrix analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<float>& successor_matrix, Matrix<float>& initial_state){

@@ -1,12 +1,12 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
-#include "../src/cfg.h"
+#include <cfg/cfg.h>
 #include <memory>
-#include "../src/transforms_matrix.h"
-#include "../src/matrix_analysis.h"
-#include "../src/kernel.h"
-#include "../src/cuda/bit_cuda/analysis.h"
-#include "../src/cuda/cuda_worklist/analysis.h"
+#include <cfg/transformations/transforms_matrix.h>
+#include <matrix_analysis.h>
+#include <kernel.h>
+#include <cuda/bit_cuda/analysis.h>
+#include <cuda/cuda_worklist/analysis.h>
 
 TEST_CASE("bit cuda x=$ -> y=x") {
     std::vector<bit_cuda::Node> nodes;
