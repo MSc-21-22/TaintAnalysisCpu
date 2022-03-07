@@ -144,9 +144,11 @@ int main(int argc, char *argv[]){
             return 0;
         }
 
+        auto program = time_func<ScTransformer>("Creating CFG nodes: ", 
+                parse_to_cfg_transformer, prog);
+
         if(gpu_flag){
             std::cout << "Running analysis using cuBLAS on GPU" << std::endl;
-            auto program = parse_to_cfg_transformer(prog);
             time_func("Cublas creation: ", 
                 create_cublas);
             time_func("Variable reduction: ", 
@@ -157,22 +159,16 @@ int main(int argc, char *argv[]){
             }
         }else if(cuda_flag){
             std::cout << "Running bit-cuda analysis" << std::endl;
-            auto program = parse_to_cfg_transformer(prog);
             bit_cuda_analysis(program);
         }else if(cuda_worklist_flag){
             std::cout << "Running bit-cuda analysis using worklists" << std::endl;
-            auto program = parse_to_cfg_transformer(prog);
             bit_cuda_worklist_analysis(program);
         }else if(cpu_flag){
             if(multi_taint_flag){
                 std::cout << "Running multi-taint analysis using CPU" << std::endl;
-                auto program = parse_to_cfg_transformer(prog);
                 cpu_multi_taint_analysis(program);
             }else{
                 std::cout << "Running analysis using CPU" << std::endl;
-
-                auto program = time_func<ScTransformer>("Creating CFG nodes: ", 
-                parse_to_cfg_transformer, prog);
                 cpu_analysis(program);
             }
         }else{
