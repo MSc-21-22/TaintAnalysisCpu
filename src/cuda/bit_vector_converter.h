@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cuda_data.h"
-#include <cfg.h>
+#include <cfg/cfg.h>
 
 template<typename NodeType>
 void set_bit_cuda_state(std::vector<NodeType>& nodes, std::map<std::string, int>& variables, 
