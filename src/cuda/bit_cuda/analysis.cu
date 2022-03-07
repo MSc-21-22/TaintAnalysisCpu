@@ -85,10 +85,10 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
     }
 
     // Allocate GPU buffers for three vectors (two input, one output)
-    cuda_allocate_memory((void**)&dev_nodes, sizeof(Node)*node_count + 1);
+    dev_nodes = cuda_allocate_memory<Node>(sizeof(Node)*node_count + 1);
     cuda_copy_to_device(dev_nodes, nodes, sizeof(Node)*node_count);
 
-    cuda_allocate_memory((void**)&dev_transfers, sizeof(Transfer)*transfer_count);
+    dev_transfers = cuda_allocate_memory<Transfer>(sizeof(Transfer)*transfer_count);
     cuda_copy_to_device(dev_transfers, transfers, sizeof(Transfer)*transfer_count);
     
     dev_has_changed = (bool*) (dev_nodes + (sizeof(Node)*node_count));

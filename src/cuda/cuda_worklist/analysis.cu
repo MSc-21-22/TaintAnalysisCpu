@@ -116,18 +116,18 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
     }
 
     // Allocate work columns
-    cuda_allocate_memory((void**)&dev_worklists, sizeof(int) * THREAD_COUNT * (work_column_count + 1));
+    dev_worklists = cuda_allocate_memory<int*>(sizeof(int) * THREAD_COUNT * (work_column_count + 1));
     cudaMemset(dev_worklists, -1, sizeof(int) * THREAD_COUNT * (work_column_count + 1));
     cuda_copy_to_device(dev_worklists, &worklists[0], sizeof(int) * THREAD_COUNT * work_column_count);
 
     // Allocate GPU buffers for three vectors (two input, one output)  
-    cuda_allocate_memory((void**)&dev_nodes, sizeof(Node)*node_count + 1);
+    dev_nodes = cuda_allocate_memory<Node>(sizeof(Node)*node_count + 1);
     cuda_copy_to_device(dev_nodes, nodes, sizeof(Node)*node_count);
 
     dev_work_to_do = (bool*) (dev_nodes + node_count);
 
     // Allocate transfer function
-    cuda_allocate_memory((void**)&dev_transfers, sizeof(Transfer)*transfer_count);
+    dev_transfers = cuda_allocate_memory<Transfer>(sizeof(Transfer)*transfer_count);
     cuda_copy_to_device(dev_transfers, transfers, sizeof(Transfer)*transfer_count);
   
     int i = 0;
