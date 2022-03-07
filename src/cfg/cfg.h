@@ -70,8 +70,8 @@ public:
 
     std::vector<StatefulNode<LatticeType>> get_predecessors() {
         std::vector<StatefulNode<LatticeType>> nodes;
-        for(std::shared_ptr<Node> succ : node->predecessors){
-            nodes.emplace_back(succ, states);
+        for(std::shared_ptr<Node> pred : node->predecessors){
+            nodes.emplace_back(pred, states);
         }
         return nodes;
     }
@@ -81,22 +81,44 @@ public:
     }
 
     void accept(CfgStateVisitor<LatticeType>& visitor) {
-        if(auto node_ptr = dynamic_cast<PropagationNode*>(node.get()); node_ptr){
-            visitor.visit_propagation(*node_ptr, *states);
-        }else if(auto node_ptr = dynamic_cast<AssignmentNode*>(node.get()); node_ptr){
-            visitor.visit_assignment(*node_ptr, *states);
-        }else if(auto node_ptr = dynamic_cast<ReturnNode*>(node.get()); node_ptr){
-            visitor.visit_return(*node_ptr, *states);
-        }else if(auto node_ptr = dynamic_cast<EmptyReturnNode*>(node.get()); node_ptr){
-            visitor.visit_emptyReturn(*node_ptr, *states);
-        }else if(auto node_ptr = dynamic_cast<FunctionEntryNode*>(node.get()); node_ptr){
-            visitor.visit_functionEntry(*node_ptr, *states);
-        }else if(auto node_ptr = dynamic_cast<AssignReturnNode*>(node.get()); node_ptr){
-            visitor.visit_assignReturn(*node_ptr, *states);
-        }else if(auto node_ptr = dynamic_cast<ArrayAssignmentNode*>(node.get()); node_ptr){
-            visitor.visit_arrayAssignment(*node_ptr, *states);
-        }else if(auto node_ptr = dynamic_cast<ArrayInitializerNode*>(node.get()); node_ptr){
-            visitor.visit_arrayinit(*node_ptr, *states);
+        auto propagation_ptr = dynamic_cast<PropagationNode*>(node.get());
+        if(propagation_ptr){
+            visitor.visit_propagation(*propagation_ptr, *states);
+            return;
+        }
+        auto assignment_ptr = dynamic_cast<AssignmentNode*>(node.get());
+        if(assignment_ptr){
+            visitor.visit_assignment(*assignment_ptr, *states);
+            return;
+        }
+        auto return_ptr = dynamic_cast<ReturnNode*>(node.get());
+        if(return_ptr) {
+            visitor.visit_return(*return_ptr, *states);
+            return;
+        }
+        auto empty_return_ptr = dynamic_cast<EmptyReturnNode*>(node.get());
+        if(empty_return_ptr){
+            visitor.visit_emptyReturn(*empty_return_ptr, *states);
+            return;
+        }
+        auto function_entry_ptr = dynamic_cast<FunctionEntryNode*>(node.get());
+        if(function_entry_ptr){
+            visitor.visit_functionEntry(*function_entry_ptr, *states);
+            return;
+        }
+        auto assign_return_node = dynamic_cast<AssignReturnNode*>(node.get());
+        if(assign_return_node){
+            visitor.visit_assignReturn(*assign_return_node, *states);
+            return;
+        }
+        auto array_assignment_ptr = dynamic_cast<ArrayAssignmentNode*>(node.get()); 
+        if(array_assignment_ptr){
+            visitor.visit_arrayAssignment(*array_assignment_ptr, *states);
+            return;
+        }
+        auto array_init_ptr = dynamic_cast<ArrayInitializerNode*>(node.get());
+        if(array_init_ptr){
+            visitor.visit_arrayinit(*array_init_ptr, *states);
         }
     }
 
