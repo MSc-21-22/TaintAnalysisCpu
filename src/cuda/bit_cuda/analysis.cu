@@ -2,6 +2,7 @@
 #include "device_launch_parameters.h"
 #include <iostream>
 #include <stdio.h>
+#include "../cuda_common.cuh"
 
 #include "analysis.h"
 
@@ -23,7 +24,7 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
         while(*has_changed){
             if(node_index == 0)
                 *has_changed = false;
-            BitVector joined_data = 0;
+            BitVector joined_data = 1;
             //Join
             {
                 int pred_index = 0;
@@ -57,7 +58,7 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
                     }
                     transfer_index = transfer->next_transfer_index;
                 }
-
+                printf("[%d] [%d] (%d)\n", current, last_joined, node_index);
                 nodes[node_index].data = current;
                 *has_changed = true;
                 is_changed = false;
@@ -73,54 +74,33 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
 void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers, int transfer_count) {
     Node* dev_nodes = nullptr;
     bool* dev_has_changed = nullptr;
-    Transfer* dev_extra_transfers = nullptr;
+    Transfer* dev_transfers = nullptr;
 
     int block_count = node_count/128 + 1;
     dim3 threadsPerBlock(128);
-
     auto cudaStatus = cudaSetDevice(0);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
-        goto Error;
+        exit(1);
     }
 
-    // Allocate GPU buffers for three vectors (two input, one output)    .
-    cudaStatus = cudaMalloc((void**)&dev_nodes, sizeof(Node)*node_count + 1);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
+    // Allocate GPU buffers for three vectors (two input, one output)
+    dev_nodes = cuda_allocate_memory<Node>(sizeof(Node)*node_count + 1);
+    cuda_copy_to_device(dev_nodes, nodes, sizeof(Node)*node_count);
 
-    if(transfer_count > 0){
-        cudaStatus = cudaMalloc((void**)&dev_extra_transfers, sizeof(Transfer)*transfer_count);
-        if (cudaStatus != cudaSuccess) {
-            fprintf(stderr, "cudaMalloc failed!");
-            goto Error;
-        }
-    }
+    dev_transfers = cuda_allocate_memory<Transfer>(sizeof(Transfer)*transfer_count);
+    cuda_copy_to_device(dev_transfers, transfers, sizeof(Transfer)*transfer_count);
+    
     dev_has_changed = (bool*) (dev_nodes + (sizeof(Node)*node_count));
 
-    cudaStatus = cudaMemcpy(dev_nodes, nodes, sizeof(Node)*node_count, cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "Copy false to gpu failed");
-        goto Error;
-    }
-
-    if(transfer_count > 0){
-        cudaStatus = cudaMemcpy(dev_extra_transfers, transfers, sizeof(Transfer)*transfer_count, cudaMemcpyHostToDevice);
-        if (cudaStatus != cudaSuccess) {
-            fprintf(stderr, "Copy false to gpu failed");
-            goto Error;
-        }
-    }
     // Launch a kernel on the GPU with one thread for each element.
-    analyze<<<block_count, threadsPerBlock>>>(dev_nodes, dev_extra_transfers, dev_has_changed, node_count);
+    analyze<<<block_count, threadsPerBlock>>>(dev_nodes, dev_transfers, dev_has_changed, node_count);
 
     // Check for any errors launching the kernel
     cudaStatus = cudaGetLastError();
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
-        goto Error;
+        exit(1);
     }
 
     // cudaDeviceSynchronize waits for the kernel to finish, and returns
@@ -128,20 +108,12 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
     cudaStatus = cudaDeviceSynchronize();
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
-        goto Error;
+        exit(1);
     }
 
     // Copy output vector from GPU buffer to host memory.
-    cudaStatus = cudaMemcpy(nodes, dev_nodes, sizeof(Node)*node_count, cudaMemcpyDeviceToHost);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed with message: %d", cudaStatus);
-        goto Error;
-    }
+    cuda_copy_to_host(nodes, dev_nodes, sizeof(Node)*node_count);
 
-Error:
-    cudaFree(dev_nodes);
-
-    if(dev_extra_transfers != nullptr){
-        cudaFree(dev_extra_transfers);
-    }
+    cuda_free(dev_nodes);
+    cuda_free(dev_transfers);
 }

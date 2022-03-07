@@ -1,20 +1,22 @@
 #pragma once
 
 #include <cfg.h>
-#include "analysis.h"
+#include "cuda_data.h"
 #include <var_visitor.h>
+#include "bit_cuda/analysis.h"
+#include "cuda_worklist/analysis.h"
 
-template <typename LatticeType>
-class BitCudaTransformer : public CfgVisitor<LatticeType>
+template <typename LatticeType, typename NodeType>
+class CudaTransformer : public CfgVisitor<LatticeType>
 {
 public:
-    std::vector<bit_cuda::Node> nodes{};
-    std::vector<bit_cuda::Transfer> transfer_functions{};
+    std::vector<NodeType> nodes{};
+    std::vector<Transfer> transfer_functions{};
     std::map<Node<LatticeType>*, int> node_to_index{};
     std::map<std::string, int> variables{};
     std::set<int> taint_sources{};
 
-    BitCudaTransformer(std::set<std::string> progVariables){
+    CudaTransformer(std::set<std::string> progVariables){
         int i = 0;
         variables[TAINT_VAR] = i++;
         variables[RETURN_VAR] = i++;
@@ -31,7 +33,7 @@ public:
     void visit_assignment(AssignmentNode<LatticeType>& node) {
         int id = nodes.size();
         node_to_index[&node] = id;
-        bit_cuda::Node& node_struct = nodes.emplace_back();
+        NodeType& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(node.id, node.expression);
         add_taint_source(id, transfer_functions[node_struct.first_transfer_index].rhs);
@@ -41,7 +43,7 @@ public:
     void visit_return(ReturnNode<LatticeType>& node) {
         int id = nodes.size();
         node_to_index[&node] = id;
-        bit_cuda::Node& node_struct = nodes.emplace_back();
+        NodeType& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(RETURN_VAR, node.expression);
         add_taint_source(id, transfer_functions[node_struct.first_transfer_index].rhs);
@@ -50,21 +52,21 @@ public:
 
     void visit_emptyReturn(EmptyReturnNode<LatticeType>& node) {
         node_to_index[&node] = nodes.size();
-        bit_cuda::Node& node_struct = nodes.emplace_back();
+        NodeType& node_struct = nodes.emplace_back();
         node_struct.join_mask = 0;
     }
 
     void visit_functionEntry(FunctionEntryNode<LatticeType>& node) { 
         int id = nodes.size();
         node_to_index[&node] = id;
-        bit_cuda::Node& node_struct = nodes.emplace_back();
+        NodeType& node_struct = nodes.emplace_back();
 
         node_struct.join_mask = 0;
 
         if(node.arguments.size() >= 1){
             node_struct.first_transfer_index = add_transfer_function(node.formal_parameters[0], node.arguments[0]);
             add_taint_source(id, transfer_functions[node_struct.first_transfer_index].rhs);
-            bit_cuda::Transfer& last = transfer_functions[node_struct.first_transfer_index];
+            Transfer& last = transfer_functions[node_struct.first_transfer_index];
             
             for (int i = 1; i < node.arguments.size(); i++)
             {
@@ -78,7 +80,7 @@ public:
     void visit_assignReturn(AssignReturnNode<LatticeType>& node) { 
         int id = nodes.size();
         node_to_index[&node] = id;
-        bit_cuda::Node& node_struct = nodes.emplace_back();
+        NodeType& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(node.id, {RETURN_VAR});
         add_taint_source(id, transfer_functions[node_struct.first_transfer_index].rhs);
@@ -89,7 +91,7 @@ public:
     void visit_arrayAssignment(ArrayAssignmentNode<LatticeType>& node) { 
         int id = nodes.size();
         node_to_index[&node] = id;
-        bit_cuda::Node& node_struct = nodes.emplace_back();
+        NodeType& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(node.id, node.expression);
         add_taint_source(id, transfer_functions[node_struct.first_transfer_index].rhs);
@@ -99,7 +101,7 @@ public:
     void visit_arrayinit(ArrayInitializerNode<LatticeType>& node) { 
         int id = nodes.size();
         node_to_index[&node] = id;
-        bit_cuda::Node& node_struct = nodes.emplace_back();
+        NodeType& node_struct = nodes.emplace_back();
 
         node_struct.join_mask ^= 1 << variables[node.id];
 
@@ -118,13 +120,13 @@ public:
 
     void visit_propagation(PropagationNode<LatticeType>& node) { 
         node_to_index[&node] = nodes.size();
-        bit_cuda::Node& node_struct = nodes.emplace_back();
+        NodeType& node_struct = nodes.emplace_back();
     }
 
 private:
     int add_transfer_function(std::string x, std::set<std::string>& vars){
         int index = transfer_functions.size();
-        bit_cuda::Transfer& current_transfer = transfer_functions.emplace_back();
+        Transfer& current_transfer = transfer_functions.emplace_back();
         current_transfer.x = variables[x];
         fill_with_variable_indices(current_transfer.rhs, vars);
         return index;
@@ -158,8 +160,8 @@ private:
     }
 };
 
-template<typename LatticeType>
-void add_predecessors(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, BitCudaTransformer<LatticeType>& transformer){
+template<typename LatticeType, typename NodeType>
+void add_predecessors(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, CudaTransformer<LatticeType, NodeType>& transformer){
     for(int i = 0; i < nodes.size(); i++){
         int j = 0;
         for (auto pred_it = nodes[i]->predecessors.begin(); pred_it != nodes[i]->predecessors.end(); ++pred_it){
@@ -168,13 +170,39 @@ void add_predecessors(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, Bi
     }
 }
 
+template<typename LatticeType, typename NodeType>
+void add_neighbours(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes, CudaTransformer<LatticeType, NodeType>& transformer){
+    for(int i = 0; i < nodes.size(); i++){
+        int j = 0;
+        for (auto pred_it = nodes[i]->predecessors.begin(); pred_it != nodes[i]->predecessors.end(); ++pred_it){
+            transformer.nodes[i].predecessor_index[j++] = transformer.node_to_index[pred_it->get()];
+        }
+
+        int succ_index = 0;
+        for (auto succ = nodes[i]->successors.begin(); succ != nodes[i]->successors.end(); ++succ){
+            transformer.nodes[i].successor_index[succ_index++] = transformer.node_to_index[succ->get()];
+        }
+    }
+}
+
 template<typename LatticeType>
-BitCudaTransformer<LatticeType> transform_bit_cuda(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes) {
+CudaTransformer<LatticeType, bit_cuda::Node> transform_bit_cuda(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes) {
     auto variables = get_variables(nodes);
-    BitCudaTransformer<LatticeType> transformer(variables);
+    CudaTransformer<LatticeType, bit_cuda::Node> transformer(variables);
     for(auto &node : nodes){
         node->accept(transformer);
     }
     add_predecessors(nodes, transformer);
+    return transformer;
+}
+
+template<typename LatticeType>
+CudaTransformer<LatticeType, cuda_worklist::Node> transform_cuda_worklist(std::vector<std::shared_ptr<Node<LatticeType>>>& nodes) {
+    auto variables = get_variables(nodes);
+    CudaTransformer<LatticeType, cuda_worklist::Node> transformer(variables);
+    for(auto &node : nodes){
+        node->accept(transformer);
+    }
+    add_neighbours(nodes, transformer);
     return transformer;
 }
