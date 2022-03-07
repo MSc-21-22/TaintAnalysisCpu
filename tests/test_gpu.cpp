@@ -5,31 +5,26 @@
 #include "../src/transforms_matrix.h"
 #include "../src/matrix_analysis.h"
 #include "../src/kernel.h"
-#include "../src/bit_cuda/analysis.h"
-
-
+#include "../src/cuda/bit_cuda/analysis.h"
+#include "../src/cuda/cuda_worklist/analysis.h"
 
 TEST_CASE("bit cuda x=$ -> y=x") {
     std::vector<bit_cuda::Node> nodes;
-    std::vector<bit_cuda::Transfer> transfer_functions{};
+    std::vector<Transfer> transfer_functions{};
 
     bit_cuda::Node node1;
     node1.first_transfer_index = 0;
-    bit_cuda::Transfer& transfer1 = transfer_functions.emplace_back();
+    Transfer& transfer1 = transfer_functions.emplace_back();
     transfer1.x = 1;
     transfer1.rhs[0] = 0;
-    transfer1.rhs[1] = -1;
-    node1.predecessor_index[0] = -1;
     nodes.push_back(node1);
     
     bit_cuda::Node node2;
     node2.first_transfer_index = 1;
-    bit_cuda::Transfer& transfer2 = transfer_functions.emplace_back();
+    Transfer& transfer2 = transfer_functions.emplace_back();
     transfer2.x = 2;
     transfer2.rhs[0] = 1;
-    transfer2.rhs[1] = -1;
     node2.predecessor_index[0] = 0;
-    node2.predecessor_index[1] = -1;
     nodes.push_back(node2);
 
     bit_cuda::execute_analysis(&nodes[0], nodes.size(), &transfer_functions[0], transfer_functions.size());
@@ -38,205 +33,74 @@ TEST_CASE("bit cuda x=$ -> y=x") {
     CHECK_MESSAGE(nodes[1].data == 7, "Second node results doesnt match");
 } 
 
-TEST_CASE("bit cuda multi transforms") {
-    std::vector<bit_cuda::Node> nodes;
-    std::vector<bit_cuda::Transfer> transfers;
-    bit_cuda::Node& node1 = nodes.emplace_back();
+TEST_CASE("worklist cuda x=$ -> y=x") {
+    std::vector<cuda_worklist::Node> nodes;
+    std::vector<Transfer> transfer_functions{};
 
-    bit_cuda::Transfer& transfer1 = transfers.emplace_back();
+    cuda_worklist::Node node1;
+    node1.first_transfer_index = 0;
+    node1.successor_index[0] = 1;
+    Transfer& transfer1 = transfer_functions.emplace_back();
+    transfer1.x = 1;
+    transfer1.rhs[0] = 0;
+    nodes.push_back(node1);
+    
+    cuda_worklist::Node node2;
+    node2.first_transfer_index = 1;
+    Transfer& transfer2 = transfer_functions.emplace_back();
+    transfer2.x = 2;
+    transfer2.rhs[0] = 1;
+    node2.predecessor_index[0] = 0;
+    nodes.push_back(node2);
+
+    std::set<int> taint_sources = {0};
+    cuda_worklist::execute_analysis(&nodes[0], nodes.size(), &transfer_functions[0], transfer_functions.size(), taint_sources);
+
+    CHECK_MESSAGE(nodes[0].data == 3, "First node results doesnt match");
+    CHECK_MESSAGE(nodes[1].data == 7, "Second node results doesnt match");
+} 
+
+
+TEST_CASE("worklist cuda multi transforms") {
+    std::vector<cuda_worklist::Node> nodes;
+    std::vector<Transfer> transfers;
+    cuda_worklist::Node& node1 = nodes.emplace_back();
+
+    Transfer& transfer1 = transfers.emplace_back();
+    transfer1.next_transfer_index = 1;
     node1.first_transfer_index = 0;
     transfer1.x = 1;
     transfer1.rhs[0] = 0;
-    transfer1.rhs[1] = -1;
-    node1.predecessor_index[0] = -1;
 
-    bit_cuda::Transfer& transfer = transfers.emplace_back();
-    transfer.next_transfer_index = 1;
-    transfer.x = 2;
-    transfer.rhs[0] = 0;
+    Transfer& transfer2 = transfers.emplace_back();
+    transfer2.x = 2;
+    transfer2.rhs[0] = 0;
+
+    std::set<int> taint_sources = {0};
+    cuda_worklist::execute_analysis(&nodes[0], nodes.size(), &transfers[0], transfers.size(), taint_sources);
+
+    CHECK_MESSAGE(nodes[0].data == 7, "First node results doesnt match");
+} 
+
+TEST_CASE("bit cuda multi transforms") {
+    std::vector<bit_cuda::Node> nodes;
+    std::vector<Transfer> transfers;
+    bit_cuda::Node& node1 = nodes.emplace_back();
+
+    Transfer& transfer1 = transfers.emplace_back();
+    node1.first_transfer_index = 0;
+    transfer1.next_transfer_index = 1;
+    transfer1.x = 1;
+    transfer1.rhs[0] = 0;
+
+    Transfer& transfer2 = transfers.emplace_back();
+    transfer2.x = 2;
+    transfer2.rhs[0] = 0;
 
     bit_cuda::execute_analysis(&nodes[0], nodes.size(), &transfers[0], transfers.size());
 
     CHECK_MESSAGE(nodes[0].data == 7, "First node results doesnt match");
 } 
-
-TEST_CASE("unit matrix") {
-
-    auto matrix = unit_matrix<float>(4);
-
-    
-    //     1,0,0,0,
-    //     0,1,0,0,
-    //     0,0,1,0,
-    //     0,0,0,1
-    float correct_matrix[] = {
-        1,0,0,0,
-        0,1,0,0,
-        0,0,1,0,
-        0,0,0,1};
-    CHECK_MESSAGE(std::memcmp(matrix.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
-                matrix.to_string());
-
-} 
-
-TEST_CASE("matrix transform initilization") {
-
-    auto b = std::make_shared<VariableExpression>("b");
-    auto taint = std::make_shared<VariableExpression>(TAINT_VAR);
-    auto exp = std::make_shared<BinaryOperatorExpression>(b,"+",taint);
-    AssignmentNode<int> node("a", exp);
-
-    MatrixTransforms<int,float> matrixTransformer({"a","b"});
-    node.accept(matrixTransformer);
-
-    
-    //     0,1,0,1,
-    //     0,1,0,0,
-    //     0,0,1,0,
-    //     0,0,0,1
-    float correct_matrix[] = {
-        0,0,0,0,
-        1,1,0,0,
-        0,0,1,0,
-        1,0,0,1};
-    Matrix<float> matrix = matrixTransformer.matrices[0];
-    CHECK_MESSAGE(std::memcmp(matrix.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
-                matrix.to_string());
-
-} 
-
-TEST_CASE("matrix transform assignment") {
-
-    auto taint = std::make_shared<VariableExpression>(TAINT_VAR);
-    AssignmentNode<int> node{"a", taint};
-
-    MatrixTransforms<int, float> matrixTransformer({"a","b"});
-    node.accept(matrixTransformer);
-
-
-    //      0,0,0,1,
-    //      0,1,0,0,
-    //      0,0,1,0,
-    //      0,0,0,1
-    float correct_matrix[] = 
-       {0,0,0,0,
-        0,1,0,0,
-        0,0,1,0,
-        1,0,0,1};
-
-      Matrix<float> matrix = matrixTransformer.matrices[0];
-      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,sizeof(correct_matrix)) == 0,
-                    matrix.to_string());
-} 
-
-TEST_CASE("matrix transform assign return") {
-
-    AssignReturnNode<int> node{"a"};
-
-    MatrixTransforms<int, float> matrixTransformer({"a","b"});
-    node.accept(matrixTransformer);
-
-    //      0,0,1,0,
-    //      0,1,0,0,
-    //      0,0,0,0,
-    //      0,0,0,1
-    float correct_matrix[] = 
-        {0,0,0,0,
-         0,1,0,0,
-         1,0,0,0,
-         0,0,0,1};
-
-      Matrix<float> matrix = matrixTransformer.matrices[0];
-      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,sizeof(correct_matrix)) == 0,
-                    matrix.to_string());
-} 
-
-TEST_CASE("matrix transform function entry"){
-
-    auto c = std::make_shared<VariableExpression>("c");
-    auto taint = std::make_shared<VariableExpression>(TAINT_VAR);
-
-    std::vector<std::shared_ptr<Expression>> args{c,taint};
-    std::string taint_var(TAINT_VAR);
-    auto funcCall = std::make_shared<PropagationNode<int>>("f(c, "+ taint_var +")");
-    std::vector<std::string> params{"a","b"};
-    auto funcEntry = std::make_shared<FunctionEntryNode<int>>("f", params);
-    funcEntry->arguments = args;
-    auto funcDef = std::make_shared<PropagationNode<int>>("void f(int a, int b)");
-    
-    funcCall->successors.insert(funcEntry);
-    funcEntry->predecessors.insert(funcCall);
-    funcEntry->successors.insert(funcDef);
-    funcDef->predecessors.insert(funcEntry);
-
-    MatrixTransforms<int,float> matrixTransforms({"a","b","c"});
-    funcEntry->accept(matrixTransforms);
-
-    //     {0,0,1,0,0,
-    //      0,0,0,0,1,
-    //      0,0,0,0,0,
-    //      0,0,0,0,0,
-    //      0,0,0,0,1
-    float  correct_matrix[] =
-        {0,0,0,0,0,
-         0,0,0,0,0,
-         1,0,0,0,0,
-         0,0,0,0,0,
-         0,1,0,0,1};
-
-    Matrix<float> matrix = matrixTransforms.matrices[0];
-    CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,sizeof(correct_matrix)) == 0,
-                  matrix.to_string());
-}
-
-
-TEST_CASE("matrix transform return") {
-
-    auto a = std::make_shared<VariableExpression>("a");
-    ReturnNode<int> node(a, "f");
-
-    MatrixTransforms<int, float> matrixTransformer({"a","b"});
-    node.accept(matrixTransformer);
-
-    //      0,0,0,0,
-    //      0,0,0,0,
-    //      1,0,0,0,
-    //      0,0,0,1
-    float  correct_matrix[] = 
-        {0,0,1,0,
-         0,0,0,0,
-         0,0,0,0,
-         0,0,0,1};
-
-      Matrix<float> matrix = matrixTransformer.matrices[0];
-      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(),correct_matrix,sizeof(correct_matrix)) == 0,
-                    matrix.to_string());
-} 
-
-
-TEST_CASE("Create successor node matrix"){
-    auto node1 = std::make_shared<PropagationNode<int>>("Empty");
-    auto node2 = std::make_shared<PropagationNode<int>>("Empty");
-    auto node3 = std::make_shared<PropagationNode<int>>("Empty");
-
-    node1->successors.insert({node2,node3});
-    node2->successors.insert(node3);
-    node2->predecessors.insert(node1);
-    node3->predecessors.insert({node1,node2});
-    
-    std::vector<std::shared_ptr<Node<int>>> vec{node1,node2,node3};
-    auto matrix = get_successor_matrix<int, float>(vec);
-
-    //     1,1,1,
-    //     0,1,1,
-    //     0,0,1
-    float correct_matrix[] = {
-        1,0,0,
-        1,1,0,
-        1,1,1};
-      CHECK_MESSAGE(std::memcmp(matrix.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
-                    matrix.to_string());
-}
 
 TEST_CASE("Matrix copying test"){
     create_cublas();
@@ -349,7 +213,6 @@ TEST_CASE("Matrix multiply initial state with succ test"){
     CHECK_MESSAGE(std::memcmp(matrixC.matrix.get(), correct_matrix, sizeof(correct_matrix)) == 0,
             matrixC.to_string());
 }
-
 
 TEST_CASE("Matrix multiply 5x5"){
     create_cublas();
