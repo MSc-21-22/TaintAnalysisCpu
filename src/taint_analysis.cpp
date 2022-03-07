@@ -8,108 +8,114 @@ std::set<std::string> least_upper_bound(const std::set<std::string>& left, const
     return out;
 }
 
-std::set<std::string> join(const Node<std::set<std::string>> &node)
+std::set<std::string> join(const Node &node, std::map<Node*, std::set<std::string>> &states)
 {   
     if(node.predecessors.size() == 0)
         return {};
 
     auto it = node.predecessors.begin();
-    auto state = (*it)->state;
+    auto state = states[it->get()];
     it++;
     while(it != node.predecessors.end())
     {
-        state = least_upper_bound((*it)->state, state);
+        state = least_upper_bound(states[it->get()], state);
         it++;
     }
     return state;
 }
 
-void TaintAnalyzer::visit_arrayinit(ArrayInitializerNode<std::set<std::string>> &node)
+void TaintAnalyzer::visit_arrayinit(ArrayInitializerNode &node, std::map<Node*, std::set<std::string>> &states)
 {
-    node.state = join(node);
+    std::set<std::string>& node_state = states[&node];
+    node_state = join(node, states);
     for (auto &expression : node.arrayContent)
     {
-        if (evaluateExpression(expression, node.state))
+        if (evaluateExpression(expression, node_state))
         {
-            node.state.insert(node.id);
+            node_state.insert(node.id);
         }
     }
     
 }
 
-void TaintAnalyzer::visit_assignment(AssignmentNode<std::set<std::string>> &node)
+void TaintAnalyzer::visit_assignment(AssignmentNode &node, std::map<Node*, std::set<std::string>> &states)
 {
-    node.state = join(node);
+    std::set<std::string>& node_state = states[&node];
+    node_state = join(node, states);
 
-    if (evaluateExpression(node.expression, node.state))
+    if (evaluateExpression(node.expression, node_state))
     {
-        node.state.insert(node.id);
+        node_state.insert(node.id);
     }
     else
     {
-        node.state.erase(node.id);
+        node_state.erase(node.id);
     }
 }
 
-void TaintAnalyzer::visit_arrayAssignment(ArrayAssignmentNode<std::set<std::string>> &node)
+void TaintAnalyzer::visit_arrayAssignment(ArrayAssignmentNode &node, std::map<Node*, std::set<std::string>> &states)
 {
-    node.state = join(node);
+    std::set<std::string>& node_state = states[&node];
+    node_state = join(node, states);
 
-    if (evaluateExpression(node.expression, node.state))
+    if (evaluateExpression(node.expression, node_state))
     {
-        node.state.insert(node.arrayid);
+        node_state.insert(node.arrayid);
     }
 }
 
-void TaintAnalyzer::visit_propagation(PropagationNode<std::set<std::string>> &node){
-    node.state = join(node);
+void TaintAnalyzer::visit_propagation(PropagationNode &node, std::map<Node*, std::set<std::string>> &states){
+    std::set<std::string>& node_state = states[&node];
+    node_state = join(node, states);
 }
 
-void TaintAnalyzer::visit_return(ReturnNode<std::set<std::string>> &node)
+void TaintAnalyzer::visit_return(ReturnNode &node, std::map<Node*, std::set<std::string>> &states)
 {
-    node.state = join(node);
+    std::set<std::string>& node_state = states[&node];
+    node_state = join(node, states);
 
-    if (evaluateExpression(node.expression, node.state))
+    if (evaluateExpression(node.expression, node_state))
     {
-        node.state = {RETURN_VAR};
+        node_state = {RETURN_VAR};
     }
     else
     {
-        node.state = {};
+        node_state = {};
     }
 }
 
-void TaintAnalyzer::visit_emptyReturn(EmptyReturnNode<std::set<std::string>>&)
-{
+void TaintAnalyzer::visit_emptyReturn(EmptyReturnNode &node, std::map<Node*, std::set<std::string>>& states){
 
 }
 
 
 
-void TaintAnalyzer::visit_functionEntry(FunctionEntryNode<std::set<std::string>>& node){
+void TaintAnalyzer::visit_functionEntry(FunctionEntryNode &node, std::map<Node*, std::set<std::string>>& states){
+    std::set<std::string>& node_state = states[&node];
     if (node.successors.size() == 0)
         return;
 
-    auto previous_state = join(node);
+    auto previous_state = join(node, states);
 
     for(size_t i = 0; i < node.arguments.size(); ++i){
         bool isTainted = node.arguments[i]->evaluate(previous_state);
         if(isTainted){
             auto parameter = node.formal_parameters[i];
-            node.state.insert(parameter);
+            node_state.insert(parameter);
         }
     }
 }
 
-void TaintAnalyzer::visit_assignReturn(AssignReturnNode<std::set<std::string>>& node){
-    node.state = join(node);
-    if (node.state.find(RETURN_VAR) != node.state.end()){
-        node.state.insert(node.id);
+void TaintAnalyzer::visit_assignReturn(AssignReturnNode &node, std::map<Node*, std::set<std::string>>& states){
+    std::set<std::string>& node_state = states[&node];
+    node_state = join(node, states);
+    if (node_state.find(RETURN_VAR) != node_state.end()){
+        node_state.insert(node.id);
     }else{
-        node.state.erase(node.id);
+        node_state.erase(node.id);
     }
 
-    node.state.erase(RETURN_VAR);
+    node_state.erase(RETURN_VAR);
 }
 
 bool evaluateExpression(std::shared_ptr<Expression> expression, std::set<std::string> &state)
