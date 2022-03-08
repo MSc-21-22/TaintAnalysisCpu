@@ -20,7 +20,7 @@ __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][TH
         if (succ_index == -1)
             return;
         intptr_t hash = reinterpret_cast<intptr_t>(&nodes[succ_index]);
-        int x = 0;
+        int collision_count = 0;
         int* work_column = work_columns[current_work_column];
         while(work_column[hash % THREAD_COUNT] != -1){
             if(work_column[hash % THREAD_COUNT] == succ_index){
@@ -28,10 +28,9 @@ __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][TH
             }
             
 
-            if(++x >= COLLISIONS_BEFORE_SWITCH){
+            if(++collision_count >= COLLISIONS_BEFORE_SWITCH){
                 current_work_column = (current_work_column + 1) % work_column_count;
                 work_column = work_columns[current_work_column];
-                //printf("Current %d / %d || %d\n", current_work_column, work_column_count, initial_work_column);
             }else{
                 hash++;
             }
@@ -144,7 +143,6 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
   
     int i = 0;
     while(work_to_do){
-        printf("Iteration %d\n", i);
         work_to_do = false;
         cuda_copy_to_device(dev_work_to_do, &work_to_do, 1);
 
