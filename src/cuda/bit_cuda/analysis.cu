@@ -14,14 +14,14 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
     if(node_index == 0)
         *has_changed = true;
 
-    if(node_index < node_count){
-        nodes[node_index].data = 1; // Set taint constant to true
         
-        bool is_changed = true;
-        BitVector last_joined = 0;
-        BitVector current = nodes[node_index].data;
+    bool is_changed = true;
+    BitVector last_joined = 0;
+    BitVector current = nodes[node_index].data;
 
-        while(*has_changed){
+    while(*has_changed){
+        if(node_index < node_count){
+            nodes[node_index].data = 1; // Set taint constant to true
             if(node_index == 0)
                 *has_changed = false;
             BitVector joined_data = 1;
@@ -58,15 +58,14 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
                     }
                     transfer_index = transfer->next_transfer_index;
                 }
-                printf("[%d] [%d] (%d)\n", current, last_joined, node_index);
                 nodes[node_index].data = current;
                 *has_changed = true;
                 is_changed = false;
                 // __syncthreads();
             }
-            __syncthreads();
-            __threadfence();
         }
+        __syncthreads();
+        __threadfence();
     }
 
 }
