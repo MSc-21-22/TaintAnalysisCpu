@@ -1,5 +1,5 @@
 
-// Generated from /home/nhug/TaintAnalysisCpu/sc.g4 by ANTLR 4.8
+// Generated from .\sc.g4 by ANTLR 4.9.2
 
 
 #include "scVisitor.h"

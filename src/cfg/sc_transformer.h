@@ -221,7 +221,9 @@ public:
         auto id = ctx->ID()->getText();
         std::shared_ptr<FunctionEntryNode> functionEntry = std::static_pointer_cast<FunctionEntryNode>(functions[id]);
         auto successor = clone_entry(functionEntry, &nodes);
+        std::reverse(args.begin(), args.end());
         successor->arguments = args;
+    
         entryNodes.push_back(successor);
 
         std::string args_string = "(";

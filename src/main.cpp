@@ -31,7 +31,6 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
 void cpu_analysis(ScTransformer program){
     TaintAnalyzer analyzer;
 
-
     std::vector<StatefulNode<std::set<std::string>>> nodes = create_states<std::set<std::string>>(program.nodes, {TAINT_VAR});
     time_func("Analyzing: ", 
         worklist<std::set<std::string>>, nodes, analyzer);
