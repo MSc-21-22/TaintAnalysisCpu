@@ -8,23 +8,35 @@
 
 #include "analysis.h"
 
-#define THREAD_COUNT 128
+#define THREAD_COUNT 1024
+#define COLLISIONS_BEFORE_SWITCH (1) 
 
 using namespace cuda_worklist;
 
-__device__ void add_sucessors_to_worklist(int* successors, int* work_list, Node* nodes){
+__device__ void add_sucessors_to_worklist(int* successors, int work_columns[][THREAD_COUNT], int work_column_count, int current_work_column, Node* nodes){
+    int initial_work_column = current_work_column;
     for(int i = 0; i < 5; i++){
         int succ_index = successors[i];
         if (succ_index == -1)
             return;
         intptr_t hash = reinterpret_cast<intptr_t>(&nodes[succ_index]);
-        while(work_list[hash % THREAD_COUNT] != -1){
-            if(work_list[hash % THREAD_COUNT] == succ_index){
+        int x = 0;
+        int* work_column = work_columns[current_work_column];
+        while(work_column[hash % THREAD_COUNT] != -1){
+            if(work_column[hash % THREAD_COUNT] == succ_index){
                 break;
             }
-            hash++;
+            
+
+            if(++x >= COLLISIONS_BEFORE_SWITCH){
+                current_work_column = (current_work_column + 1) % work_column_count;
+                work_column = work_columns[current_work_column];
+                //printf("Current %d / %d || %d\n", current_work_column, work_column_count, initial_work_column);
+            }else{
+                hash++;
+            }
         }
-        work_list[hash % THREAD_COUNT] = succ_index;
+        work_column[hash % THREAD_COUNT] = succ_index;
     }
 }
 
@@ -76,7 +88,7 @@ __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work
 
         if(last != current){
             current_node.data = current;
-            add_sucessors_to_worklist(current_node.successor_index, work_columns[(i+1) % work_column_count], nodes);
+            add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, (i+1) % work_column_count, nodes);
             *work_to_do = true;
         }
         work_column[node_index] = -1;   
@@ -92,7 +104,7 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
     bool work_to_do = true;
     int threadsPerBlock = 128;
     int block_count = THREAD_COUNT/threadsPerBlock;    
-    int work_column_count = (node_count + THREAD_COUNT - 1)/THREAD_COUNT;
+    int work_column_count = ((node_count + THREAD_COUNT - 1)/THREAD_COUNT) + 50;
 
     std::vector<std::array<int, THREAD_COUNT>> worklists{};
 
@@ -132,6 +144,7 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
   
     int i = 0;
     while(work_to_do){
+        printf("Iteration %d\n", i);
         work_to_do = false;
         cuda_copy_to_device(dev_work_to_do, &work_to_do, 1);
 
