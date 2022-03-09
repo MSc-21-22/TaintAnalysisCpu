@@ -6,6 +6,7 @@
 #include <array>
 #include "../cuda_common.cuh"
 
+#include <timing.h>
 #include "analysis.h"
 
 #define THREAD_COUNT 1024
@@ -141,6 +142,7 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
     dev_transfers = cuda_allocate_memory<Transfer>(sizeof(Transfer)*transfer_count);
     cuda_copy_to_device(dev_transfers, transfers, sizeof(Transfer)*transfer_count);
   
+    Stopwatch lfp_watch;
     int i = 0;
     while(work_to_do){
         work_to_do = false;
@@ -165,6 +167,8 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
         cuda_copy_to_host((void*)&work_to_do, dev_work_to_do, sizeof(bool));
         i = (i+1) % (work_column_count+1);
     }
+    lfp_watch.stop();
+    lfp_watch.print_time<Microseconds>("LFP time: ");
 
 
     // Copy output vector from GPU buffer to host memory.

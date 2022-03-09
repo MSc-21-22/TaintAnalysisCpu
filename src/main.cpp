@@ -17,18 +17,17 @@
 #include <cstring>
 #include "cuda/bit_vector_converter.h"
 #include "cuda/cuda_transformer.h"
+#include <cuda/common.h>
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
     for (auto& x : result){
-        if (x!="$"){
-            stream << x << " ";
-        }
+        stream << x << " ";
     }
     stream << "}";
 }
 
-void cpu_analysis(ScTransformer program){
+std::vector<StatefulNode<std::set<std::string>>> cpu_analysis(ScTransformer program){
     TaintAnalyzer analyzer;
 
     std::vector<StatefulNode<std::set<std::string>>> nodes = create_states<std::set<std::string>>(program.nodes, {TAINT_VAR});
@@ -38,6 +37,7 @@ void cpu_analysis(ScTransformer program){
     if(!timing::should_benchmark) {
         print_digraph_subgraph(nodes, std::cout, print_result, "main");
     }
+    return nodes;
 }
 
 void cpu_multi_taint_analysis(ScTransformer& program){
@@ -51,6 +51,7 @@ void cpu_multi_taint_analysis(ScTransformer& program){
 }
 
 void bit_cuda_analysis(ScTransformer& program){
+    init_gpu();
     time_func("Variable reduction: ", 
                 reduce_variables, program.entryNodes);
     auto transformer = time_func<CudaTransformer<bit_cuda::Node>>("Gpu structure transformation: ", 
@@ -67,7 +68,8 @@ void bit_cuda_analysis(ScTransformer& program){
         print_digraph_subgraph(nodes, std::cout, print_result, "main");
 }
 
-void bit_cuda_worklist_analysis(ScTransformer& program){
+std::vector<StatefulNode<std::set<std::string>>> bit_cuda_worklist_analysis(ScTransformer& program){
+    init_gpu();
     time_func("Variable reduction: ", 
                 reduce_variables, program.entryNodes);
     auto transformer = time_func<CudaTransformer<cuda_worklist::Node>>("Gpu structure transformation: ", 
@@ -79,9 +81,30 @@ void bit_cuda_worklist_analysis(ScTransformer& program){
     std::vector<StatefulNode<std::set<std::string>>> nodes = create_states<std::set<std::string>>(program.nodes);
     time_func("Save into nodes", 
                 set_bit_cuda_state<cuda_worklist::Node>, transformer.nodes, transformer.variables, nodes);
-
     if(!timing::should_benchmark)
         print_digraph_subgraph(nodes, std::cout, print_result, "main");
+
+    return nodes;
+}
+
+bool state_equality(std::vector<StatefulNode<std::set<std::string>>>& lhs, std::vector<StatefulNode<std::set<std::string>>>& rhs){
+    int size = lhs.size();
+    if (size != rhs.size())
+        return false;
+
+    for(int i = 0; i < size; ++i){
+        for(const std::string& item : lhs[i].get_state()){
+            if(rhs[i].get_state().count(item) == 0){
+                std::cout << "Difference on node " << i; 
+                print_result(lhs[i].get_state(), std::cout);
+                std::cout << "!=";
+                print_result(rhs[i].get_state(), std::cout);
+                std::cout << '\n';
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 int main(int argc, char *argv[]){
@@ -181,6 +204,26 @@ int main(int argc, char *argv[]){
             std::cout << " --benchmark -b to enable benchmarking where possible\n";
         }
 
+    }else{
+        antlr4::ANTLRFileStream csfile;
+        csfile.loadFromFile("./sampleprograms/multiplefunc.sc");
+        antlr4::ANTLRInputStream prog(csfile);
+
+        auto program = time_func<ScTransformer>("Creating CFG nodes: ", 
+            parse_to_cfg_transformer, prog);
+
+        std::vector<StatefulNode<std::set<std::string>>> result1 = bit_cuda_worklist_analysis(program);
+        std::cout << "#######\n";
+        std::cout << "#######\n";
+        std::cout << "#######\n";
+        std::cout << "#######\n";
+        std::cout << "#######\n";
+        std::cout << "#######\n";
+        std::vector<StatefulNode<std::set<std::string>>> result2 = cpu_analysis(program);
+
+
+
+        std::cout << "The result1 == result2 = " << state_equality(result1, result2) << "\n";
     }
     return 0;
 }
