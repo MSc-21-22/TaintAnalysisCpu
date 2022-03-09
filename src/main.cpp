@@ -204,7 +204,7 @@ int main(int argc, char *argv[]){
                 reduce_variables, program.entryNodes);
             auto stateful_nodes = gpu_analysis(program.nodes);
             if(!timing::should_benchmark){
-                print_digraph_with_result(stateful_nodes, std::cout, print_result);
+                print_digraph_subgraph(stateful_nodes, std::cout, print_result, "main");
             }
         }else if(cuda_flag){
             std::cout << "Running bit-cuda analysis" << std::endl;
