@@ -50,7 +50,7 @@ void cpu_multi_taint_analysis(ScTransformer& program){
     }
 }
 
-void bit_cuda_analysis(ScTransformer& program){
+std::vector<StatefulNode<std::set<std::string>>> bit_cuda_analysis(ScTransformer& program){
     init_gpu();
     time_func("Variable reduction: ", 
                 reduce_variables, program.entryNodes);
@@ -66,6 +66,8 @@ void bit_cuda_analysis(ScTransformer& program){
 
     if(!timing::should_benchmark)
         print_digraph_subgraph(nodes, std::cout, print_result, "main");
+
+    return nodes;
 }
 
 std::vector<StatefulNode<std::set<std::string>>> bit_cuda_worklist_analysis(ScTransformer& program){
@@ -153,15 +155,40 @@ int main(int argc, char *argv[]){
             std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
             auto program = parse_to_cfg_transformer(prog);
             Stopwatch cpu_watch;
-            cpu_analysis(program);
+            auto cpu_nodes = cpu_analysis(program);
             cpu_watch.save_time<Microseconds>();
 
             std::cout << "\n⭐ GPU cuBLAS analysis ⭐" << std::endl;
             time_func("Cublas creation: ", 
                 create_cublas);
             Stopwatch cuBLAS_watch;
-            gpu_analysis(program.nodes);
+            auto cublas_nodes = gpu_analysis(program.nodes);
             cuBLAS_watch.save_time<Microseconds>();
+
+            if(!state_equality(cpu_nodes, cublas_nodes)){
+                std::cout << "###### cpu != cublas #####" << std::endl;
+            }
+
+            init_gpu();
+
+            std::cout << "\n⭐ bit-cuda analysis ⭐" << std::endl;
+            Stopwatch bit_cuda_watch;
+            auto bit_cuda_nodes = bit_cuda_analysis(program);
+            bit_cuda_watch.save_time<Microseconds>();
+
+            if(!state_equality(cublas_nodes, bit_cuda_nodes)){
+                std::cout << "###### cublas != bit-cuda #####" << std::endl;
+            }
+
+            std::cout << "\n⭐ bit-cuda worklist analysis ⭐" << std::endl;
+            Stopwatch cuda_worklist_watch;
+            auto cuda_worklist_nodes = bit_cuda_worklist_analysis(program);
+            cuda_worklist_watch.save_time<Microseconds>();
+
+            if(!state_equality(bit_cuda_nodes, cuda_worklist_nodes)){
+                std::cout << "###### bit-cuda != cuda-worklist #####" << std::endl;
+            }
+
             Stopwatch::add_line();
             return 0;
         }
