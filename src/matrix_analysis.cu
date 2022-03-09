@@ -30,9 +30,6 @@ Matrix<float> get_initial_matrix(int var_count, int node_count){
 }
 
 std::vector<StatefulNode<std::set<std::string>>> gpu_analysis(std::vector<std::shared_ptr<Node>>& cfg_nodes){
-    Stopwatch test_watch;
-    test_watch.print_time<Microseconds>("test timer ");
-
     Stopwatch stopwatch;
     auto variables = get_variables(cfg_nodes);
 
