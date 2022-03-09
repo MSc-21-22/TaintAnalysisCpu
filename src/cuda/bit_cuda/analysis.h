@@ -8,7 +8,7 @@ namespace bit_cuda{
         int first_transfer_index = -1;
         int predecessor_index[5] = {-1,-1,-1,-1,-1};
         BitVector join_mask = INT32_MAX;
-        BitVector data;
+        BitVector data = 1;
     };
 
     void execute_analysis(Node* nodes, int node_count, Transfer* transfers, int extra_transfer_count);

@@ -18,10 +18,8 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
     bool is_changed = true;
     BitVector last_joined = 0;
     BitVector current = nodes[node_index].data;
-
     while(*has_changed){
         if(node_index < node_count){
-            nodes[node_index].data = 1; // Set taint constant to true
             if(node_index == 0)
                 *has_changed = false;
             BitVector joined_data = 1;
@@ -48,7 +46,6 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
                     int var_index = 0;
                     int next_var = transfer->rhs[var_index];
                     while(next_var != -1){
-
                         if((joined_data & (1 << next_var)) != 0){
                             current |= (1 << transfer->x);
                             break;
