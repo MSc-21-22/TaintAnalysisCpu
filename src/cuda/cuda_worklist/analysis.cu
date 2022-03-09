@@ -143,11 +143,8 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
     cuda_copy_to_device(dev_transfers, transfers, sizeof(Transfer)*transfer_count);
   
     Stopwatch lfp_watch;
-    lfp_watch.start();
     int i = 0;
-    int j = 0;
     while(work_to_do){
-        j++;
         work_to_do = false;
         cuda_copy_to_device(dev_work_to_do, &work_to_do, 1);
 
@@ -171,7 +168,6 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
         i = (i+1) % (work_column_count+1);
     }
     lfp_watch.stop();
-
     lfp_watch.print_time<Microseconds>("LFP time: ");
 
 
