@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <cuda/cuda_common.cuh>
+#include <cuda/common.h>
 
 void cuda_copy_to_device(void *dst, const void *src, size_t size){
     auto cudaStatus = cudaMemcpy(dst, src, size, cudaMemcpyHostToDevice);
@@ -22,4 +24,15 @@ void cuda_free(void* devPtr){
         fprintf(stderr, "cudaFree failed: %s\n", cudaGetErrorString(cudaStatus));
         exit(1);
     }
+}
+
+void init_gpu(){
+    auto cudaStatus = cudaSetDevice(0);
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
+        return;
+    }
+
+    int* x = cuda_allocate_memory<int>(4);
+    cuda_free(x);
 }

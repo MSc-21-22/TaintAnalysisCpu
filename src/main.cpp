@@ -17,6 +17,7 @@
 #include <cstring>
 #include "cuda/bit_vector_converter.h"
 #include "cuda/cuda_transformer.h"
+#include <cuda/common.h>
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -50,6 +51,7 @@ void cpu_multi_taint_analysis(ScTransformer& program){
 }
 
 void bit_cuda_analysis(ScTransformer& program){
+    init_gpu();
     time_func("Variable reduction: ", 
                 reduce_variables, program.entryNodes);
     auto transformer = time_func<CudaTransformer<bit_cuda::Node>>("Gpu structure transformation: ", 
@@ -67,7 +69,7 @@ void bit_cuda_analysis(ScTransformer& program){
 }
 
 std::vector<StatefulNode<std::set<std::string>>> bit_cuda_worklist_analysis(ScTransformer& program){
-    cuda_worklist::init_gpu();
+    init_gpu();
     time_func("Variable reduction: ", 
                 reduce_variables, program.entryNodes);
     auto transformer = time_func<CudaTransformer<cuda_worklist::Node>>("Gpu structure transformation: ", 

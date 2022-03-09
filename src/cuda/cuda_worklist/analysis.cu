@@ -178,14 +178,3 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
     cuda_free(dev_transfers);
     cuda_free(dev_worklists);
 }
-
-void cuda_worklist::init_gpu(){
-    auto cudaStatus = cudaSetDevice(0);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
-        return;
-    }
-
-    int* x = cuda_allocate_memory<int>(4);
-    cuda_free(x);
-}
