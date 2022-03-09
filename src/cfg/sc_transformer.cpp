@@ -14,7 +14,7 @@ std::string stringify_parameters(std::vector<std::string> content){
     return result;
 }
 
-ScTransformer parse_to_cfg_transformer(antlr4::ANTLRInputStream &stream)
+ScTransformer parse_to_cfg_transformer(antlr4::ANTLRInputStream stream)
 {
     scLexer lexer(&stream);
     antlr4::CommonTokenStream tokens(&lexer);
@@ -28,7 +28,7 @@ ScTransformer parse_to_cfg_transformer(antlr4::ANTLRInputStream &stream)
     return transformer;
 }
 
-std::vector<std::shared_ptr<Node>> parse_to_cfg(antlr4::ANTLRInputStream &stream)
+std::vector<std::shared_ptr<Node>> parse_to_cfg(antlr4::ANTLRInputStream stream)
 {
     scLexer lexer(&stream);
     antlr4::CommonTokenStream tokens(&lexer);

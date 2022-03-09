@@ -154,14 +154,17 @@ int main(int argc, char *argv[]){
 
             std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
             auto program = parse_to_cfg_transformer(prog);
+            reduce_variables(program.entryNodes);
             Stopwatch cpu_watch;
             auto cpu_nodes = cpu_analysis(program);
             cpu_watch.save_time<Microseconds>();
 
             std::cout << "\n⭐ GPU cuBLAS analysis ⭐" << std::endl;
+            program = parse_to_cfg_transformer(prog);
             time_func("Cublas creation: ", 
                 create_cublas);
             Stopwatch cuBLAS_watch;
+            reduce_variables(program.entryNodes);
             auto cublas_nodes = gpu_analysis(program.nodes);
             cuBLAS_watch.save_time<Microseconds>();
 
@@ -172,6 +175,7 @@ int main(int argc, char *argv[]){
             init_gpu();
 
             std::cout << "\n⭐ bit-cuda analysis ⭐" << std::endl;
+            program = parse_to_cfg_transformer(prog);
             Stopwatch bit_cuda_watch;
             auto bit_cuda_nodes = bit_cuda_analysis(program);
             bit_cuda_watch.save_time<Microseconds>();
@@ -181,6 +185,7 @@ int main(int argc, char *argv[]){
             }
 
             std::cout << "\n⭐ bit-cuda worklist analysis ⭐" << std::endl;
+            program = parse_to_cfg_transformer(prog);
             Stopwatch cuda_worklist_watch;
             auto cuda_worklist_nodes = bit_cuda_worklist_analysis(program);
             cuda_worklist_watch.save_time<Microseconds>();
