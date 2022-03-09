@@ -11,7 +11,7 @@ std::set<std::string> least_upper_bound(const std::set<std::string>& left, const
 std::set<std::string> join(const Node &node, std::map<Node*, std::set<std::string>> &states)
 {   
     if(node.predecessors.size() == 0)
-        return {};
+        return {TAINT_VAR};
 
     auto it = node.predecessors.begin();
     auto state = states[it->get()];
@@ -76,11 +76,11 @@ void TaintAnalyzer::visit_return(ReturnNode &node, std::map<Node*, std::set<std:
 
     if (evaluateExpression(node.expression, node_state))
     {
-        node_state = {RETURN_VAR};
+        node_state = {TAINT_VAR, RETURN_VAR};
     }
     else
     {
-        node_state = {};
+        node_state = {TAINT_VAR};
     }
 }
 

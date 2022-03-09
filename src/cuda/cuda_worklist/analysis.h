@@ -14,4 +14,5 @@ namespace cuda_worklist{
     };
 
     void execute_analysis(Node* nodes, int node_count, Transfer* transfers, int transfer_count, std::set<int>& taint_sources);
+    void init_gpu();
 };
