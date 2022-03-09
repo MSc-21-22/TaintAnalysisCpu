@@ -45,8 +45,6 @@ void print_digraph_with_result(std::vector<StatefulNode<LatticeType>> &nodes, st
 {
     DigraphPrinter printer(stream);
 
-    stream << "Hello" << nodes.size();
-
     for (StatefulNode<LatticeType> &state_node : nodes)
     {
 
