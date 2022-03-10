@@ -2,8 +2,6 @@
 #include "../cuda_data.h"
 #include <set>
 
-using BitVector = int32_t;
-
 namespace cuda_worklist{
     struct Node{
         int first_transfer_index = -1;
