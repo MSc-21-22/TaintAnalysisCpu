@@ -167,7 +167,6 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
         cuda_copy_to_host((void*)&work_to_do, dev_work_to_do, sizeof(bool));
         i = (i+1) % (work_column_count+1);
     }
-    lfp_watch.stop();
     lfp_watch.print_time<Microseconds>("LFP time: ");
 
 

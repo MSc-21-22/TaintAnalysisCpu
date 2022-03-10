@@ -82,14 +82,12 @@ public:
 
 private:
     TimeVar startTime;
-    std::chrono::duration<double> duration;
-    bool running;
+    std::chrono::nanoseconds duration{};
 
     template<class TimeUnit, typename UnitType = typename TimeUnit::chrono_type>
     int64_t get_time(){
-        if(running){
-            stop();
-        }
+        auto endTime = std::chrono::high_resolution_clock::now();
+        duration = endTime - startTime;
         return std::chrono::duration_cast<UnitType>(duration).count();
     }
 };

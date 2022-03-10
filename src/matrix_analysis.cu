@@ -81,22 +81,16 @@ GpuMatrix analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<float>& 
 
     
     Stopwatch analysisStopwatch;
-    Stopwatch matrixStopwatch;
-    Stopwatch memcmpStopwatch;
 
     while(true){
-        matrixStopwatch.start();
         state.multiply(succ, next_state);
 
 
         for(int i = 0; i < transfer_matrices.size(); ++i) {
             next_state.multiply_vector(i, transfers[i]);
         }
-        matrixStopwatch.stop();        
 
-        memcmpStopwatch.start();
         auto cmp = gpu_mem_cmp(state.resource, next_state.resource);
-        memcmpStopwatch.stop();
 
         if(cmp){
             state = next_state;
@@ -106,8 +100,6 @@ GpuMatrix analyse(std::vector<Matrix<float>>& transfer_matrices, Matrix<float>& 
     }
 
     analysisStopwatch.print_time<Microseconds>("Least fixed point algorithm ");
-    matrixStopwatch.print_time<Microseconds>("matrix math ");
-    memcmpStopwatch.print_time<Microseconds>("gpu memcmp ");
 
     time_func("Cublas destroy: ",
         destroy_cublas);

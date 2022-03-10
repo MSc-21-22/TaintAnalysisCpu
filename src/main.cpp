@@ -156,7 +156,9 @@ int main(int argc, char *argv[]){
             auto program = parse_to_cfg_transformer(prog);
             reduce_variables(program.entryNodes);
             Stopwatch cpu_watch;
+            cpu_watch.print_time<Microseconds>("Testing ");
             auto cpu_nodes = cpu_analysis(program);
+            cpu_watch.print_time<Microseconds>("Testing ");
             cpu_watch.save_time<Microseconds>();
 
             std::cout << "\n⭐ GPU cuBLAS analysis ⭐" << std::endl;
