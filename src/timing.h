@@ -55,8 +55,6 @@ public:
 class Stopwatch{
 public:
     Stopwatch();
-    void start();
-    void stop();
 
     template<typename TimeUnit>
     void print_time(std::string message){
