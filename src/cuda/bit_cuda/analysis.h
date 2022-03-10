@@ -1,5 +1,5 @@
 #pragma once
-#include "../cuda_data.h"
+#include "../cuda_common.cuh"
 
 namespace bit_cuda{
     struct Node{

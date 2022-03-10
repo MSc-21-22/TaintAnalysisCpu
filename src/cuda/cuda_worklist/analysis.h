@@ -1,6 +1,6 @@
 #pragma once
-#include "../cuda_data.h"
 #include <set>
+#include "../cuda_common.cuh"
 
 namespace cuda_worklist{
     struct Node{
