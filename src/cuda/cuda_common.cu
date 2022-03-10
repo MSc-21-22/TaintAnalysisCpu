@@ -36,3 +36,4 @@ void init_gpu(){
     int* x = cuda_allocate_memory<int>(4);
     cuda_free(x);
 }
+

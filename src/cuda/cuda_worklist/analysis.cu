@@ -38,27 +38,6 @@ __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][TH
     }
 }
 
-__device__ void transfer_function(int first_transfer_index, Transfer transfers[], BitVector& joined_data, BitVector& current){
-    Transfer* transfer;
-    int transfer_index = first_transfer_index;
-
-    while(transfer_index != -1){
-        transfer = &transfers[transfer_index];
-        int var_index = 0;
-        int next_var = transfer->rhs[var_index];
-        while(next_var != -1){
-
-            if((joined_data & (1 << next_var)) != 0){
-                current |= (1 << transfer->x);
-                break;
-            }
-            ++var_index;
-            next_var = transfer->rhs[var_index];
-        }
-        transfer_index = transfer->next_transfer_index;
-    }
-}
-
 __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work_column_count, Transfer transfers[], int node_count, bool* work_to_do, int i){
     int node_index = threadIdx.x + blockDim.x * blockIdx.x;
     int* work_column = work_columns[i];
