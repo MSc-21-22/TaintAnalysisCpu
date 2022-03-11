@@ -25,7 +25,7 @@ if(NOT DEFINED CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES)
     message(FATAL_ERROR "The cuda toolkit was not found?!")
 endif()
 
-set( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" "-lcublas -dc" )
+set( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" "-lcublas" )
 
 include_directories(src/
     src/antlr4-runtime
