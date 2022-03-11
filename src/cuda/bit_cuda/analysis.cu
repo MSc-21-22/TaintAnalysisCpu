@@ -11,60 +11,22 @@ using namespace bit_cuda;
 __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, int node_count){
     int node_index = threadIdx.x + blockDim.x * blockIdx.x;
 
-    if(node_index == 0)
-        *has_changed = true;
-
+    if(node_index < node_count){
+        Node& current_node = nodes[node_index];
         
-    bool is_changed = true;
-    BitVector last_joined = 0;
-    BitVector current = nodes[node_index].data;
-    while(*has_changed){
-        if(node_index < node_count){
-            if(node_index == 0)
-                *has_changed = false;
-            BitVector joined_data = 1;
-            //Join
-            {
-                int pred_index = 0;
-                while (nodes[node_index].predecessor_index[pred_index] != -1){
-                    joined_data |= nodes[nodes[node_index].predecessor_index[pred_index]].data;
-                    ++pred_index;
-                }
+        BitVector current = current_node.data;
+        BitVector last = current_node.data;
+        
+        BitVector joined_data = join(current_node.predecessor_index, nodes);
+        current |= joined_data & current_node.join_mask;
 
-                is_changed |= last_joined != joined_data;
-                last_joined = joined_data;
-                current |= joined_data & nodes[node_index].join_mask;
-            }
+        transfer_function(current_node.first_transfer_index, transfers, joined_data, current);
 
-            //Transfer
-            if(is_changed){
-                Transfer* transfer;
-                int transfer_index = nodes[node_index].first_transfer_index;
-
-                while(transfer_index != -1){
-                    transfer = &transfers[transfer_index];
-                    int var_index = 0;
-                    int next_var = transfer->rhs[var_index];
-                    while(next_var != -1){
-                        if((joined_data & (1 << next_var)) != 0){
-                            current |= (1 << transfer->x);
-                            break;
-                        }
-                        ++var_index;
-                        next_var = transfer->rhs[var_index];
-                    }
-                    transfer_index = transfer->next_transfer_index;
-                }
-                nodes[node_index].data = current;
-                *has_changed = true;
-                is_changed = false;
-                // __syncthreads();
-            }
+        if(last != current){
+            current_node.data = current;
+            *has_changed = true;
         }
-        __syncthreads();
-        __threadfence();
     }
-
 }
 
 void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers, int transfer_count) {
@@ -87,17 +49,34 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
     dev_transfers = cuda_allocate_memory<Transfer>(sizeof(Transfer)*transfer_count);
     cuda_copy_to_device(dev_transfers, transfers, sizeof(Transfer)*transfer_count);
     
-    dev_has_changed = (bool*) (dev_nodes + (sizeof(Node)*node_count));
+    dev_has_changed = (bool*) (dev_nodes + node_count);
 
-    // Launch a kernel on the GPU with one thread for each element.
-    analyze<<<block_count, threadsPerBlock>>>(dev_nodes, dev_transfers, dev_has_changed, node_count);
+    bool has_changed = true;
+    while(has_changed){
+        has_changed = false;
+        cuda_copy_to_device(dev_has_changed, &has_changed, sizeof(bool));
 
-    // Check for any errors launching the kernel
-    cudaStatus = cudaGetLastError();
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
-        exit(1);
+        // Launch a kernel on the GPU with one thread for each element.
+        analyze<<<block_count, threadsPerBlock>>>(dev_nodes, dev_transfers, dev_has_changed, node_count);
+        
+        // Check for any errors launching the kernel
+        cudaStatus = cudaGetLastError();
+        if (cudaStatus != cudaSuccess) {
+            fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
+            exit(1);
+        }
+
+        // cudaDeviceSynchronize waits for the kernel to finish, and returns
+        // any errors encountered during the launch.
+        cudaStatus = cudaDeviceSynchronize();
+        if (cudaStatus != cudaSuccess) {
+            fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
+        }
+
+        cuda_copy_to_host((void*)&has_changed, dev_has_changed, sizeof(bool));
+        std::cout << "has changed: " << has_changed << std::endl;
     }
+
 
     // cudaDeviceSynchronize waits for the kernel to finish, and returns
     // any errors encountered during the launch.

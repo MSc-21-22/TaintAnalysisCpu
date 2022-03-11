@@ -1,8 +1,6 @@
 #pragma once
 #include "../cuda_data.h"
 
-using BitVector = int32_t;
-
 namespace bit_cuda{
     struct Node{
         int first_transfer_index = -1;
