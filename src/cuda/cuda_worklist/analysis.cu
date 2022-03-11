@@ -1,5 +1,3 @@
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
 #include <iostream>
 #include <stdio.h>
 #include <vector>
@@ -37,37 +35,6 @@ __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][TH
             }
         }
         work_column[hash % THREAD_COUNT] = succ_index;
-    }
-}
-
-__device__ BitVector join(int predecessors[], Node nodes[]){
-        BitVector joined_data = 1;
-        int pred_index = 0;
-        while (predecessors[pred_index] != -1){
-            joined_data |= nodes[predecessors[pred_index]].data;
-            ++pred_index;
-        }
-        return joined_data;
-}
-
-__device__ void transfer_function(int first_transfer_index, Transfer transfers[], BitVector& joined_data, BitVector& current){
-    Transfer* transfer;
-    int transfer_index = first_transfer_index;
-
-    while(transfer_index != -1){
-        transfer = &transfers[transfer_index];
-        int var_index = 0;
-        int next_var = transfer->rhs[var_index];
-        while(next_var != -1){
-
-            if((joined_data & (1 << next_var)) != 0){
-                current |= (1 << transfer->x);
-                break;
-            }
-            ++var_index;
-            next_var = transfer->rhs[var_index];
-        }
-        transfer_index = transfer->next_transfer_index;
     }
 }
 

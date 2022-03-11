@@ -1,8 +1,6 @@
 #pragma once
-#include "../cuda_data.h"
 #include <set>
-
-using BitVector = int32_t;
+#include "../cuda_data.h"
 
 namespace cuda_worklist{
     struct Node{
