@@ -46,102 +46,6 @@ public:
     virtual void visit_propagation(PropagationNode& node, std::map<Node*, LatticeType>& states) = 0;
 };
 
-template<typename LatticeType>
-class StatefulNode {
-public:
-    std::shared_ptr<Node> node;
-    std::shared_ptr<std::map<Node*, LatticeType>> states;
-
-    StatefulNode(std::shared_ptr<Node> node) : node(node) {
-        states = std::make_shared<std::map<Node*, LatticeType>>();
-    }
-
-    StatefulNode(std::shared_ptr<Node> node, std::shared_ptr<std::map<Node*, LatticeType>> states) : node(node), states(states) {
-        
-    }
-
-    std::vector<StatefulNode<LatticeType>> get_successors() {
-        std::vector<StatefulNode<LatticeType>> nodes;
-        for(std::shared_ptr<Node> succ : node->successors){
-            nodes.emplace_back(succ, states);
-        }
-        return nodes;
-    }
-
-    std::vector<StatefulNode<LatticeType>> get_predecessors() {
-        std::vector<StatefulNode<LatticeType>> nodes;
-        for(std::shared_ptr<Node> pred : node->predecessors){
-            nodes.emplace_back(pred, states);
-        }
-        return nodes;
-    }
-
-    LatticeType& get_state() {
-        return (*states)[node.get()];
-    }
-
-    void accept(CfgStateVisitor<LatticeType>& visitor) {
-        auto propagation_ptr = dynamic_cast<PropagationNode*>(node.get());
-        if(propagation_ptr){
-            visitor.visit_propagation(*propagation_ptr, *states);
-            return;
-        }
-        auto assignment_ptr = dynamic_cast<AssignmentNode*>(node.get());
-        if(assignment_ptr){
-            visitor.visit_assignment(*assignment_ptr, *states);
-            return;
-        }
-        auto return_ptr = dynamic_cast<ReturnNode*>(node.get());
-        if(return_ptr) {
-            visitor.visit_return(*return_ptr, *states);
-            return;
-        }
-        auto empty_return_ptr = dynamic_cast<EmptyReturnNode*>(node.get());
-        if(empty_return_ptr){
-            visitor.visit_emptyReturn(*empty_return_ptr, *states);
-            return;
-        }
-        auto function_entry_ptr = dynamic_cast<FunctionEntryNode*>(node.get());
-        if(function_entry_ptr){
-            visitor.visit_functionEntry(*function_entry_ptr, *states);
-            return;
-        }
-        auto assign_return_node = dynamic_cast<AssignReturnNode*>(node.get());
-        if(assign_return_node){
-            visitor.visit_assignReturn(*assign_return_node, *states);
-            return;
-        }
-        auto array_assignment_ptr = dynamic_cast<ArrayAssignmentNode*>(node.get()); 
-        if(array_assignment_ptr){
-            visitor.visit_arrayAssignment(*array_assignment_ptr, *states);
-            return;
-        }
-        auto array_init_ptr = dynamic_cast<ArrayInitializerNode*>(node.get());
-        if(array_init_ptr){
-            visitor.visit_arrayinit(*array_init_ptr, *states);
-        }
-    }
-
-    void accept(CfgVisitor& visitor) {
-        node->accept(visitor);
-    }
-};
-
-template<typename LatticeType>
-std::vector<StatefulNode<LatticeType>> create_states(std::vector<std::shared_ptr<Node>>& nodes, const LatticeType default_state = {}){
-    std::vector<StatefulNode<LatticeType>> stateful_nodes;
-    
-    auto states = std::make_shared<std::map<Node*, LatticeType>>();
-    
-    for(std::shared_ptr<Node>& node : nodes) {
-        stateful_nodes.emplace_back(node, states);
-        (*states)[node.get()] = default_state;
-    }
-
-    return stateful_nodes;
-}
-
-
 class Node {
 public:
     std::set<std::shared_ptr<Node>> predecessors;
@@ -265,3 +169,97 @@ public:
     }
 };
 
+template<typename LatticeType>
+class StatefulNode {
+public:
+    std::shared_ptr<Node> node;
+    std::shared_ptr<std::map<Node*, LatticeType>> states;
+
+    StatefulNode(std::shared_ptr<Node> node) : node(node) {
+        states = std::make_shared<std::map<Node*, LatticeType>>();
+    }
+
+    StatefulNode(std::shared_ptr<Node> node, std::shared_ptr<std::map<Node*, LatticeType>> states) : node(node), states(states) {
+        
+    }
+
+    std::vector<StatefulNode<LatticeType>> get_successors() {
+        std::vector<StatefulNode<LatticeType>> nodes;
+        for(std::shared_ptr<Node> succ : node->successors){
+            nodes.emplace_back(succ, states);
+        }
+        return nodes;
+    }
+
+    std::vector<StatefulNode<LatticeType>> get_predecessors() {
+        std::vector<StatefulNode<LatticeType>> nodes;
+        for(std::shared_ptr<Node> pred : node->predecessors){
+            nodes.emplace_back(pred, states);
+        }
+        return nodes;
+    }
+
+    LatticeType& get_state() {
+        return (*states)[node.get()];
+    }
+
+    void accept(CfgStateVisitor<LatticeType>& visitor) {
+        auto propagation_ptr = dynamic_cast<PropagationNode*>(node.get());
+        if(propagation_ptr){
+            visitor.visit_propagation(*propagation_ptr, *states);
+            return;
+        }
+        auto assignment_ptr = dynamic_cast<AssignmentNode*>(node.get());
+        if(assignment_ptr){
+            visitor.visit_assignment(*assignment_ptr, *states);
+            return;
+        }
+        auto return_ptr = dynamic_cast<ReturnNode*>(node.get());
+        if(return_ptr) {
+            visitor.visit_return(*return_ptr, *states);
+            return;
+        }
+        auto empty_return_ptr = dynamic_cast<EmptyReturnNode*>(node.get());
+        if(empty_return_ptr){
+            visitor.visit_emptyReturn(*empty_return_ptr, *states);
+            return;
+        }
+        auto function_entry_ptr = dynamic_cast<FunctionEntryNode*>(node.get());
+        if(function_entry_ptr){
+            visitor.visit_functionEntry(*function_entry_ptr, *states);
+            return;
+        }
+        auto assign_return_node = dynamic_cast<AssignReturnNode*>(node.get());
+        if(assign_return_node){
+            visitor.visit_assignReturn(*assign_return_node, *states);
+            return;
+        }
+        auto array_assignment_ptr = dynamic_cast<ArrayAssignmentNode*>(node.get()); 
+        if(array_assignment_ptr){
+            visitor.visit_arrayAssignment(*array_assignment_ptr, *states);
+            return;
+        }
+        auto array_init_ptr = dynamic_cast<ArrayInitializerNode*>(node.get());
+        if(array_init_ptr){
+            visitor.visit_arrayinit(*array_init_ptr, *states);
+        }
+    }
+
+    void accept(CfgVisitor& visitor) {
+        node->accept(visitor);
+    }
+};
+
+template<typename LatticeType>
+std::vector<StatefulNode<LatticeType>> create_states(std::vector<std::shared_ptr<Node>>& nodes, const LatticeType default_state = {}){
+    std::vector<StatefulNode<LatticeType>> stateful_nodes;
+    
+    auto states = std::make_shared<std::map<Node*, LatticeType>>();
+    
+    for(std::shared_ptr<Node>& node : nodes) {
+        stateful_nodes.emplace_back(node, states);
+        (*states)[node.get()] = default_state;
+    }
+
+    return stateful_nodes;
+}
