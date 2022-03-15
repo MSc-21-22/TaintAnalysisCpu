@@ -21,20 +21,26 @@ __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][TH
         intptr_t hash = reinterpret_cast<intptr_t>(&nodes[succ_index]);
         int collision_count = 0;
         int* work_column = work_columns[current_work_column];
-        while(work_column[hash % THREAD_COUNT] != -1){
-            if(work_column[hash % THREAD_COUNT] == succ_index){
-                break;
-            }
-            
 
-            if(++collision_count >= COLLISIONS_BEFORE_SWITCH){
-                current_work_column = (current_work_column + 1) % work_column_count;
-                work_column = work_columns[current_work_column];
-            }else{
-                hash++;
+        int old;
+        do{
+            while(work_column[hash % THREAD_COUNT] != -1){
+                if(work_column[hash % THREAD_COUNT] == succ_index){
+                    break;
+                }
+                
+
+                if(++collision_count >= COLLISIONS_BEFORE_SWITCH){
+                    current_work_column = (current_work_column + 1) % work_column_count;
+                    work_column = work_columns[current_work_column];
+                }else{
+                    hash++;
+                }
             }
-        }
-        work_column[hash % THREAD_COUNT] = succ_index;
+            // work_column[hash % THREAD_COUNT] = succ_index;
+
+            old = atomicCAS(&work_column[hash % THREAD_COUNT], -1, succ_index);
+        }while (old == -1);
     }
 }
 
