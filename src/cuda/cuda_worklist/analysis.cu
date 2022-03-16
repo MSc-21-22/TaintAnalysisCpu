@@ -62,7 +62,7 @@ __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work
             add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, (i+1) % work_column_count, nodes);
             *work_to_do = true;
         }
-        //printf("Node[%d]\n", work_column[node_index]);
+        
         work_column[node_index] = -1;   
     }
 }
