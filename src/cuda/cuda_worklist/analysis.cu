@@ -15,32 +15,30 @@ using namespace cuda_worklist;
 __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][THREAD_COUNT], int work_column_count, int current_work_column, Node* nodes){
     int initial_work_column = current_work_column;
     for(int i = 0; i < 5; i++){
+        current_work_column = initial_work_column;
         int succ_index = successors[i];
         if (succ_index == -1)
             return;
-        intptr_t hash = reinterpret_cast<intptr_t>(&nodes[succ_index]);
+        intptr_t hash = succ_index*120811;
         int collision_count = 0;
         int* work_column = work_columns[current_work_column];
 
-        int old;
-        do{
-            while(work_column[hash % THREAD_COUNT] != -1){
-                if(work_column[hash % THREAD_COUNT] == succ_index){
-                    break;
-                }
-                
-
-                if(++collision_count >= COLLISIONS_BEFORE_SWITCH){
-                    current_work_column = (current_work_column + 1) % work_column_count;
-                    work_column = work_columns[current_work_column];
-                }else{
-                    hash++;
-                }
+        while(atomicCAS(&work_column[hash % THREAD_COUNT], -1, succ_index) != -1){
+            if(work_column[hash % THREAD_COUNT] == succ_index){
+                break;
             }
-            // work_column[hash % THREAD_COUNT] = succ_index;
+            
 
-            old = atomicCAS(&work_column[hash % THREAD_COUNT], -1, succ_index);
-        }while (old == -1);
+            if(++collision_count >= COLLISIONS_BEFORE_SWITCH){
+                current_work_column = (current_work_column + 1) % work_column_count;
+                work_column = work_columns[current_work_column];
+                collision_count = 0;
+            }else{
+                hash++;
+            }
+        }
+
+        int xhash = hash % THREAD_COUNT;
     }
 }
 
@@ -64,6 +62,7 @@ __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work
             add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, (i+1) % work_column_count, nodes);
             *work_to_do = true;
         }
+        //printf("Node[%d]\n", work_column[node_index]);
         work_column[node_index] = -1;   
     }
 }

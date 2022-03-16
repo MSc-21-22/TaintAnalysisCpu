@@ -144,10 +144,13 @@ std::vector<StatefulNode<LatticeType>> create_states(std::vector<std::shared_ptr
 
 class Node {
 public:
-    std::set<std::shared_ptr<Node>> predecessors;
-    std::set<std::shared_ptr<Node>> successors;
+    std::vector<std::shared_ptr<Node>> predecessors;
+    std::vector<std::shared_ptr<Node>> successors;
 
     virtual void accept(CfgVisitor& visitor)=0;
+
+    void add_successor(std::shared_ptr<Node> node);
+    void add_predecessor(std::shared_ptr<Node> node);
 };
 
 class ArrayInitializerNode : public Node {
