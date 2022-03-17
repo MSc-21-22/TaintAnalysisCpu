@@ -2,6 +2,7 @@ find_package(Java QUIET COMPONENTS Runtime)
 
 if(NOT ANTLR_EXECUTABLE)
   find_program(ANTLR_EXECUTABLE
+               PATHS ${CMAKE_SOURCE_DIR}
                NAMES antlr.jar antlr4.jar antlr-4.jar antlr-4.9.3-complete.jar)
 endif()
 
