@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
-if(NOT DEFINED ANTLR_EXECUTABLE)
-    message(FATAL_ERROR "You must define ANTLR_EXECUTABLE using the flag -D ANTLR_EXECUTABLE=...")
-endif()
-
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
     message(FATAL_ERROR "You must define CMAKE_CUDA_ARCHITECTURES using the flag -D CMAKE_CUDA_ARCHITECTURES={compute computablity version i.e 61} Go to https://developer.nvidia.com/cuda-gpus and find your graphics card computability version (dont forget to remove the . between the numbers)")
 endif()
@@ -15,11 +11,11 @@ set(CMAKE_CXX_STANDARD 17)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 add_definitions(-DANTLR4CPP_STATIC)
+find_package(ANTLR REQUIRED)
 set(ANTLR4_WITH_STATIC_CRT OFF)
 include(cmake/ExternalAntlr4Cpp.cmake)   
 project(analyzer CXX CUDA)
 
-find_package(ANTLR REQUIRED)
 
 if(NOT DEFINED CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES)
     message(FATAL_ERROR "The cuda toolkit was not found?!")
