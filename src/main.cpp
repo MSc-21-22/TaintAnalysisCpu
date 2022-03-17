@@ -94,12 +94,16 @@ bool state_equality(std::vector<StatefulNode<std::set<std::string>>>& lhs, std::
     if (size != rhs.size())
         return false;
 
+    DigraphPrinter printer(std::cout);
+
     for(int i = 0; i < size; ++i){
         for(const std::string& item : lhs[i].get_state()){
             if(rhs[i].get_state().count(item) == 0){
-                std::cout << "Difference on node " << i; 
+                std::cout << "Difference on node " << i << "    "; 
+                lhs[i].accept(printer);
                 print_result(lhs[i].get_state(), std::cout);
-                std::cout << "!=";
+                std::cout << "    !=    ";
+                rhs[i].accept(printer);
                 print_result(rhs[i].get_state(), std::cout);
                 std::cout << '\n';
                 return false;

@@ -25,8 +25,8 @@ private:
 
     void link_to_lasts(std::shared_ptr<Node> node){
         for(auto& other : last){
-            node->predecessors.insert(other);
-            other->successors.insert(node);
+            node->add_predecessor(other);
+            other->add_successor(node);
         }
     }
 
