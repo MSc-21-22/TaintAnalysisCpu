@@ -10,7 +10,7 @@ First install the required dependencies to compile
 
 - CMake
 - C++ Compiler of your choice (MSVC has been tested)
-- Antlr4 jar executable file
+- Antlr4 jar executable file (v. 4.9.3)
 
 
 # Cuda
