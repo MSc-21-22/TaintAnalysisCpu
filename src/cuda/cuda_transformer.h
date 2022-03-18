@@ -62,17 +62,17 @@ public:
         NodeType& node_struct = nodes.emplace_back();
 
         node_struct.join_mask = 0;
-
         if(node.arguments.size() >= 1){
             node_struct.first_transfer_index = add_transfer_function(node.formal_parameters[0], node.arguments[0]);
             add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
-            Transfer& last = transfer_functions[node_struct.first_transfer_index];
-            
+            int last_index = node_struct.first_transfer_index;
+
             for (int i = 1; i < node.arguments.size(); i++)
             {
-                last.next_transfer_index = add_transfer_function(node.formal_parameters[i], node.arguments[i]);
-                add_taint_source(id, transfer_functions[last.next_transfer_index]);
-                last = transfer_functions[last.next_transfer_index];
+                int current_index = add_transfer_function(node.formal_parameters[i], node.arguments[i]);
+                transfer_functions[last_index].next_transfer_index = current_index;
+                add_taint_source(id, transfer_functions[current_index]);
+                last_index = current_index;
             }
         }
     }
@@ -129,6 +129,7 @@ private:
         Transfer& current_transfer = transfer_functions.emplace_back();
         current_transfer.x = variables[x];
         fill_with_variable_indices(current_transfer.rhs, vars);
+
         return index;
     }
 
