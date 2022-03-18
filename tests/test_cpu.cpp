@@ -4,6 +4,26 @@
 #include <cuda/cuda_transformer.h>
 #include <cfg/transformations/transforms_matrix.h>
 
+TEST_CASE("cuda multiple transferfunctions"){
+    std::vector<std::string> parameters = {"a", "b", "c"};
+
+    auto i = std::make_shared<VariableExpression>("i");
+    auto j = std::make_shared<VariableExpression>("j");
+    auto h = std::make_shared<VariableExpression>("h");
+    std::vector<std::shared_ptr<Expression>> arguments = {i,j,h};
+
+    auto funcEntry = std::make_shared<FunctionEntryNode>("f", parameters);
+    funcEntry->arguments = arguments;
+
+    std::vector<std::shared_ptr<Node>> nodes = {funcEntry};
+    CudaTransformer<bit_cuda::Node> transformer = transform_bit_cuda(nodes);
+
+    CHECK_MESSAGE(transformer.transfer_functions.size() == 3, "Function entry should have 3 transfer functions");
+    CHECK_MESSAGE(transformer.nodes[0].first_transfer_index == 0, "first transfer_index of node should be 0");
+    CHECK_MESSAGE(transformer.transfer_functions[0].next_transfer_index == 1, "transfer_functions[0].next_transfer_index should be 1");
+    CHECK_MESSAGE(transformer.transfer_functions[1].next_transfer_index == 2, "transfer_functions[1].next_transfer_index should be 2");
+
+}
 
 TEST_CASE("cuda-worklist transforms successor"){
     auto funcCall = std::make_shared<PropagationNode>("f()");
