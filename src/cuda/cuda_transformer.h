@@ -5,6 +5,7 @@
 #include "cuda_worklist/analysis.h"
 #include <cfg/cfg.h>
 #include <cfg/transformations/var_visitor.h>
+#include <assert.h>
 
 template <typename NodeType>
 class CudaTransformer : public CfgVisitor
@@ -165,9 +166,10 @@ private:
 template<typename NodeType>
 void add_predecessors(std::vector<std::shared_ptr<Node>>& nodes, CudaTransformer<NodeType>& transformer){
     for(int i = 0; i < nodes.size(); i++){
-        int j = 0;
+        int pred_index = 0;
         for (auto pred_it = nodes[i]->predecessors.begin(); pred_it != nodes[i]->predecessors.end(); ++pred_it){
-            transformer.nodes[i].predecessor_index[j++] = transformer.node_to_index[pred_it->get()];
+            assert(pred_index < 5);
+            transformer.nodes[i].predecessor_index[pred_index++] = transformer.node_to_index[pred_it->get()];
         }
     }
 }
@@ -175,13 +177,15 @@ void add_predecessors(std::vector<std::shared_ptr<Node>>& nodes, CudaTransformer
 template<typename NodeType>
 void add_neighbours(std::vector<std::shared_ptr<Node>>& nodes, CudaTransformer<NodeType>& transformer){
     for(int i = 0; i < nodes.size(); i++){
-        int j = 0;
+        int pred_index = 0;
         for (auto pred_it = nodes[i]->predecessors.begin(); pred_it != nodes[i]->predecessors.end(); ++pred_it){
-            transformer.nodes[i].predecessor_index[j++] = transformer.node_to_index[pred_it->get()];
+            assert(pred_index < 5);
+            transformer.nodes[i].predecessor_index[pred_index++] = transformer.node_to_index[pred_it->get()];
         }
 
         int succ_index = 0;
         for (auto succ = nodes[i]->successors.begin(); succ != nodes[i]->successors.end(); ++succ){
+            assert(succ_index < 5);
             transformer.nodes[i].successor_index[succ_index++] = transformer.node_to_index[succ->get()];
         }
     }

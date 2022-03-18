@@ -24,11 +24,7 @@ int takingmanyparams(int a, int b, int c, int d, int e){
         if(b){
             if(c){
                 if(d){
-                    if(e){
-                        value = 5+e;
-                    }else{
-                        value = 4+d;
-                    }
+                    value = 4+d;
                 }else{
                     value = 3+c;
                 }
