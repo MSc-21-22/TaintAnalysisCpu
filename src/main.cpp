@@ -151,10 +151,13 @@ int main(int argc, char *argv[]){
         }
 
         antlr4::ANTLRFileStream csfile;
-        csfile.loadFromFile(argv[argc-1]);
+        const std::string& file_name = argv[argc-1];
+        csfile.loadFromFile(file_name);
         antlr4::ANTLRInputStream prog(csfile);
 
         if(benchmark_all){
+
+            Stopwatch::add_header(file_name);
 
             std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
             auto program = parse_to_cfg_transformer(prog);

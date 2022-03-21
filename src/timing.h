@@ -71,6 +71,12 @@ public:
         fout << get_time<TimeUnit>() << ",";   
     }
 
+    static void add_header(const std::string header){
+        std::fstream fout;
+        fout.open("timings.csv", std::ios::out | std::ios::app);
+        fout << header << ",";
+    }
+
     static void add_line(){
         std::fstream fout;
         fout.open("timings.csv", std::ios::out | std::ios::app);
