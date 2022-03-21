@@ -163,6 +163,8 @@ int main(int argc, char *argv[]){
             auto cpu_nodes = cpu_analysis(program);
             cpu_watch.save_time<Microseconds>();
 
+            init_gpu();
+
             std::cout << "\n⭐ GPU cuBLAS analysis ⭐" << std::endl;
             program = parse_to_cfg_transformer(prog);
             time_func("Cublas creation: ", 
@@ -175,8 +177,6 @@ int main(int argc, char *argv[]){
             if(!state_equality(cpu_nodes, cublas_nodes)){
                 std::cout << "###### cpu != cublas #####" << std::endl;
             }
-
-            init_gpu();
 
             std::cout << "\n⭐ bit-cuda analysis ⭐" << std::endl;
             program = parse_to_cfg_transformer(prog);
