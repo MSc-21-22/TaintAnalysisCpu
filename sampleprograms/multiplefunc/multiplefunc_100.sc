@@ -108,4 +108,14 @@ void main(int j){
     int a = f();
     int a = f();
     int a = f();
+    int a = f();
+    int a = f();
+    int a = f();
+    int a = f();
+    int a = f();
+    int a = f();
+    int a = f();
+    int a = f();
+    int a = f();
+    int a = f();
 }
