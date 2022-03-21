@@ -45,12 +45,11 @@ void print_digraph_with_result(std::vector<StatefulNode<LatticeType>> &nodes, st
 {
     DigraphPrinter printer(stream);
 
-    stream << "Hello" << nodes.size();
-
+    int i = 0;
     for (StatefulNode<LatticeType> &state_node : nodes)
     {
 
-        stream << (unsigned long long int)state_node.node.get() << "[label = \"";
+        stream << (unsigned long long int)state_node.node.get() << "[label = \"x" << i++ << ": ";
         state_node.node->accept(printer);
         lattice_printer(state_node.get_state(), stream);
         stream << "\"]\n";

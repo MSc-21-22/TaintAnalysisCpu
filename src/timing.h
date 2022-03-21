@@ -55,8 +55,6 @@ public:
 class Stopwatch{
 public:
     Stopwatch();
-    void start();
-    void stop();
 
     template<typename TimeUnit>
     void print_time(std::string message){
@@ -73,6 +71,12 @@ public:
         fout << get_time<TimeUnit>() << ",";   
     }
 
+    static void add_header(const std::string header){
+        std::fstream fout;
+        fout.open("timings.csv", std::ios::out | std::ios::app);
+        fout << header << ",";
+    }
+
     static void add_line(){
         std::fstream fout;
         fout.open("timings.csv", std::ios::out | std::ios::app);
@@ -82,14 +86,12 @@ public:
 
 private:
     TimeVar startTime;
-    std::chrono::duration<double> duration;
-    bool running;
+    std::chrono::nanoseconds duration{};
 
     template<class TimeUnit, typename UnitType = typename TimeUnit::chrono_type>
     int64_t get_time(){
-        if(running){
-            stop();
-        }
+        auto endTime = std::chrono::high_resolution_clock::now();
+        duration = endTime - startTime;
         return std::chrono::duration_cast<UnitType>(duration).count();
     }
 };
