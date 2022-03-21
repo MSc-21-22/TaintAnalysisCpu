@@ -76,7 +76,7 @@ public:
     }
 
     void visit_emptyReturn(EmptyReturnNode& node){
-        matrices.push_back(unit_matrix<ElementType>(rowSize));
+        matrices.push_back(base_transfer_matrix<ElementType>(rowSize));
     }
 
     void visit_functionEntry(FunctionEntryNode& node){

@@ -19,7 +19,7 @@ template<typename NodeType>
 __device__ BitVector join(int predecessors[], NodeType nodes[]){
         BitVector joined_data = 1;
         int pred_index = 0;
-        while (predecessors[pred_index] != -1){
+        while (pred_index < 5 && predecessors[pred_index] != -1){
             joined_data |= nodes[predecessors[pred_index]].data;
             ++pred_index;
         }
