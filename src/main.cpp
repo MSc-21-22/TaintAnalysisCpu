@@ -104,7 +104,7 @@ std::vector<StatefulNode<SourcedTaintState>> multi_bit_cuda_worklist_analysis(Sc
 
     std::vector<StatefulNode<SourcedTaintState>> nodes = create_states<SourcedTaintState>(program.nodes);
     time_func("Save into nodes", 
-                set_bit_cuda_multi_state<multi_cuda::Node>, transformer.nodes, transformer.variables, source_count, nodes);
+                set_bit_cuda_multi_state, transformer.nodes, transformer.variables, source_count, nodes);
     if(!timing::should_benchmark)
         print_digraph_subgraph(nodes, std::cout, print_taint_source, "main");
 
