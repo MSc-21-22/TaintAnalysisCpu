@@ -7,7 +7,7 @@ namespace multi_cuda{
         int first_transfer_index = -1;
         int predecessor_index[5] = {-1,-1,-1,-1,-1};
         int successor_index[5] = {-1,-1,-1,-1,-1};
-        BitVector join_mask = INT32_MAX;
+        BitVector join_mask = INT32_MAX - 1;
         BitVector data[]; // Experiment with different types might be faster consider 32 and 64 bit numbers
     };
 
