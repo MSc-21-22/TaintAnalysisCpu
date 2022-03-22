@@ -131,7 +131,7 @@ bool state_equality(std::vector<StatefulNode<std::set<std::string>>>& lhs, std::
 int main(int argc, char *argv[]){
     if(argc > 1){
 
-        bool gpu_flag = false, multi_taint_flag = false, cpu_flag = false, benchmark_all = false, cuda_flag = false, cuda_worklist_flag = false;
+        bool gpu_flag = false, multi_taint_flag = false, cpu_flag = false, benchmark_all = false, cuda_flag = false, cuda_worklist_flag = false, multi_source_cuda = false;
         for (int i = 1; i < argc; i++)
         {
             char* arg = argv[i];
@@ -146,6 +146,10 @@ int main(int argc, char *argv[]){
 
             if(strcmp(arg, "--cuda") == 0 || strcmp(arg, "-cu") == 0){
                 cuda_flag = true;
+            }
+
+            if(strcmp(arg, "--multi-cuda") == 0 || strcmp(arg, "-mc") == 0){
+                multi_source_cuda = true;
             }
 
             if(strcmp(arg, "--cuda-worklist") == 0 || strcmp(arg, "-cw") == 0){
@@ -206,6 +210,9 @@ int main(int argc, char *argv[]){
         }else if(cuda_worklist_flag){
             std::cout << "Running bit-cuda analysis using worklists" << std::endl;
             bit_cuda_worklist_analysis(program);
+        }else if(multi_source_cuda){
+            std::cout << "Running multi-colored bit-cuda analysis using worklists" << std::endl;
+            multi_bit_cuda_worklist_analysis(program);
         }else if(cpu_flag){
             if(multi_taint_flag){
                 std::cout << "Running multi-taint analysis using CPU" << std::endl;
@@ -218,10 +225,11 @@ int main(int argc, char *argv[]){
             std::cout << "Invalid command\n";
             std::cout << " --cpu -c for use on cpu\n";
             std::cout << " with cpu flag:\n";
-            std::cout << "  --multi -m for multi taint analysis\n";
+            std::cout << " --multi -m for multi taint analysis\n";
             std::cout << " --gpu -g for use on gpu\n";
             std::cout << " --cuda -cu for bit-cuda implementation\n";
             std::cout << " --cuda-worklist -cw for bit-cuda implementation using worklist\n";
+            std::cout << " --multi-cuda -mc for multi colored taint analysis using cuda and worklist\n";
             std::cout << " --benchmark -b to enable benchmarking where possible\n";
         }
 
