@@ -48,7 +48,11 @@ Then use cmake to compile the dependencies and the project
 
 --cuda-worklist | -cw : run using the bit-cuda implementation using a worklist
 
---multi | -m : run multi-coloured taint analysis (only implemented with cpu)
+--multi | -m : run multi-coloured taint analysis on CPU
+
+-- multi-cuda | -mc : run multi-colored taint analysis on GPU
 
 --benchmark | -b : output execution time of the different phases of the analysis
+
+--benchmark-all-multi | -bam to compare all multi-colored taint analysis options and output results into timings.csv
 
