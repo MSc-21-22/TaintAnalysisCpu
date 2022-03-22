@@ -37,8 +37,6 @@ __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][TH
                 hash++;
             }
         }
-
-        int xhash = hash % THREAD_COUNT;
     }
 }
 
