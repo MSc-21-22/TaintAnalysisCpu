@@ -15,13 +15,15 @@ using namespace cuda_worklist;
 __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][THREAD_COUNT], int work_column_count, int current_work_column, Node* nodes){
     int initial_work_column = current_work_column;
     for(int i = 0; i < 5; i++){
+        current_work_column = initial_work_column;
         int succ_index = successors[i];
         if (succ_index == -1)
             return;
-        intptr_t hash = reinterpret_cast<intptr_t>(&nodes[succ_index]);
+        intptr_t hash = succ_index*120811;
         int collision_count = 0;
         int* work_column = work_columns[current_work_column];
-        while(work_column[hash % THREAD_COUNT] != -1){
+
+        while(atomicCAS(&work_column[hash % THREAD_COUNT], -1, succ_index) != -1){
             if(work_column[hash % THREAD_COUNT] == succ_index){
                 break;
             }
@@ -30,11 +32,13 @@ __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][TH
             if(++collision_count >= COLLISIONS_BEFORE_SWITCH){
                 current_work_column = (current_work_column + 1) % work_column_count;
                 work_column = work_columns[current_work_column];
+                collision_count = 0;
             }else{
                 hash++;
             }
         }
-        work_column[hash % THREAD_COUNT] = succ_index;
+
+        int xhash = hash % THREAD_COUNT;
     }
 }
 
@@ -58,6 +62,7 @@ __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work
             add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, (i+1) % work_column_count, nodes);
             *work_to_do = true;
         }
+        
         work_column[node_index] = -1;   
     }
 }
@@ -134,7 +139,6 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
         cuda_copy_to_host((void*)&work_to_do, dev_work_to_do, sizeof(bool));
         i = (i+1) % (work_column_count+1);
     }
-    lfp_watch.stop();
     lfp_watch.print_time<Microseconds>("LFP time: ");
 
 

@@ -74,7 +74,6 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
         }
 
         cuda_copy_to_host((void*)&has_changed, dev_has_changed, sizeof(bool));
-        std::cout << "has changed: " << has_changed << std::endl;
     }
 
 

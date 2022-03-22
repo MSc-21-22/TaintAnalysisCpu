@@ -4,16 +4,36 @@
 #include <cuda/cuda_transformer.h>
 #include <cfg/transformations/transforms_matrix.h>
 
+TEST_CASE("cuda multiple transferfunctions"){
+    std::vector<std::string> parameters = {"a", "b", "c"};
+
+    auto i = std::make_shared<VariableExpression>("i");
+    auto j = std::make_shared<VariableExpression>("j");
+    auto h = std::make_shared<VariableExpression>("h");
+    std::vector<std::shared_ptr<Expression>> arguments = {i,j,h};
+
+    auto funcEntry = std::make_shared<FunctionEntryNode>("f", parameters);
+    funcEntry->arguments = arguments;
+
+    std::vector<std::shared_ptr<Node>> nodes = {funcEntry};
+    CudaTransformer<bit_cuda::Node> transformer = transform_bit_cuda(nodes);
+
+    CHECK_MESSAGE(transformer.transfer_functions.size() == 3, "Function entry should have 3 transfer functions");
+    CHECK_MESSAGE(transformer.nodes[0].first_transfer_index == 0, "first transfer_index of node should be 0");
+    CHECK_MESSAGE(transformer.transfer_functions[0].next_transfer_index == 1, "transfer_functions[0].next_transfer_index should be 1");
+    CHECK_MESSAGE(transformer.transfer_functions[1].next_transfer_index == 2, "transfer_functions[1].next_transfer_index should be 2");
+
+}
 
 TEST_CASE("cuda-worklist transforms successor"){
     auto funcCall = std::make_shared<PropagationNode>("f()");
     auto funcEntry = std::make_shared<PropagationNode>("f");
     auto funcDef = std::make_shared<PropagationNode>("void f(int a, int b)");
     
-    funcCall->successors.insert(funcEntry);
-    funcEntry->predecessors.insert(funcCall);
-    funcEntry->successors.insert(funcDef);
-    funcDef->predecessors.insert(funcEntry);
+    funcCall->add_successor(funcEntry);
+    funcEntry->add_predecessor(funcCall);
+    funcEntry->add_successor(funcDef);
+    funcDef->add_predecessor(funcEntry);
 
     std::vector<std::shared_ptr<Node>> nodes = {funcCall, funcEntry, funcDef};
     CudaTransformer<cuda_worklist::Node> transformer = transform_cuda_worklist(nodes);
@@ -126,10 +146,10 @@ TEST_CASE("matrix transform function entry"){
     funcEntry->arguments = args;
     auto funcDef = std::make_shared<PropagationNode>("void f(int a, int b)");
     
-    funcCall->successors.insert(funcEntry);
-    funcEntry->predecessors.insert(funcCall);
-    funcEntry->successors.insert(funcDef);
-    funcDef->predecessors.insert(funcEntry);
+    funcCall->add_successor(funcEntry);
+    funcEntry->add_predecessor(funcCall);
+    funcEntry->add_successor(funcDef);
+    funcDef->add_predecessor(funcEntry);
 
     MatrixTransforms<float> matrixTransforms({"a","b","c"});
     funcEntry->accept(matrixTransforms);
@@ -179,10 +199,12 @@ TEST_CASE("Create successor node matrix"){
     auto node2 = std::make_shared<PropagationNode>("Empty");
     auto node3 = std::make_shared<PropagationNode>("Empty");
 
-    node1->successors.insert({node2,node3});
-    node2->successors.insert(node3);
-    node2->predecessors.insert(node1);
-    node3->predecessors.insert({node1,node2});
+    node1->add_successor(node2);
+    node1->add_successor(node3);
+    node2->add_successor(node3);
+    node2->add_predecessor(node1);
+    node3->add_predecessor(node1);
+    node3->add_predecessor(node2);
     
     std::vector<std::shared_ptr<Node>> vec{node1,node2,node3};
     auto matrix = get_successor_matrix<float>(vec);

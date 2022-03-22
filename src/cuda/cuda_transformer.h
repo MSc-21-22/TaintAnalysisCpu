@@ -7,6 +7,7 @@
 #include <cfg/cfg.h>
 #include <cfg/transformations/var_visitor.h>
 #include <cfg/transformations/taint_locator.h>
+#include <assert.h>
 
 template <typename NodeType>
 class CudaTransformer : public CfgVisitor
@@ -66,17 +67,17 @@ public:
         NodeType& node_struct = nodes.emplace_back();
 
         node_struct.join_mask = 0;
-
         if(node.arguments.size() >= 1){
             node_struct.first_transfer_index = add_transfer_function(node.formal_parameters[0], node.arguments[0]);
             add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
-            Transfer& last = transfer_functions[node_struct.first_transfer_index];
-            
+            int last_index = node_struct.first_transfer_index;
+
             for (int i = 1; i < node.arguments.size(); i++)
             {
-                last.next_transfer_index = add_transfer_function(node.formal_parameters[i], node.arguments[i]);
-                add_taint_source(id, transfer_functions[last.next_transfer_index]);
-                last = transfer_functions[last.next_transfer_index];
+                int current_index = add_transfer_function(node.formal_parameters[i], node.arguments[i]);
+                transfer_functions[last_index].next_transfer_index = current_index;
+                add_taint_source(id, transfer_functions[current_index]);
+                last_index = current_index;
             }
         }
     }
@@ -133,6 +134,7 @@ private:
         Transfer& current_transfer = transfer_functions.emplace_back();
         current_transfer.x = variables[x];
         fill_with_variable_indices(current_transfer.rhs, vars);
+
         return index;
     }
 
@@ -168,9 +170,10 @@ private:
 template<typename NodeType>
 void add_predecessors(std::vector<std::shared_ptr<Node>>& nodes, CudaTransformer<NodeType>& transformer){
     for(int i = 0; i < nodes.size(); i++){
-        int j = 0;
+        int pred_index = 0;
         for (auto pred_it = nodes[i]->predecessors.begin(); pred_it != nodes[i]->predecessors.end(); ++pred_it){
-            transformer.nodes[i].predecessor_index[j++] = transformer.node_to_index[pred_it->get()];
+            assert(pred_index < 5);
+            transformer.nodes[i].predecessor_index[pred_index++] = transformer.node_to_index[pred_it->get()];
         }
     }
 }
@@ -178,13 +181,15 @@ void add_predecessors(std::vector<std::shared_ptr<Node>>& nodes, CudaTransformer
 template<typename NodeType>
 void add_neighbours(std::vector<std::shared_ptr<Node>>& nodes, CudaTransformer<NodeType>& transformer){
     for(int i = 0; i < nodes.size(); i++){
-        int j = 0;
+        int pred_index = 0;
         for (auto pred_it = nodes[i]->predecessors.begin(); pred_it != nodes[i]->predecessors.end(); ++pred_it){
-            transformer.nodes[i].predecessor_index[j++] = transformer.node_to_index[pred_it->get()];
+            assert(pred_index < 5);
+            transformer.nodes[i].predecessor_index[pred_index++] = transformer.node_to_index[pred_it->get()];
         }
 
         int succ_index = 0;
         for (auto succ = nodes[i]->successors.begin(); succ != nodes[i]->successors.end(); ++succ){
+            assert(succ_index < 5);
             transformer.nodes[i].successor_index[succ_index++] = transformer.node_to_index[succ->get()];
         }
     }

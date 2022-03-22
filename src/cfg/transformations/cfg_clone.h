@@ -23,8 +23,8 @@ private:
 
         for(auto& succ : old_successors){
             auto other = nodeConverter[succ.get()];
-            node->successors.insert(other);
-            other->predecessors.insert(node);
+            node->add_successor(other);
+            other->add_predecessor(node);
         }
     }
 

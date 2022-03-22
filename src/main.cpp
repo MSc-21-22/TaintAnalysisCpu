@@ -51,7 +51,7 @@ void cpu_multi_taint_analysis(ScTransformer& program){
     }
 }
 
-void bit_cuda_analysis(ScTransformer& program){
+std::vector<StatefulNode<std::set<std::string>>> bit_cuda_analysis(ScTransformer& program){
     init_gpu();
     time_func("Variable reduction: ", 
                 reduce_variables, program.entryNodes);
@@ -67,6 +67,8 @@ void bit_cuda_analysis(ScTransformer& program){
 
     if(!timing::should_benchmark)
         print_digraph_subgraph(nodes, std::cout, print_result, "main");
+
+    return nodes;
 }
 
 std::vector<StatefulNode<std::set<std::string>>> bit_cuda_worklist_analysis(ScTransformer& program){
@@ -113,12 +115,16 @@ bool state_equality(std::vector<StatefulNode<std::set<std::string>>>& lhs, std::
     if (size != rhs.size())
         return false;
 
+    DigraphPrinter printer(std::cout);
+
     for(int i = 0; i < size; ++i){
         for(const std::string& item : lhs[i].get_state()){
             if(rhs[i].get_state().count(item) == 0){
-                std::cout << "Difference on node " << i; 
+                std::cout << "Difference on node " << i << "    "; 
+                lhs[i].accept(printer);
                 print_result(lhs[i].get_state(), std::cout);
-                std::cout << "!=";
+                std::cout << "    !=    ";
+                rhs[i].accept(printer);
                 print_result(rhs[i].get_state(), std::cout);
                 std::cout << '\n';
                 return false;
@@ -170,23 +176,56 @@ int main(int argc, char *argv[]){
         }
 
         antlr4::ANTLRFileStream csfile;
-        csfile.loadFromFile(argv[argc-1]);
+        const std::string& file_name = argv[argc-1];
+        csfile.loadFromFile(file_name);
         antlr4::ANTLRInputStream prog(csfile);
 
         if(benchmark_all){
 
+            Stopwatch::add_header(file_name);
+
             std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
             auto program = parse_to_cfg_transformer(prog);
+            reduce_variables(program.entryNodes);
             Stopwatch cpu_watch;
-            cpu_analysis(program);
+            auto cpu_nodes = cpu_analysis(program);
             cpu_watch.save_time<Microseconds>();
 
+            init_gpu();
+
             std::cout << "\n⭐ GPU cuBLAS analysis ⭐" << std::endl;
+            program = parse_to_cfg_transformer(prog);
             time_func("Cublas creation: ", 
                 create_cublas);
             Stopwatch cuBLAS_watch;
-            gpu_analysis(program.nodes);
+            reduce_variables(program.entryNodes);
+            auto cublas_nodes = gpu_analysis(program.nodes);
             cuBLAS_watch.save_time<Microseconds>();
+
+            if(!state_equality(cpu_nodes, cublas_nodes)){
+                std::cout << "###### cpu != cublas #####" << std::endl;
+            }
+
+            std::cout << "\n⭐ bit-cuda analysis ⭐" << std::endl;
+            program = parse_to_cfg_transformer(prog);
+            Stopwatch bit_cuda_watch;
+            auto bit_cuda_nodes = bit_cuda_analysis(program);
+            bit_cuda_watch.save_time<Microseconds>();
+
+            if(!state_equality(cublas_nodes, bit_cuda_nodes)){
+                std::cout << "###### cublas != bit-cuda #####" << std::endl;
+            }
+
+            std::cout << "\n⭐ bit-cuda worklist analysis ⭐" << std::endl;
+            program = parse_to_cfg_transformer(prog);
+            Stopwatch cuda_worklist_watch;
+            auto cuda_worklist_nodes = bit_cuda_worklist_analysis(program);
+            cuda_worklist_watch.save_time<Microseconds>();
+
+            if(!state_equality(bit_cuda_nodes, cuda_worklist_nodes)){
+                std::cout << "###### bit-cuda != cuda-worklist #####" << std::endl;
+            }
+
             Stopwatch::add_line();
             return 0;
         }
@@ -202,7 +241,7 @@ int main(int argc, char *argv[]){
                 reduce_variables, program.entryNodes);
             auto stateful_nodes = gpu_analysis(program.nodes);
             if(!timing::should_benchmark){
-                print_digraph_with_result(stateful_nodes, std::cout, print_result);
+                print_digraph_subgraph(stateful_nodes, std::cout, print_result, "main");
             }
         }else if(cuda_flag){
             std::cout << "Running bit-cuda analysis" << std::endl;
