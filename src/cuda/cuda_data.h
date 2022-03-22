@@ -20,7 +20,7 @@ private:
     size_t max_size;
     unsigned int item_size;
 public:
-    DynamicArray(size_t item_count, unsigned int item_size) : max_size(item_count), item_size(item_size){
+    DynamicArray(size_t item_count, unsigned int item_size) : max_size(item_count), item_size(item_size), current_size(0){
         items = alloc.allocate(max_size * item_size);
     }
 
@@ -33,7 +33,9 @@ public:
     DynamicArray(const DynamicArray& other) {
         max_size = other.max_size;
         item_size = other.item_size;
+        current_size = other.current_size;
         items = alloc.allocate(max_size * item_size);
+        std::copy(other.items, other.items + current_size*item_size, items);
     }
 
     DynamicArray& operator=(const DynamicArray& other){
@@ -74,8 +76,12 @@ public:
 
     template<typename ... Args>
     Item& emplace_back(Args ... args){
-        Item* next = (Item*)items + current_size * item_size;
+        if(current_size >= max_size){
+            throw "Exceeded capacity of dynamic array";
+        }
 
+        Item* next = (Item*)items + current_size * item_size;
+        current_size++;
         *next = Item(std::forward<Args>(args)...);
         return *next; 
     }
