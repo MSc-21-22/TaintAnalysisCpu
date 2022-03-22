@@ -29,10 +29,10 @@ include_directories(src/
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     tests/)
 
-add_library(gpu_lib src/matrix_analysis.cu src/kernel.cu src/GpuManagement.cu src/timing.cpp src/cuda/bit_cuda/analysis.cu src/cuda/cuda_worklist/analysis.cu src/cuda/cuda_common.cu src/cfg/transformations/cfg_transformers.cpp)
+add_library(gpu_lib src/matrix_analysis.cu src/kernel.cu src/GpuManagement.cu src/timing.cpp src/cuda/bit_cuda/analysis.cu src/cuda/cuda_worklist/analysis.cu src/cuda/cuda_common.cu src/cfg/transformations/cfg_transformers.cpp src/cuda/multi_cuda/analysis.cu)
 
 add_library(analyze_lib src/antlr4-runtime/scBaseVisitor.cpp src/antlr4-runtime/scLexer.cpp src/antlr4-runtime/scParser.cpp src/antlr4-runtime/scVisitor.cpp 
-                src/taint_analysis.cpp src/cfg/digraph.cpp src/multi_taint_analysis.cpp src/timing.cpp src/cfg/sc_transformer.cpp)
+                src/taint_analysis.cpp src/cfg/digraph.cpp src/multi_taint_analysis.cpp src/timing.cpp src/cfg/sc_transformer.cpp src/cfg/transformations/taint_locator.cpp src/cuda/cuda_transformer.cpp)
 add_dependencies(analyze_lib antlr4_static)
 target_link_libraries(analyze_lib cublas antlr4_static)
 

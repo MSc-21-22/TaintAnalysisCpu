@@ -8,7 +8,7 @@
 class Expression
 {
 public:
-    virtual bool evaluate(std::set<std::string> &state) = 0;
+    virtual bool evaluate(const std::set<std::string> &state) = 0;
     virtual std::set<std::string> get_variables() = 0;
     virtual std::string dotPrint() = 0;
     virtual void replace_names(std::map<std::string, std::string>& names) = 0;
@@ -20,7 +20,7 @@ class EmptyExpression : public Expression
 public:
     EmptyExpression() {}
 
-    bool evaluate(std::set<std::string>&)
+    bool evaluate(const std::set<std::string>&)
     {
         return true;
     }
@@ -54,7 +54,7 @@ public:
 
     BinaryOperatorExpression(std::shared_ptr<Expression> lhs, std::string op, std::shared_ptr<Expression> rhs): op(op), lhs(lhs), rhs(rhs){}
 
-    bool evaluate(std::set<std::string> &state)
+    bool evaluate(const std::set<std::string> &state)
     {
         return lhs->evaluate(state) || rhs->evaluate(state);
     }
@@ -92,7 +92,7 @@ public:
 
     LiteralExpression(std::string literal): literal(literal){}
 
-    bool evaluate(std::set<std::string>&)
+    bool evaluate(const std::set<std::string>&)
     {
         return false;
     }
@@ -122,7 +122,7 @@ public:
 
     VariableExpression(std::string id): id(id){}
 
-    bool evaluate(std::set<std::string> &state)
+    bool evaluate(const std::set<std::string> &state)
     {
         return state.find(id) != state.end();
     }
@@ -157,7 +157,7 @@ public:
 
     ParanthesisExpression(std::shared_ptr<Expression> expression): expression(expression){}
 
-    bool evaluate(std::set<std::string> &state)
+    bool evaluate(const std::set<std::string> &state)
     {
         return expression->evaluate(state);
     }
@@ -188,7 +188,7 @@ public:
 
     ArrayExpression(std::string id, std::shared_ptr<Expression> index): id(id), indexExpression(index){}
 
-    bool evaluate(std::set<std::string> &state)
+    bool evaluate(const std::set<std::string> &state)
     {
         if (state.find(id) != state.end())
             return true;

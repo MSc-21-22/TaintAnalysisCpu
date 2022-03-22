@@ -87,6 +87,26 @@ std::vector<StatefulNode<std::set<std::string>>> bit_cuda_worklist_analysis(ScTr
     return nodes;
 }
 
+std::vector<StatefulNode<SourcedTaintState>> multi_bit_cuda_worklist_analysis(ScTransformer& program){
+    init_gpu();
+    time_func("Variable reduction: ", 
+                reduce_variables, program.entryNodes);
+    int source_count = 0;
+    auto transformer = time_func<CudaTransformer<multi_cuda::Node>>("Gpu structure transformation: ", 
+                transform_multi_cuda, program.nodes, source_count);
+    
+    time_func("Least fixed point algorithm: ",
+            multi_cuda::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.transfer_functions.begin(), transformer.transfer_functions.size(), transformer.taint_sources, source_count);
+
+    std::vector<StatefulNode<SourcedTaintState>> nodes = create_states<SourcedTaintState>(program.nodes);
+    time_func("Save into nodes", 
+                set_bit_cuda_multi_state<multi_cuda::Node>, transformer.nodes, transformer.variables, source_count, nodes);
+    if(!timing::should_benchmark)
+        print_digraph_subgraph(nodes, std::cout, print_taint_source, "main");
+
+    return nodes;
+}
+
 bool state_equality(std::vector<StatefulNode<std::set<std::string>>>& lhs, std::vector<StatefulNode<std::set<std::string>>>& rhs){
     int size = lhs.size();
     if (size != rhs.size())
