@@ -82,7 +82,7 @@ public:
 
         Item* next = (Item*)items + current_size * item_size;
         current_size++;
-        *next = Item(std::forward<Args>(args)...);
+        new (next) Item(std::forward<Args>(args)...); //Placement new, i.e. not an allocation
         return *next; 
     }
 
