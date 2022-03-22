@@ -41,7 +41,7 @@ std::vector<StatefulNode<std::set<std::string>>> cpu_analysis(ScTransformer prog
     return nodes;
 }
 
-void cpu_multi_taint_analysis(ScTransformer& program){
+std::vector<StatefulNode<SourcedTaintState>> cpu_multi_taint_analysis(ScTransformer& program){
     MultiTaintAnalyzer analyzer;
     std::vector<StatefulNode<SourcedTaintState>> nodes = create_states<SourcedTaintState>(program.nodes);
     worklist<SourcedTaintState>(nodes, analyzer);
@@ -49,6 +49,7 @@ void cpu_multi_taint_analysis(ScTransformer& program){
     if(!timing::should_benchmark) {
         print_digraph_subgraph(nodes, std::cout, print_taint_source, "main");
     }
+    return nodes;
 }
 
 std::vector<StatefulNode<std::set<std::string>>> bit_cuda_analysis(ScTransformer& program){
@@ -134,16 +135,69 @@ bool state_equality(std::vector<StatefulNode<std::set<std::string>>>& lhs, std::
     return true;
 }
 
+bool state_multi_equality(std::vector<StatefulNode<SourcedTaintState>>& lhs, std::vector<StatefulNode<SourcedTaintState>>& rhs){
+    int size = lhs.size();
+    if (size != rhs.size())
+        return false;
+
+    DigraphPrinter printer(std::cout);
+
+    for(int i = 0; i < size; ++i){
+        for(auto &[var_name1, sources_set1] : lhs[i].get_state()){
+            for(auto &[var_name2, sources_set2] : rhs[i].get_state()){
+                if(sources_set1 != sources_set2){
+                    std::cout << "Difference on node " << i << "    "; 
+                    lhs[i].accept(printer);
+                    print_taint_source(lhs[i].get_state(), std::cout);
+                    std::cout << "    !=    ";
+                    rhs[i].accept(printer);
+                    print_taint_source(rhs[i].get_state(), std::cout);
+                    std::cout << '\n';
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+void benchmark_all_multi_taint(antlr4::ANTLRInputStream& prog, std::string file_name){
+    Stopwatch::add_header(file_name);
+
+    std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
+    auto program = parse_to_cfg_transformer(prog);
+    reduce_variables(program.entryNodes);
+    Stopwatch cpu_watch;
+    auto cpu_nodes = cpu_multi_taint_analysis(program);
+    cpu_watch.save_time<Microseconds>();
+
+    init_gpu();
+    std::cout << "\n⭐ GPU analysis ⭐" << std::endl;
+    program = parse_to_cfg_transformer(prog);
+    Stopwatch gpu_watch;
+    auto gpu_nodes = multi_bit_cuda_worklist_analysis(program);
+    gpu_watch.save_time<Microseconds>();
+
+    if(!state_multi_equality(cpu_nodes, gpu_nodes)){
+        std::cout << "###### cpu != gpu #####" << std::endl;
+    }
+}
+
 int main(int argc, char *argv[]){
     if(argc > 1){
 
-        bool gpu_flag = false, multi_taint_flag = false, cpu_flag = false, benchmark_all = false, cuda_flag = false, cuda_worklist_flag = false, multi_source_cuda = false;
+        bool gpu_flag = false, multi_taint_flag = false, cpu_flag = false, benchmark_all = false, benchmark_all_multi = false, cuda_flag = false, cuda_worklist_flag = false, multi_source_cuda = false;
         for (int i = 1; i < argc; i++)
         {
             char* arg = argv[i];
             if(strcmp(arg, "--benchmark-all") == 0 || strcmp(arg, "-ba") == 0){
                 timing::should_benchmark = true;
                 benchmark_all = true;
+            }
+
+            if(strcmp(arg, "--benchmark-all-multi") == 0 || strcmp(arg, "-bam") == 0){
+                timing::should_benchmark = true;
+                benchmark_all_multi = true;
             }
 
             if(strcmp(arg, "--gpu") == 0 || strcmp(arg, "-g") == 0){
@@ -179,6 +233,10 @@ int main(int argc, char *argv[]){
         const std::string& file_name = argv[argc-1];
         csfile.loadFromFile(file_name);
         antlr4::ANTLRInputStream prog(csfile);
+
+        if(benchmark_all_multi){
+            benchmark_all_multi_taint(prog, file_name);
+        }
 
         if(benchmark_all){
 
