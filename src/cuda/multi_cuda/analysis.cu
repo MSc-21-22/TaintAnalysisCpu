@@ -42,7 +42,7 @@ __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][TH
     }
 }
 
-__device__ BitVector my_join(int predecessors[], Node *nodes, int node_size, int source_index){
+__device__ BitVector multi_cuda_join(int predecessors[], Node *nodes, int node_size, int source_index){
         BitVector joined_data = 1;
         int pred_index = 0;
         while (predecessors[pred_index] != -1){
@@ -67,7 +67,7 @@ __global__ void analyze(Node* nodes, int work_columns[][THREAD_COUNT], int work_
             BitVector current = last;
 
 
-            BitVector joined_data = my_join(current_node.predecessor_index, nodes, node_size, source);
+            BitVector joined_data = multi_cuda_join(current_node.predecessor_index, nodes, node_size, source);
             current |= joined_data & current_node.join_mask;
 
             transfer_function(current_node.first_transfer_index, transfers, joined_data, current);
