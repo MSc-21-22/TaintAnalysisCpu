@@ -17,3 +17,5 @@ public:
     void visit_arrayinit(ArrayInitializerNode& node);
     void visit_propagation(PropagationNode& node);
 };
+
+int count_taint_sources(std::vector<std::shared_ptr<Node>>& nodes);

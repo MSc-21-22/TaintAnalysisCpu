@@ -43,3 +43,16 @@ void TaintSourceLocator::visit_arrayinit(ArrayInitializerNode& node){
 void TaintSourceLocator::visit_propagation(PropagationNode& node){
     last_is_taintsource = false;
 }
+
+
+int count_taint_sources(std::vector<std::shared_ptr<Node>>& nodes){
+    TaintSourceLocator locator;
+    int count = 0;
+    for(std::shared_ptr<Node>& node : nodes){
+        if(locator.is_taintsource(*node)){
+            ++count;
+        }
+    }
+
+    return count;
+}

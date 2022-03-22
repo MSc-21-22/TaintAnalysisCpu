@@ -7,6 +7,7 @@
 #include "taint_analysis.h"
 #include "multi_taint_analysis.h"
 #include <cfg/digraph.h>
+#include <cfg/transformations/taint_locator.h>
 #include "matrix_analysis.h"
 #include "GpuManagement.h"
 #include "cfg/transformations/variable_reduction.h"
@@ -91,7 +92,7 @@ std::vector<StatefulNode<SourcedTaintState>> multi_bit_cuda_worklist_analysis(Sc
     init_gpu();
     time_func("Variable reduction: ", 
                 reduce_variables, program.entryNodes);
-    int source_count = 0;
+    int source_count = count_taint_sources(program.nodes);
     auto transformer = time_func<CudaTransformer<multi_cuda::Node>>("Gpu structure transformation: ", 
                 transform_multi_cuda, program.nodes, source_count);
     
