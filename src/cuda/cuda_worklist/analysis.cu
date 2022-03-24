@@ -7,7 +7,7 @@
 #include <timing.h>
 #include "analysis.h"
 
-#define THREAD_COUNT 1024*5
+#define THREAD_COUNT 1024
 #define COLLISIONS_BEFORE_SWITCH (1) 
 
 using namespace cuda_worklist;
