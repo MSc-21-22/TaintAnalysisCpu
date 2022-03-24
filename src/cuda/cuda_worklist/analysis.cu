@@ -39,7 +39,6 @@ __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][TH
             }
         }
         
-        int xhash = hash % THREAD_COUNT;
         atomicMax(worklists_pending, amount_of_new_worklists);
     }
 }
