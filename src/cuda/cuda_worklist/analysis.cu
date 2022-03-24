@@ -7,14 +7,15 @@
 #include <timing.h>
 #include "analysis.h"
 
-#define THREAD_COUNT 1024
+#define THREAD_COUNT 1024*5
 #define COLLISIONS_BEFORE_SWITCH (1) 
 
 using namespace cuda_worklist;
 
-__device__ void add_sucessors_to_worklist(int* successors, int work_columns[][THREAD_COUNT], int work_column_count, int current_work_column, Node* nodes){
+__device__ void add_sucessors_to_worklist(int* successors, int work_columns[][THREAD_COUNT], int work_column_count, int current_work_column, Node* nodes, int* worklists_pending){
     int initial_work_column = current_work_column;
     for(int i = 0; i < 5; i++){
+        int amount_of_new_worklists = 1;
         current_work_column = initial_work_column;
         int succ_index = successors[i];
         if (succ_index == -1)
@@ -28,21 +29,28 @@ __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][TH
                 break;
             }
             
-
             if(++collision_count >= COLLISIONS_BEFORE_SWITCH){
                 current_work_column = (current_work_column + 1) % work_column_count;
                 work_column = work_columns[current_work_column];
+                amount_of_new_worklists++;
                 collision_count = 0;
             }else{
                 hash++;
             }
         }
-
+        
         int xhash = hash % THREAD_COUNT;
+        if(succ_index == 17792){
+            printf("Add node x17792 to worklist %d\n", current_work_column);
+        }
+        if(succ_index == 17768){
+            printf("Add node x17768 to worklist %d\n", current_work_column);
+        }
+        atomicMax(worklists_pending, amount_of_new_worklists);
     }
 }
 
-__global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work_column_count, Transfer transfers[], int node_count, bool* work_to_do, int i){
+__global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work_column_count, Transfer transfers[], int node_count, int* worklists_pending, int i){
     int node_index = threadIdx.x + blockDim.x * blockIdx.x;
     int* work_column = work_columns[i];
 
@@ -57,10 +65,16 @@ __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work
 
         transfer_function(current_node.first_transfer_index, transfers, joined_data, current);
 
+        if(work_column[node_index] == 17792){
+            printf("Analysing node x17792\n");
+        }
+        if(work_column[node_index] == 17768){
+            printf("Analysing node x17768\n");
+        }
+
         if(last != current){
             current_node.data = current;
-            add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, (i+1) % work_column_count, nodes);
-            *work_to_do = true;
+            add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, (i+1) % work_column_count, nodes, worklists_pending);
         }
         
         work_column[node_index] = -1;   
@@ -69,14 +83,14 @@ __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work
 
 void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* transfers, int transfer_count, std::set<int>& taint_sources) {
     Node* dev_nodes = nullptr;
-    bool* dev_work_to_do = nullptr;
+    int* dev_worklists_pending = nullptr;
     Transfer* dev_transfers = nullptr;
     int** dev_worklists = nullptr;
 
-    bool work_to_do = true;
+    int worklists_pending = ((node_count + THREAD_COUNT - 1)/THREAD_COUNT); //TODO initialzie
     int threadsPerBlock = 128;
     int block_count = THREAD_COUNT/threadsPerBlock;    
-    int work_column_count = ((node_count + THREAD_COUNT - 1)/THREAD_COUNT) + 50;
+    int work_column_count = worklists_pending + 500;
 
     std::vector<std::array<int, THREAD_COUNT>> worklists{};
 
@@ -100,15 +114,15 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
     }
 
     // Allocate work columns
-    dev_worklists = cuda_allocate_memory<int*>(sizeof(int) * THREAD_COUNT * (work_column_count + 1));
-    cudaMemset(dev_worklists, -1, sizeof(int) * THREAD_COUNT * (work_column_count + 1));
+    dev_worklists = cuda_allocate_memory<int*>(sizeof(int) * THREAD_COUNT * work_column_count);
+    cudaMemset(dev_worklists, -1, sizeof(int) * THREAD_COUNT * work_column_count);
     cuda_copy_to_device(dev_worklists, &worklists[0], sizeof(int) * THREAD_COUNT * work_column_count);
 
     // Allocate GPU buffers for three vectors (two input, one output)  
-    dev_nodes = cuda_allocate_memory<Node>(sizeof(Node)*node_count + 1);
+    dev_nodes = cuda_allocate_memory<Node>(sizeof(Node)*node_count + sizeof(int));
     cuda_copy_to_device(dev_nodes, nodes, sizeof(Node)*node_count);
 
-    dev_work_to_do = (bool*) (dev_nodes + node_count);
+    dev_worklists_pending = (int*) (dev_nodes + node_count);
 
     // Allocate transfer function
     dev_transfers = cuda_allocate_memory<Transfer>(sizeof(Transfer)*transfer_count);
@@ -116,12 +130,15 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
   
     Stopwatch lfp_watch;
     int i = 0;
-    while(work_to_do){
-        work_to_do = false;
-        cuda_copy_to_device(dev_work_to_do, &work_to_do, 1);
+    while(worklists_pending > 0){
+
+        std::cout << "Running worklist: " << i << std::endl;
+
+        --worklists_pending;
+        cuda_copy_to_device(dev_worklists_pending, &worklists_pending, sizeof(int));
 
         // Launch a kernel on the GPU with one thread for each element.
-        analyze<<<block_count, threadsPerBlock>>>(dev_nodes, (int(*)[THREAD_COUNT])dev_worklists, work_column_count+1, dev_transfers, node_count, dev_work_to_do, i);
+        analyze<<<block_count, threadsPerBlock>>>(dev_nodes, (int(*)[THREAD_COUNT])dev_worklists, work_column_count+1, dev_transfers, node_count, dev_worklists_pending, i);
         
         // Check for any errors launching the kernel
         cudaStatus = cudaGetLastError();
@@ -136,8 +153,8 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
             fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
         }
         
-        cuda_copy_to_host((void*)&work_to_do, dev_work_to_do, sizeof(bool));
-        i = (i+1) % (work_column_count+1);
+        cuda_copy_to_host((void*)&worklists_pending, dev_worklists_pending, sizeof(int));
+        i = (i+1) % work_column_count;
     }
     lfp_watch.print_time<Microseconds>("LFP time: ");
 
