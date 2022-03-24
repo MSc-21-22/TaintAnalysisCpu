@@ -46,14 +46,13 @@ std::vector<std::shared_ptr<Node>> parse_to_cfg(antlr4::ANTLRInputStream stream)
 void remove_node(ScTransformer& transformer)
 {
     int toDelete = 0;
-    for (auto node : transformer.nodes){
-        for (auto succ: node->successors)
-        {
-            FunctionEntryNode* entry = dynamic_cast<FunctionEntryNode*>(succ.get());
-            if(entry){
-                if (entry->function_id == "main"){
-                    break;
-                }
+    for (auto node : transformer.nodes)
+    {
+        FunctionEntryNode* entry = dynamic_cast<FunctionEntryNode*>(node.get());
+        if(entry){
+        std::cout << entry->function_id << std::endl;
+        if (entry->function_id == "main"){
+                break;
             }
         }
         ++toDelete;

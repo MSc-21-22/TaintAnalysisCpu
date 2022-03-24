@@ -360,3 +360,4 @@ public:
 
 ScTransformer parse_to_cfg_transformer(antlr4::ANTLRInputStream stream);
 std::vector<std::shared_ptr<Node>> parse_to_cfg(antlr4::ANTLRInputStream stream);
+void remove_node(ScTransformer& transformer);
