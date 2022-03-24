@@ -12,8 +12,8 @@
 
 using namespace cuda_worklist;
 
-__device__ void add_sucessors_to_worklist(int* successors, int work_columns[][THREAD_COUNT], int work_column_count, int current_work_column, Node* nodes, int* worklists_pending){
-    int initial_work_column = current_work_column;
+__device__ void add_sucessors_to_worklist(int* successors, int work_columns[][THREAD_COUNT], int work_column_count, int initial_work_column, Node* nodes, int* worklists_pending){
+    int current_work_column;
     for(int i = 0; i < 5; i++){
         int amount_of_new_worklists = 1;
         current_work_column = initial_work_column;
@@ -50,9 +50,9 @@ __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][TH
     }
 }
 
-__global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work_column_count, Transfer transfers[], int node_count, int* worklists_pending, int i){
+__global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work_column_count, Transfer transfers[], int node_count, int* worklists_pending, int current_work_column){
     int node_index = threadIdx.x + blockDim.x * blockIdx.x;
-    int* work_column = work_columns[i];
+    int* work_column = work_columns[current_work_column];
 
     if(node_index < THREAD_COUNT && work_column[node_index] != -1){
         Node& current_node = nodes[work_column[node_index]];
@@ -74,7 +74,7 @@ __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work
 
         if(last != current){
             current_node.data = current;
-            add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, (i+1) % work_column_count, nodes, worklists_pending);
+            add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, (current_work_column+1) % work_column_count, nodes, worklists_pending);
         }
         
         work_column[node_index] = -1;   
@@ -87,7 +87,7 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
     Transfer* dev_transfers = nullptr;
     int** dev_worklists = nullptr;
 
-    int worklists_pending = ((node_count + THREAD_COUNT - 1)/THREAD_COUNT); //TODO initialzie
+    int worklists_pending = ((node_count + THREAD_COUNT - 1)/THREAD_COUNT);
     int threadsPerBlock = 128;
     int block_count = THREAD_COUNT/threadsPerBlock;    
     int work_column_count = worklists_pending + 500;
@@ -129,16 +129,16 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
     cuda_copy_to_device(dev_transfers, transfers, sizeof(Transfer)*transfer_count);
   
     Stopwatch lfp_watch;
-    int i = 0;
+    int current_worklist = 0;
     while(worklists_pending > 0){
 
-        std::cout << "Running worklist: " << i << std::endl;
+        std::cout << "Running worklist: " << current_worklist << std::endl;
 
         --worklists_pending;
         cuda_copy_to_device(dev_worklists_pending, &worklists_pending, sizeof(int));
 
         // Launch a kernel on the GPU with one thread for each element.
-        analyze<<<block_count, threadsPerBlock>>>(dev_nodes, (int(*)[THREAD_COUNT])dev_worklists, work_column_count+1, dev_transfers, node_count, dev_worklists_pending, i);
+        analyze<<<block_count, threadsPerBlock>>>(dev_nodes, (int(*)[THREAD_COUNT])dev_worklists, work_column_count+1, dev_transfers, node_count, dev_worklists_pending, current_worklist);
         
         // Check for any errors launching the kernel
         cudaStatus = cudaGetLastError();
@@ -154,7 +154,7 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
         }
         
         cuda_copy_to_host((void*)&worklists_pending, dev_worklists_pending, sizeof(int));
-        i = (i+1) % work_column_count;
+        current_worklist = (current_worklist+1) % work_column_count;
     }
     lfp_watch.print_time<Microseconds>("LFP time: ");
 
