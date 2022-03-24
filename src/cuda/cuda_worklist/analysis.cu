@@ -40,12 +40,6 @@ __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][TH
         }
         
         int xhash = hash % THREAD_COUNT;
-        if(succ_index == 17792){
-            printf("Add node x17792 to worklist %d\n", current_work_column);
-        }
-        if(succ_index == 17768){
-            printf("Add node x17768 to worklist %d\n", current_work_column);
-        }
         atomicMax(worklists_pending, amount_of_new_worklists);
     }
 }
@@ -64,13 +58,6 @@ __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work
         current |= joined_data & current_node.join_mask;
 
         transfer_function(current_node.first_transfer_index, transfers, joined_data, current);
-
-        if(work_column[node_index] == 17792){
-            printf("Analysing node x17792\n");
-        }
-        if(work_column[node_index] == 17768){
-            printf("Analysing node x17768\n");
-        }
 
         if(last != current){
             current_node.data = current;
@@ -131,9 +118,6 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
     Stopwatch lfp_watch;
     int current_worklist = 0;
     while(worklists_pending > 0){
-
-        std::cout << "Running worklist: " << current_worklist << std::endl;
-
         --worklists_pending;
         cuda_copy_to_device(dev_worklists_pending, &worklists_pending, sizeof(int));
 
