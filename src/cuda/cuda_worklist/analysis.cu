@@ -8,6 +8,7 @@
 #include "analysis.h"
 
 #define THREAD_COUNT 1024
+#define EXTRA_WORKLISTS 50
 #define COLLISIONS_BEFORE_SWITCH (1) 
 
 using namespace cuda_worklist;
@@ -77,7 +78,7 @@ void cuda_worklist::execute_analysis(Node* nodes, int node_count, Transfer* tran
     int worklists_pending = ((node_count + THREAD_COUNT - 1)/THREAD_COUNT);
     int threadsPerBlock = 128;
     int block_count = THREAD_COUNT/threadsPerBlock;    
-    int work_column_count = worklists_pending + 500;
+    int work_column_count = worklists_pending + EXTRA_WORKLISTS;
 
     std::vector<std::array<int, THREAD_COUNT>> worklists{};
 
