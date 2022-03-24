@@ -61,7 +61,8 @@ __global__ void analyze(Node nodes[], int work_columns[][THREAD_COUNT], int work
 
         if(last != current){
             current_node.data = current;
-            add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, (current_work_column+1) % work_column_count, nodes, worklists_pending);
+            int next_work_column = (current_work_column+1) % work_column_count;
+            add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, next_work_column, nodes, worklists_pending);
         }
         
         work_column[node_index] = -1;   
