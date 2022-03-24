@@ -20,7 +20,7 @@ __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][TH
         int succ_index = successors[i];
         if (succ_index == -1)
             return;
-        intptr_t hash = succ_index*120811;
+        unsigned long hash = succ_index*120811;
         int collision_count = 0;
         int* work_column = work_columns[current_work_column];
 
