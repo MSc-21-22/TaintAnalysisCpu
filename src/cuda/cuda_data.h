@@ -50,6 +50,7 @@ public:
     
     DynamicArray(DynamicArray&& other) noexcept : DynamicArray(other.max_size, other.item_size) {
         std::swap(alloc, other.alloc);
+        current_size = other.current_size;
         items = other.items;
         other.items = nullptr;
     }
@@ -80,9 +81,12 @@ public:
             throw "Exceeded capacity of dynamic array";
         }
 
-        Item* next = (Item*)items + current_size * item_size;
+        Item* next = (Item*)(items + current_size * item_size);
         current_size++;
         new (next) Item(std::forward<Args>(args)...); //Placement new, i.e. not an allocation
+
+        std::memset(next+1, 0, item_size - sizeof(Item));
+
         return *next; 
     }
 

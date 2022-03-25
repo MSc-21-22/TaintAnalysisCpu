@@ -13,7 +13,10 @@
 using namespace multi_cuda;
 
 __device__ inline Node& get_node(Node* nodes, int index, int node_size){
-    return *(Node*)(((int8_t*)nodes) + index * node_size);
+    int8_t* byte_ptr = (int8_t*)nodes;
+    int byte_offset = index * node_size;
+    
+    return *(Node*)(byte_ptr + byte_offset);
 }
 
 __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][THREAD_COUNT], int work_column_count, int current_work_column){
@@ -43,7 +46,7 @@ __device__ void add_sucessors_to_worklist(int* successors, int work_columns[][TH
 }
 
 __device__ BitVector multi_cuda_join(int predecessors[], Node *nodes, int node_size, int source_index){
-        BitVector joined_data = 1;
+        BitVector joined_data = 0;
         int pred_index = 0;
         while (predecessors[pred_index] != -1){
             joined_data |= get_node(nodes, predecessors[pred_index], node_size).data[source_index];
@@ -55,9 +58,10 @@ __device__ BitVector multi_cuda_join(int predecessors[], Node *nodes, int node_s
 __global__ void analyze(Node* nodes, int work_columns[][THREAD_COUNT], int work_column_count, Transfer transfers[], int node_count, bool* work_to_do, int i, int source_count){
     int node_index = threadIdx.x + blockDim.x * blockIdx.x;
     int* work_column = work_columns[i];
-    int node_size = sizeof(BitVector) * source_count;
+    int node_size = sizeof(Node) + sizeof(BitVector) * source_count;
 
     if(node_index < THREAD_COUNT && work_column[node_index] != -1){
+        int index = node_size * work_column[node_index];
         Node& current_node = get_node(nodes, work_column[node_index], node_size);
 
         bool add_successors = false;
@@ -69,18 +73,19 @@ __global__ void analyze(Node* nodes, int work_columns[][THREAD_COUNT], int work_
 
             BitVector joined_data = multi_cuda_join(current_node.predecessor_index, nodes, node_size, source);
             current |= joined_data & current_node.join_mask;
-
+            
+            joined_data |= current;
             transfer_function(current_node.first_transfer_index, transfers, joined_data, current);
 
             if(last != current){
                 current_node.data[source] = current;
                 add_successors = true;
-                *work_to_do = true;
             }
         }
 
         if(add_successors){
             add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, (i+1) % work_column_count);
+            *work_to_do = true;
         }
 
         work_column[node_index] = -1;   
@@ -97,6 +102,8 @@ void multi_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfe
     int threadsPerBlock = 128;
     int block_count = THREAD_COUNT/threadsPerBlock;    
     int work_column_count = ((node_count + THREAD_COUNT - 1)/THREAD_COUNT) + 50;
+
+    int node_size = sizeof(BitVector) * source_count + sizeof(Node);
 
     std::vector<std::array<int, THREAD_COUNT>> worklists{};
 
@@ -125,8 +132,8 @@ void multi_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfe
     cuda_copy_to_device(dev_worklists, &worklists[0], sizeof(int) * THREAD_COUNT * work_column_count);
 
     // Allocate GPU buffers for three vectors (two input, one output)  
-    dev_nodes = cuda_allocate_memory<Node>(sizeof(Node)*node_count + 1);
-    cuda_copy_to_device(dev_nodes, nodes, sizeof(Node)*node_count);
+    dev_nodes = cuda_allocate_memory<Node>(node_size * node_count + 1);
+    cuda_copy_to_device(dev_nodes, nodes, node_size * node_count);
 
     dev_work_to_do = (bool*) (dev_nodes + node_count);
 
@@ -163,7 +170,7 @@ void multi_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfe
 
 
     // Copy output vector from GPU buffer to host memory.
-    cuda_copy_to_host(nodes, dev_nodes, sizeof(Node)*node_count);
+    cuda_copy_to_host(nodes, dev_nodes, node_size*node_count);
 
     cuda_free(dev_nodes);
     cuda_free(dev_transfers);

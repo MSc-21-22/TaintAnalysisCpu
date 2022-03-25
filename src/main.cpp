@@ -43,7 +43,20 @@ std::vector<StatefulNode<std::set<std::string>>> cpu_analysis(ScTransformer prog
 
 std::vector<StatefulNode<SourcedTaintState>> cpu_multi_taint_analysis(ScTransformer& program){
     MultiTaintAnalyzer analyzer;
+
+
     std::vector<StatefulNode<SourcedTaintState>> nodes = create_states<SourcedTaintState>(program.nodes);
+    
+    //Insert sources
+    int source = 0;
+    TaintSourceLocator locator;
+    for(auto& node : nodes){
+        if(locator.is_taintsource(*node.node)){
+            node.get_state()[TAINT_VAR].insert(source);
+            ++source;
+        }
+    }
+
     worklist<SourcedTaintState>(nodes, analyzer);
 
     if(!timing::should_benchmark) {
@@ -78,7 +91,6 @@ std::vector<StatefulNode<std::set<std::string>>> bit_cuda_worklist_analysis(ScTr
                 reduce_variables, program.entryNodes);
     auto transformer = time_func<CudaTransformer<cuda_worklist::Node>>("Gpu structure transformation: ", 
                 transform_cuda_worklist, program.nodes);
-    
     time_func("Least fixed point algorithm: ",
             cuda_worklist::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.transfer_functions.begin(), transformer.transfer_functions.size(), transformer.taint_sources);
 
@@ -98,7 +110,7 @@ std::vector<StatefulNode<SourcedTaintState>> multi_bit_cuda_worklist_analysis(Sc
     int source_count = count_taint_sources(program.nodes);
     auto transformer = time_func<CudaTransformer<multi_cuda::Node>>("Gpu structure transformation: ", 
                 transform_multi_cuda, program.nodes, source_count);
-    
+                
     time_func("Least fixed point algorithm: ",
             multi_cuda::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.transfer_functions.begin(), transformer.transfer_functions.size(), transformer.taint_sources, source_count);
 
@@ -143,18 +155,17 @@ bool state_multi_equality(std::vector<StatefulNode<SourcedTaintState>>& lhs, std
     DigraphPrinter printer(std::cout);
 
     for(int i = 0; i < size; ++i){
-        for(auto &[var_name1, sources_set1] : lhs[i].get_state()){
-            for(auto &[var_name2, sources_set2] : rhs[i].get_state()){
-                if(sources_set1 != sources_set2){
-                    std::cout << "Difference on node " << i << "    "; 
-                    lhs[i].accept(printer);
-                    print_taint_source(lhs[i].get_state(), std::cout);
-                    std::cout << "    !=    ";
-                    rhs[i].accept(printer);
-                    print_taint_source(rhs[i].get_state(), std::cout);
-                    std::cout << '\n';
-                    return false;
-                }
+        for(auto &[var_name, sources_set1] : lhs[i].get_state()){
+            auto& sources_set2 = rhs[i].get_state()[var_name];
+            if(sources_set1 != sources_set2){
+                std::cout << "Difference on node " << i << "    "; 
+                lhs[i].accept(printer);
+                print_taint_source(lhs[i].get_state(), std::cout);
+                std::cout << "    !=    ";
+                rhs[i].accept(printer);
+                print_taint_source(rhs[i].get_state(), std::cout);
+                std::cout << '\n';
+                return false;
             }
         }
     }
@@ -181,6 +192,7 @@ void benchmark_all_multi_taint(antlr4::ANTLRInputStream& prog, std::string file_
     if(!state_multi_equality(cpu_nodes, gpu_nodes)){
         std::cout << "###### cpu != gpu #####" << std::endl;
     }
+    Stopwatch::add_line();
 }
 
 int main(int argc, char *argv[]){
@@ -206,6 +218,10 @@ int main(int argc, char *argv[]){
 
             if(strcmp(arg, "--cuda") == 0 || strcmp(arg, "-cu") == 0){
                 cuda_flag = true;
+            }
+
+            if(strcmp(arg, "--multi") == 0 || strcmp(arg, "-m") == 0){
+                multi_taint_flag = true;
             }
 
             if(strcmp(arg, "--multi-cuda") == 0 || strcmp(arg, "-mc") == 0){
@@ -236,6 +252,7 @@ int main(int argc, char *argv[]){
 
         if(benchmark_all_multi){
             benchmark_all_multi_taint(prog, file_name);
+            return 0;
         }
 
         if(benchmark_all){

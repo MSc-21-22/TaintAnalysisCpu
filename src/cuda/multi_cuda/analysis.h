@@ -8,7 +8,7 @@ namespace multi_cuda{
         int predecessor_index[5] = {-1,-1,-1,-1,-1};
         int successor_index[5] = {-1,-1,-1,-1,-1};
         BitVector join_mask = INT32_MAX - 1;
-        BitVector data[]; // Experiment with different types might be faster consider 32 and 64 bit numbers
+        BitVector data[];
     };
 
     void execute_analysis(Node* nodes, int node_count, Transfer* transfers, int transfer_count, std::set<int>& taint_sources, int source_count);
