@@ -57,7 +57,8 @@ std::vector<StatefulNode<SourcedTaintState>> cpu_multi_taint_analysis(ScTransfor
         }
     }
 
-    worklist<SourcedTaintState>(nodes, analyzer);
+    time_func("Analyzing: ",
+        worklist<SourcedTaintState>, nodes, analyzer);
 
     if(!timing::should_benchmark) {
         print_digraph_subgraph(nodes, std::cout, print_taint_source, "main");
