@@ -25,6 +25,8 @@ ScTransformer parse_to_cfg_transformer(antlr4::ANTLRInputStream stream)
     ScTransformer transformer;
     parser.prog()->accept(&transformer);
 
+    remove_function_nodes(transformer);
+
     return transformer;
 }
 
@@ -39,4 +41,25 @@ std::vector<std::shared_ptr<Node>> parse_to_cfg(antlr4::ANTLRInputStream stream)
     ScTransformer transformer;
     parser.prog()->accept(&transformer);
     return transformer.nodes;
+}
+
+void remove_function_nodes(ScTransformer& transformer)
+{
+    int nodesToDelete = 0;
+    int functionsToDelete = transformer.functionNodes.size() - 1;
+    int entriesToDelete = 0;
+    for (auto node : transformer.nodes)
+    {
+        FunctionEntryNode* entry = dynamic_cast<FunctionEntryNode*>(node.get());
+        if(entry){
+            if (entry->function_id == "main"){
+                    break;
+                }
+            ++entriesToDelete;
+        }
+        ++nodesToDelete;
+    }
+    transformer.nodes.erase(transformer.nodes.begin(), transformer.nodes.begin() + nodesToDelete);
+    transformer.functionNodes.erase(transformer.functionNodes.begin(),transformer.functionNodes.begin() + functionsToDelete);
+    transformer.entryNodes.erase(transformer.entryNodes.begin(),transformer.entryNodes.begin() + entriesToDelete);
 }
