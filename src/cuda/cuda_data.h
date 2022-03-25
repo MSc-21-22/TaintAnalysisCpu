@@ -2,6 +2,7 @@
 #include <array>
 #include <limits>
 #include <memory>
+#include <cstring>
 
 using BitVector = int32_t;
 
