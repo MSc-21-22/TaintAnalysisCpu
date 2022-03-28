@@ -3,21 +3,23 @@
 #include "cuda_data.h"
 #include "bit_cuda/analysis.h"
 #include "cuda_worklist/analysis.h"
+#include "multi_cuda/analysis.h"
 #include <cfg/cfg.h>
 #include <cfg/transformations/var_visitor.h>
+#include <cfg/transformations/taint_locator.h>
 #include <assert.h>
 
 template <typename NodeType>
 class CudaTransformer : public CfgVisitor
 {
 public:
-    std::vector<NodeType> nodes{};
+    DynamicArray<NodeType> nodes;
     std::vector<Transfer> transfer_functions{};
     std::map<Node*, int> node_to_index{};
     std::map<std::string, int> variables{};
     std::set<int> taint_sources{};
 
-    CudaTransformer(std::set<std::string> progVariables){
+    CudaTransformer(std::set<std::string> progVariables, int node_count, int node_size) : nodes(node_count, node_size){
         int i = 0;
         variables[TAINT_VAR] = i++;
         variables[RETURN_VAR] = i++;
@@ -30,6 +32,8 @@ public:
         }
 
     }
+
+    CudaTransformer(std::set<std::string> progVariables, int node_count) : CudaTransformer(progVariables, node_count, sizeof(NodeType)){}
 
     void visit_assignment(AssignmentNode& node) {
         int id = nodes.size();
@@ -191,22 +195,6 @@ void add_neighbours(std::vector<std::shared_ptr<Node>>& nodes, CudaTransformer<N
     }
 }
 
-CudaTransformer<bit_cuda::Node> transform_bit_cuda(std::vector<std::shared_ptr<Node>>& nodes) {
-    auto variables = get_variables(nodes);
-    CudaTransformer<bit_cuda::Node> transformer(variables);
-    for(auto &node : nodes){
-        node->accept(transformer);
-    }
-    add_predecessors(nodes, transformer);
-    return transformer;
-}
-
-CudaTransformer<cuda_worklist::Node> transform_cuda_worklist(std::vector<std::shared_ptr<Node>>& nodes) {
-    auto variables = get_variables(nodes);
-    CudaTransformer<cuda_worklist::Node> transformer(variables);
-    for(auto &node : nodes){
-        node->accept(transformer);
-    }
-    add_neighbours(nodes, transformer);
-    return transformer;
-}
+CudaTransformer<bit_cuda::Node> transform_bit_cuda(std::vector<std::shared_ptr<Node>>& nodes);
+CudaTransformer<cuda_worklist::Node> transform_cuda_worklist(std::vector<std::shared_ptr<Node>>& nodes);
+CudaTransformer<multi_cuda::Node> transform_multi_cuda(std::vector<std::shared_ptr<Node>>& nodes, int max_taint_sources);

@@ -13,18 +13,22 @@ SourcedTaintState least_upper_bound(const SourcedTaintState& left, const Sourced
     return state;
 }
 
-SourcedTaintState join(const Node& node, std::map<Node*, SourcedTaintState>& states){
+SourcedTaintState join(Node& node, std::map<Node*, SourcedTaintState>& states){
     if (node.predecessors.size() == 0)
         return {};
 
+    SourcedTaintState state = states[&node];
+    auto old_taint_constant = state[TAINT_VAR];
     auto it = node.predecessors.begin();
-    SourcedTaintState state = states[it->get()];
-    it++;
     while(it != node.predecessors.end())
     {
         state = least_upper_bound(states[it->get()], state);
         it++;
     }
+
+    //Dont propagate taint sources
+    state[TAINT_VAR] = old_taint_constant;
+
     return state;
 }
 
@@ -63,26 +67,21 @@ void MultiTaintAnalyzer::visit_arrayinit(ArrayInitializerNode& node, std::map<No
 }
 
 void MultiTaintAnalyzer::visit_assignment(AssignmentNode& node, std::map<Node*, SourcedTaintState>& states){
-    SourcedTaintState& node_state = states[&node];
-    node_state = join(node, states);
-    node_state[node.id] = get_taints(node.expression, node, states[&node]);
+    states[&node] = join(node, states);
+    states[&node][node.id] = get_taints(node.expression, node, states[&node]);
 }
 
 void MultiTaintAnalyzer::visit_arrayAssignment(ArrayAssignmentNode& node, std::map<Node*, SourcedTaintState>& states){
-    SourcedTaintState& node_state = states[&node];
-    node_state = join(node, states);
-    node_state[node.id] = get_taints(node.expression, node, states[&node]);
+    states[&node] = join(node, states);
+    states[&node][node.id] = get_taints(node.expression, node, states[&node]);
 }
 
 void MultiTaintAnalyzer::visit_return(ReturnNode& node, std::map<Node*, SourcedTaintState>& states){
-    SourcedTaintState& node_state = states[&node];
     auto state = join(node, states);
-
-    node_state[RETURN_VAR] = get_taints(node.expression, node, states[&node]);
+    states[&node][RETURN_VAR] = get_taints(node.expression, node, state);
 }
 void MultiTaintAnalyzer::visit_emptyReturn(EmptyReturnNode& node, std::map<Node*, SourcedTaintState>& states){
-    SourcedTaintState& node_state = states[&node];
-    node_state[RETURN_VAR] = {};
+    states[&node][RETURN_VAR] = {};
 }
 void MultiTaintAnalyzer::visit_functionEntry(FunctionEntryNode& node, std::map<Node*, SourcedTaintState>& states){
     SourcedTaintState& node_state = states[&node];
@@ -101,10 +100,9 @@ void MultiTaintAnalyzer::visit_functionEntry(FunctionEntryNode& node, std::map<N
 }
 
 void MultiTaintAnalyzer::visit_assignReturn(AssignReturnNode& node, std::map<Node*, SourcedTaintState>& states){
-    SourcedTaintState& node_state = states[&node];
-    node_state = join(node, states);
-    node_state[node.id] = node_state[RETURN_VAR];
-    node_state[RETURN_VAR] = {};
+    states[&node] = join(node, states);
+    states[&node][node.id] = states[&node][RETURN_VAR];
+    states[&node][RETURN_VAR] = {};
 }
 
 void print_taint_source(SourcedTaintState& result, std::ostream& stream){
