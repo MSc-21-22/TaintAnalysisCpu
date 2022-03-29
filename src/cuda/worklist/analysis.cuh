@@ -17,7 +17,7 @@ namespace worklist{
 
     template<typename INT>
     __device__ void add_sucessors_to_worklist(INT* successors, int work_columns[][THREAD_COUNT], int work_column_count, int initial_work_column, int* worklists_pending){
-        static_assert(std::is_same_v<INT, int>);
+        static_assert(std::is_same<INT, int>::value, "Paremeter successors must be an int pointer");
         int current_work_column;
         for(int i = 0; i < 5; i++){
             int amount_of_new_worklists = 1;
@@ -50,7 +50,7 @@ namespace worklist{
     
     template<typename Analyzer, typename NodeContainer, typename NodeType = typename Analyzer::NodeType>
     __global__ void analyze(Analyzer analyzer, NodeContainer nodes, int work_columns[][THREAD_COUNT], int work_column_count, Transfer transfers[], int node_count, int* worklists_pending, int current_work_column){
-        static_assert(std::is_same_v<NodeType, std::remove_reference_t<decltype(nodes[0])>>);
+        static_assert(std::is_same<NodeType, std::remove_reference_t<decltype(nodes[0])>>::value, "Node types must be identical");
         
 
         int node_index = threadIdx.x + blockDim.x * blockIdx.x;
@@ -63,8 +63,6 @@ namespace worklist{
 
             if(add_successors){
                 int next_work_column = (current_work_column+1) % work_column_count;
-
-                static_assert(std::is_same_v<int*, std::decay_t<decltype(current_node.successor_index)>>);
                 add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, next_work_column, worklists_pending);
             }
             
@@ -81,8 +79,8 @@ namespace worklist{
 
     template<typename Analyzer, typename NodeContainer, typename NodeType = typename Analyzer::NodeType>
     void execute_some_analysis(Analyzer analyzer, DynamicArray<NodeType>& nodes, NodeUploader<NodeContainer>& uploadable_container, Transfer* transfers, int transfer_count, const std::set<int>& taint_sources){
-        static_assert(std::is_same_v<NodeType, typename NodeUploader<NodeContainer>::Item>, "Node uploader Item type must match NodeType");
-        static_assert(std::is_same_v<typename Analyzer::NodeContainer, NodeContainer>, "Container types must match");
+        static_assert(std::is_same<NodeType, typename NodeUploader<NodeContainer>::Item>::value, "Node uploader Item type must match NodeType");
+        static_assert(std::is_same<typename Analyzer::NodeContainer, NodeContainer>::value, "Container types must match");
 
         int* dev_worklists_pending = nullptr;
         Transfer* dev_transfers = nullptr;
