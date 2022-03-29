@@ -1,5 +1,5 @@
 #include "analysis.h"
-#include "../worklist/analysis.cuh"
+#include "../worklist/worklist.cuh"
 
 using namespace multi_cuda;
 
