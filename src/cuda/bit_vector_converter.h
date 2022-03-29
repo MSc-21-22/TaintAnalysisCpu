@@ -4,7 +4,6 @@
 #include "multi_cuda/analysis.h"
 #include <cfg/cfg.h>
 #include <multi_taint_analysis.h>
-#include <iostream>
 
 template<typename NodeType>
 void set_bit_cuda_state(DynamicArray<NodeType>& nodes, std::map<std::string, int>& variables, 
