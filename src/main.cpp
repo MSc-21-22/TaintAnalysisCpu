@@ -94,8 +94,8 @@ std::vector<StatefulNode<std::set<std::string>>> bit_cuda_worklist_analysis(ScTr
                 transform_cuda_worklist, program.nodes);
     // time_func("Least fixed point algorithm: ",
     //         cuda_worklist::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.transfer_functions.begin(), transformer.transfer_functions.size(), transformer.taint_sources);
-
-    cuda_worklist::generic_analysis(transformer.nodes, transformer.transfer_functions, transformer.taint_sources);
+    time_func("Least fixed point algorithm: ",
+            cuda_worklist::execute_analysis, transformer.nodes, transformer.transfer_functions, transformer.taint_sources);
 
     std::vector<StatefulNode<std::set<std::string>>> nodes = create_states<std::set<std::string>>(program.nodes);
     time_func("Save into nodes", 
@@ -114,10 +114,8 @@ std::vector<StatefulNode<SourcedTaintState>> multi_bit_cuda_worklist_analysis(Sc
     auto transformer = time_func<CudaTransformer<multi_cuda::Node>>("Gpu structure transformation: ", 
                 transform_multi_cuda, program.nodes, source_count);
                 
-    // time_func("Least fixed point algorithm: ",
-    //         multi_cuda::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.transfer_functions.begin(), transformer.transfer_functions.size(), transformer.taint_sources, source_count);
-
-    multi_cuda::generic_analysis(transformer.nodes, transformer.transfer_functions, transformer.taint_sources, source_count);
+    time_func("Least fixed point algorithm: ",
+            multi_cuda::execute_analysis, transformer.nodes, transformer.transfer_functions, transformer.taint_sources, source_count);
 
     std::vector<StatefulNode<SourcedTaintState>> nodes = create_states<SourcedTaintState>(program.nodes);
     time_func("Save into nodes", 
