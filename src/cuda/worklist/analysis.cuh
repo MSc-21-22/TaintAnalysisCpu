@@ -15,38 +15,39 @@ namespace worklist{
     #define EXTRA_WORKLISTS 50
     #define COLLISIONS_BEFORE_SWITCH (1) 
 
-template<typename INT>
-__device__ void add_sucessors_to_worklist(INT* successors, int work_columns[][THREAD_COUNT], int work_column_count, int initial_work_column, int* worklists_pending){
-    static_assert(std::is_same_v<INT, int>);
-    int current_work_column;
-    for(int i = 0; i < 5; i++){
-        int amount_of_new_worklists = 1;
-        current_work_column = initial_work_column;
-        int succ_index = successors[i];
-        if (succ_index == -1)
-            return;
-        unsigned long hash = succ_index*120811;
-        int collision_count = 0;
-        int* work_column = work_columns[current_work_column];
+    template<typename INT>
+    __device__ void add_sucessors_to_worklist(INT* successors, int work_columns[][THREAD_COUNT], int work_column_count, int initial_work_column, int* worklists_pending){
+        static_assert(std::is_same_v<INT, int>);
+        int current_work_column;
+        for(int i = 0; i < 5; i++){
+            int amount_of_new_worklists = 1;
+            current_work_column = initial_work_column;
+            int succ_index = successors[i];
+            if (succ_index == -1)
+                return;
+            unsigned long hash = succ_index*120811;
+            int collision_count = 0;
+            int* work_column = work_columns[current_work_column];
 
-        while(atomicCAS(&work_column[hash % THREAD_COUNT], -1, succ_index) != -1){
-            if(work_column[hash % THREAD_COUNT] == succ_index){
-                break;
+            while(atomicCAS(&work_column[hash % THREAD_COUNT], -1, succ_index) != -1){
+                if(work_column[hash % THREAD_COUNT] == succ_index){
+                    break;
+                }
+                
+                if(++collision_count >= COLLISIONS_BEFORE_SWITCH){
+                    current_work_column = (current_work_column + 1) % work_column_count;
+                    work_column = work_columns[current_work_column];
+                    amount_of_new_worklists++;
+                    collision_count = 0;
+                }else{
+                    hash++;
+                }
             }
-            
-            if(++collision_count >= COLLISIONS_BEFORE_SWITCH){
-                current_work_column = (current_work_column + 1) % work_column_count;
-                work_column = work_columns[current_work_column];
-                amount_of_new_worklists++;
-                collision_count = 0;
-            }else{
-                hash++;
-            }
+        
+            atomicMax(worklists_pending, amount_of_new_worklists);
         }
-    
-        atomicMax(worklists_pending, amount_of_new_worklists);
     }
-}
+    
     template<typename Analyzer, typename NodeContainer, typename NodeType = typename Analyzer::NodeType>
     __global__ void analyze(Analyzer analyzer, NodeContainer nodes, int work_columns[][THREAD_COUNT], int work_column_count, Transfer transfers[], int node_count, int* worklists_pending, int current_work_column){
         static_assert(std::is_same_v<NodeType, std::remove_reference_t<decltype(nodes[0])>>);
