@@ -92,8 +92,6 @@ std::vector<StatefulNode<std::set<std::string>>> bit_cuda_worklist_analysis(ScTr
                 reduce_variables, program.entryNodes);
     auto transformer = time_func<CudaTransformer<cuda_worklist::Node>>("Gpu structure transformation: ", 
                 transform_cuda_worklist, program.nodes);
-    // time_func("Least fixed point algorithm: ",
-    //         cuda_worklist::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.transfer_functions.begin(), transformer.transfer_functions.size(), transformer.taint_sources);
     time_func("Least fixed point algorithm: ",
             cuda_worklist::execute_analysis, transformer.nodes, transformer.transfer_functions, transformer.taint_sources);
 
