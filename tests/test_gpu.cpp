@@ -34,27 +34,25 @@ TEST_CASE("bit cuda x=$ -> y=x") {
 } 
 
 TEST_CASE("worklist cuda x=$ -> y=x") {
-    std::vector<cuda_worklist::Node> nodes;
+    DynamicArray<cuda_worklist::Node> nodes(2, sizeof(cuda_worklist::Node));
     std::vector<Transfer> transfer_functions{};
 
-    cuda_worklist::Node node1;
+    cuda_worklist::Node& node1 = nodes.emplace_back();
     node1.first_transfer_index = 0;
     node1.successor_index[0] = 1;
     Transfer& transfer1 = transfer_functions.emplace_back();
     transfer1.x = 1;
     transfer1.rhs[0] = 0;
-    nodes.push_back(node1);
     
-    cuda_worklist::Node node2;
+    cuda_worklist::Node& node2 = nodes.emplace_back();
     node2.first_transfer_index = 1;
     Transfer& transfer2 = transfer_functions.emplace_back();
     transfer2.x = 2;
     transfer2.rhs[0] = 1;
     node2.predecessor_index[0] = 0;
-    nodes.push_back(node2);
 
     std::set<int> taint_sources = {0};
-    cuda_worklist::execute_analysis(&nodes[0], nodes.size(), &transfer_functions[0], transfer_functions.size(), taint_sources);
+    cuda_worklist::execute_analysis(nodes, transfer_functions, taint_sources);
 
     CHECK_MESSAGE(nodes[0].data == 3, "First node results doesnt match");
     CHECK_MESSAGE(nodes[1].data == 7, "Second node results doesnt match");
@@ -62,7 +60,7 @@ TEST_CASE("worklist cuda x=$ -> y=x") {
 
 
 TEST_CASE("worklist cuda multi transforms") {
-    std::vector<cuda_worklist::Node> nodes;
+    DynamicArray<cuda_worklist::Node> nodes(1, sizeof(cuda_worklist::Node));
     std::vector<Transfer> transfers;
     cuda_worklist::Node& node1 = nodes.emplace_back();
 
@@ -77,7 +75,7 @@ TEST_CASE("worklist cuda multi transforms") {
     transfer2.rhs[0] = 0;
 
     std::set<int> taint_sources = {0};
-    cuda_worklist::execute_analysis(&nodes[0], nodes.size(), &transfers[0], transfers.size(), taint_sources);
+    cuda_worklist::execute_analysis(nodes, transfers, taint_sources);
 
     CHECK_MESSAGE(nodes[0].data == 7, "First node results doesnt match");
 } 
