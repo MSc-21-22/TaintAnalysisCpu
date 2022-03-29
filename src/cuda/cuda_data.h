@@ -64,6 +64,14 @@ public:
         std::swap(alloc, other.alloc);
     }
 
+    Item* get_ptr(){
+        return (Item*)items;
+    }
+
+    size_t get_item_size(){
+        return item_size;
+    }
+
     Item& operator[](int index) {
         return *(Item*)(items + index * item_size);
     }

@@ -15,6 +15,8 @@ ReturnType* cuda_allocate_memory(size_t size){
     return (ReturnType*)devPtr;
 }
 
+void cuda_allocate_memory(void** devPtr, size_t size);
+
 template<typename NodeType>
 __device__ BitVector join(int predecessors[], NodeType nodes[]){
         BitVector joined_data = 1;

@@ -37,3 +37,10 @@ void init_gpu(){
     cuda_free(x);
 }
 
+void cuda_allocate_memory(void** devPtr, size_t size){
+    auto cudaStatus = cudaMalloc(devPtr, size);
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMalloc failed: %s\n", cudaGetErrorString(cudaStatus));
+        exit(1);
+    }
+}

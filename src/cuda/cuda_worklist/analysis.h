@@ -1,6 +1,7 @@
 #pragma once
 #include <set>
 #include "../cuda_data.h"
+#include <vector>
 
 namespace cuda_worklist{
     struct Node{
@@ -12,4 +13,5 @@ namespace cuda_worklist{
     };
 
     void execute_analysis(Node* nodes, int node_count, Transfer* transfers, int transfer_count, std::set<int>& taint_sources);
+    void generic_analysis(DynamicArray<Node>& nodes, std::vector<Transfer>& transfers, const std::set<int>& taint_sources);
 };
