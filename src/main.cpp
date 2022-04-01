@@ -19,6 +19,7 @@
 #include "cuda/bit_vector_converter.h"
 #include "cuda/cuda_transformer.h"
 #include <cuda/common.h>
+#include <cfg/transformations/analysis_converter.h>
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
@@ -28,17 +29,25 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "}";
 }
 
-std::vector<StatefulNode<std::set<std::string>>> cpu_analysis(ScTransformer program){
-    TaintAnalyzer analyzer;
+void print_cpu_result(cpu_analysis::BitVector& result, std::ostream& stream){
+    stream << "\\n{ ";
+    stream << result.bitfield;
+    stream << "}";
+}
 
-    std::vector<StatefulNode<std::set<std::string>>> nodes = create_states<std::set<std::string>>(program.nodes, {TAINT_VAR});
+std::vector<StatefulNode<std::set<std::string>>> run_cpu_analysis(ScTransformer program){
+    TransferCreator analyis_info = get_analysis_information(program.nodes);
+    std::vector<StatefulNode<cpu_analysis::BitVector>> nodes = create_states<cpu_analysis::BitVector>(program.nodes, BitVector(1));
     time_func("Analyzing: ", 
-        worklist<std::set<std::string>>, nodes, analyzer);
+        cpu_analysis::worklist, nodes, analyis_info.node_to_index, analyis_info.transfers);
+
+    std::vector<StatefulNode<std::set<std::string>>> debugable_nodes = create_states<std::set<std::string>>(program.nodes, {TAINT_VAR});
+    set_bit_vector_state(nodes, analyis_info.var_map, debugable_nodes);
 
     if(!timing::should_benchmark) {
-        print_digraph_subgraph(nodes, std::cout, print_result, "main");
+        print_digraph_subgraph(debugable_nodes, std::cout, print_result, "main");
     }
-    return nodes;
+    return debugable_nodes;
 }
 
 std::vector<StatefulNode<SourcedTaintState>> cpu_multi_taint_analysis(ScTransformer& program){
@@ -264,7 +273,7 @@ int main(int argc, char *argv[]){
             auto program = parse_to_cfg_transformer(prog);
             reduce_variables(program.entryNodes);
             Stopwatch cpu_watch;
-            auto cpu_nodes = cpu_analysis(program);
+            auto cpu_nodes = run_cpu_analysis(program);
             cpu_watch.save_time<Microseconds>();
 
             init_gpu();
@@ -334,7 +343,7 @@ int main(int argc, char *argv[]){
                 cpu_multi_taint_analysis(program);
             }else{
                 std::cout << "Running analysis using CPU" << std::endl;
-                cpu_analysis(program);
+                run_cpu_analysis(program);
             }
         }else{
             std::cout << "Invalid command\n";
@@ -363,7 +372,7 @@ int main(int argc, char *argv[]){
         std::cout << "#######\n";
         std::cout << "#######\n";
         std::cout << "#######\n";
-        std::vector<StatefulNode<std::set<std::string>>> result2 = cpu_analysis(program);
+        std::vector<StatefulNode<std::set<std::string>>> result2 = run_cpu_analysis(program);
 
 
 

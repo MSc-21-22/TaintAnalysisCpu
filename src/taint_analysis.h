@@ -3,20 +3,39 @@
 #include <set>
 #include <string>
 #include <algorithm>
+#include <vector>
+#include <limits>
 
-std::set<std::string> least_upper_bound(const std::set<std::string>& left, const std::set<std::string>& right);
+namespace cpu_analysis{
 
 
-class TaintAnalyzer : public CfgStateVisitor<std::set<std::string>> {
+struct BitVector{
+    int64_t bitfield;
 public:
-    std::set<std::string> taintedReturns{}; 
-    void visit_assignment(AssignmentNode& node, std::map<Node*, std::set<std::string>>& states);
-    void visit_return(ReturnNode& node, std::map<Node*, std::set<std::string>>& states);
-    void visit_emptyReturn(EmptyReturnNode& node, std::map<Node*, std::set<std::string>>& states);
-    void visit_functionEntry(FunctionEntryNode& node, std::map<Node*, std::set<std::string>>& states);
-    void visit_assignReturn(AssignReturnNode& node, std::map<Node*, std::set<std::string>>& states);
-    void visit_arrayAssignment(ArrayAssignmentNode& node, std::map<Node*, std::set<std::string>>& states);
-    void visit_arrayinit(ArrayInitializerNode& node, std::map<Node*, std::set<std::string>>& states);
-    void visit_propagation(PropagationNode& node, std::map<Node*, std::set<std::string>>& states);
+    BitVector() = default;
+    BitVector(const BitVector&) = default;
+    BitVector(BitVector&&) noexcept = default;
+    BitVector& operator=(const BitVector&) = default;
+    BitVector& operator=(BitVector&&) noexcept = default;
 
+    BitVector(int64_t default_value) : bitfield(default_value){}
+
+    bool operator[](int index);
+    BitVector& operator|=(const BitVector& rhs);
+    BitVector operator|(const BitVector& rhs) const;
+    bool operator!=(const BitVector& rhs) const;
+    BitVector operator&(const BitVector& rhs) const;
+    bool has_overlap(const BitVector&rhs) const;
+    void set_bit(int index);
+    void flip_bit(int index);
 };
+
+struct Transfer{
+    BitVector transfer_mask{0};
+    BitVector join_mask{INT64_MAX};
+    int8_t var_index = 0;
+    bool uses_next = false;
+};
+
+void worklist(std::vector<StatefulNode<BitVector>>& nodes, const std::vector<int>& node_to_start_transfer, const std::vector<Transfer>& transfers);
+}
