@@ -77,7 +77,7 @@ void cpu_analysis::worklist(std::vector<StatefulNode<BitVector>>& nodes, const s
     
     while (!worklist.empty()){
         int index = worklist.back();
-        worklist.pop_back()
+        worklist.pop_back();
         
         StatefulNode<BitVector>& currentNode = nodes[index];
 
