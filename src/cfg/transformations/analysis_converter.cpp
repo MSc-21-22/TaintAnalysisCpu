@@ -84,8 +84,6 @@ void TransferCreator::visit_propagation(PropagationNode& node) {
     transfers.emplace_back();
 }
 
-#include <iostream>
-
 TransferCreator get_analysis_information(std::vector<std::shared_ptr<Node>>& nodes) {
     TransferCreator transforCreator;
     for(int i = 0; i < nodes.size(); ++i){
