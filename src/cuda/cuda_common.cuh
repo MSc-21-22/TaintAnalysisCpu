@@ -39,16 +39,8 @@ __device__ void transfer_function(int first_transfer_index, Transfer transfers[]
 
     while(transfer_index != -1){
         transfer = &transfers[transfer_index];
-        int var_index = 0;
-        int next_var = transfer->rhs[var_index];
-        while(next_var != -1){
-
-            if((joined_data & (1 << next_var)) != 0){
-                current |= (1 << transfer->x);
-                break;
-            }
-            ++var_index;
-            next_var = transfer->rhs[var_index];
+        if((joined_data & transfer->rhs) != 0){
+            current |= (1 << transfer->x);
         }
         transfer_index = transfer->next_transfer_index;
     }
