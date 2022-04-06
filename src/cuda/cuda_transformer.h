@@ -133,7 +133,7 @@ private:
         int index = transfer_functions.size();
         Transfer& current_transfer = transfer_functions.emplace_back();
         current_transfer.x = variables[x];
-        current_transfer.rhs = fill_with_variable_indices(vars);
+        current_transfer.rhs = get_variable_indices(vars);
 
         return index;
     }
@@ -147,7 +147,7 @@ private:
         return add_transfer_function(x, vars);
     }
 
-    BitVector fill_with_variable_indices(std::set<std::string>& vars){
+    BitVector get_variable_indices(std::set<std::string>& vars){
         BitVector result = 0;
         for(std::string var : vars){
             if (variables.count(var)){

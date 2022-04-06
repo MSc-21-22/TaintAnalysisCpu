@@ -41,13 +41,13 @@ std::vector<StatefulNode<std::set<std::string>>> run_cpu_analysis(ScTransformer 
     time_func("Analyzing: ", 
         cpu_analysis::worklist, nodes, analyis_info.node_to_index, analyis_info.transfers);
 
-    std::vector<StatefulNode<std::set<std::string>>> debugable_nodes = create_states<std::set<std::string>>(program.nodes, {TAINT_VAR});
-    set_bit_vector_state(nodes, analyis_info.var_map, debugable_nodes);
+    std::vector<StatefulNode<std::set<std::string>>> comparable_nodes = create_states<std::set<std::string>>(program.nodes, {TAINT_VAR});
+    set_bit_vector_state(nodes, analyis_info.var_map, comparable_nodes);
 
     if(!timing::should_benchmark) {
-        print_digraph_subgraph(debugable_nodes, std::cout, print_result, "main");
+        print_digraph_subgraph(comparable_nodes, std::cout, print_result, "main");
     }
-    return debugable_nodes;
+    return comparable_nodes;
 }
 
 std::vector<StatefulNode<SourcedTaintState>> cpu_multi_taint_analysis(ScTransformer& program){

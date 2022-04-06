@@ -36,16 +36,10 @@ void BitVector::flip_bit(int index){
 
 BitVector join(const Node &node, std::map<Node*, BitVector> &states)
 {   
-    if(node.predecessors.size() == 0)
-        return BitVector(1);
-
-    auto it = node.predecessors.begin();
-    auto state = states[it->get()];
-    it++;
-    while(it != node.predecessors.end())
+    BitVector state(1);
+    for(const std::shared_ptr<Node>& pred : node.predecessors)
     {
-        state |= states[it->get()];
-        it++;
+        state |= states[pred.get()];
     }
     return state;
 }
@@ -60,8 +54,6 @@ void analyze(Node& node, std::map<Node*, BitVector>& states, std::vector<Transfe
         }
     }while(transfer++->uses_next);
 }
-
-#include <iostream>
 
 void cpu_analysis::worklist(std::vector<StatefulNode<BitVector>>& nodes, const std::vector<int>& node_to_start_transfer, const std::vector<Transfer>& transfers){
     std::vector<int> worklist;
