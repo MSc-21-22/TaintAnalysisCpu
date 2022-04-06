@@ -1,124 +1,87 @@
 #include "taint_analysis.h"
+#include <cfg/transformations/taint_locator.h>
 
-bool evaluateExpression(std::shared_ptr<Expression>, std::set<std::string> &);
+using namespace cpu_analysis;
 
-std::set<std::string> least_upper_bound(const std::set<std::string>& left, const std::set<std::string>& right){
-    std::set<std::string> out;
-    std::set_union(left.begin(), left.end(), right.begin(), right.end(), std::inserter(out, out.begin()));
-    return out;
+bool BitVector::operator[](int index) {
+    return (bitfield & 1<<index) != 0;
+}
+BitVector& BitVector::operator|=(const BitVector& rhs){
+    this->bitfield |= rhs.bitfield;
+    return *this;
 }
 
-std::set<std::string> join(const Node &node, std::map<Node*, std::set<std::string>> &states)
-{   
-    if(node.predecessors.size() == 0)
-        return {TAINT_VAR};
+bool BitVector::operator!=(const BitVector& rhs) const{
+    return this->bitfield != rhs.bitfield;
+}
 
-    auto it = node.predecessors.begin();
-    auto state = states[it->get()];
-    it++;
-    while(it != node.predecessors.end())
+BitVector BitVector::operator|(const BitVector& rhs) const{
+    return BitVector(this->bitfield | rhs.bitfield);
+}
+
+BitVector BitVector::operator&(const BitVector& rhs) const {
+    return BitVector(this->bitfield & rhs.bitfield);
+}
+
+bool BitVector::has_overlap(const BitVector&rhs) const{
+    return (this->bitfield & rhs.bitfield) != 0;
+}
+
+void BitVector::set_bit(int index){
+    bitfield |= 1<<index;
+}
+void BitVector::flip_bit(int index){
+    bitfield ^= 1<<index;
+}
+
+BitVector join(const Node &node, std::map<Node*, BitVector> &states)
+{   
+    BitVector state(1);
+    for(const std::shared_ptr<Node>& pred : node.predecessors)
     {
-        state = least_upper_bound(states[it->get()], state);
-        it++;
+        state |= states[pred.get()];
     }
     return state;
 }
 
-void TaintAnalyzer::visit_arrayinit(ArrayInitializerNode &node, std::map<Node*, std::set<std::string>> &states)
-{
-    std::set<std::string>& node_state = states[&node];
-    node_state = join(node, states);
-    for (auto &expression : node.arrayContent)
-    {
-        if (evaluateExpression(expression, node_state))
-        {
-            node_state.insert(node.id);
+void analyze(Node& node, std::map<Node*, BitVector>& states, std::vector<Transfer>::const_iterator transfer){
+    BitVector joined_state = join(node, states);
+
+    states[&node] |= joined_state & transfer->join_mask;
+    do{
+        if(transfer->transfer_mask.has_overlap(joined_state)){
+            states[&node].set_bit(transfer->var_index);
+        }
+    }while(transfer++->uses_next);
+}
+
+void cpu_analysis::worklist(std::vector<StatefulNode<BitVector>>& nodes, const std::vector<int>& node_to_start_transfer, const std::vector<Transfer>& transfers){
+    std::vector<int> worklist;
+    std::map<Node*, int> node_to_index;
+    TaintSourceLocator locator;
+    for(int i = nodes.size() - 1; i>=0; --i){
+        node_to_index.insert(std::make_pair(nodes[i].node.get(), i));
+        
+        if(locator.is_taintsource(*nodes[i].node)){
+            worklist.push_back(i);
         }
     }
     
-}
+    while (!worklist.empty()){
+        int index = worklist.back();
+        worklist.pop_back();
+        
+        StatefulNode<BitVector>& currentNode = nodes[index];
 
-void TaintAnalyzer::visit_assignment(AssignmentNode &node, std::map<Node*, std::set<std::string>> &states)
-{
-    std::set<std::string>& node_state = states[&node];
-    node_state = join(node, states);
+        BitVector oldState = currentNode.get_state();
 
-    if (evaluateExpression(node.expression, node_state))
-    {
-        node_state.insert(node.id);
-    }
-    else
-    {
-        node_state.erase(node.id);
-    }
-}
+        analyze(*currentNode.node, *currentNode.states, transfers.cbegin() + node_to_start_transfer[index]);
 
-void TaintAnalyzer::visit_arrayAssignment(ArrayAssignmentNode &node, std::map<Node*, std::set<std::string>> &states)
-{
-    std::set<std::string>& node_state = states[&node];
-    node_state = join(node, states);
-
-    if (evaluateExpression(node.expression, node_state))
-    {
-        node_state.insert(node.arrayid);
-    }
-}
-
-void TaintAnalyzer::visit_propagation(PropagationNode &node, std::map<Node*, std::set<std::string>> &states){
-    std::set<std::string>& node_state = states[&node];
-    node_state = join(node, states);
-}
-
-void TaintAnalyzer::visit_return(ReturnNode &node, std::map<Node*, std::set<std::string>> &states)
-{
-    std::set<std::string>& node_state = states[&node];
-    node_state = join(node, states);
-
-    if (evaluateExpression(node.expression, node_state))
-    {
-        node_state = {TAINT_VAR, RETURN_VAR};
-    }
-    else
-    {
-        node_state = {TAINT_VAR};
-    }
-}
-
-void TaintAnalyzer::visit_emptyReturn(EmptyReturnNode &node, std::map<Node*, std::set<std::string>>& states){
-
-}
-
-
-
-void TaintAnalyzer::visit_functionEntry(FunctionEntryNode &node, std::map<Node*, std::set<std::string>>& states){
-    std::set<std::string>& node_state = states[&node];
-    if (node.successors.size() == 0)
-        return;
-
-    auto previous_state = join(node, states);
-
-    for(size_t i = 0; i < node.arguments.size(); ++i){
-        bool isTainted = node.arguments[i]->evaluate(previous_state);
-        if(isTainted){
-            auto parameter = node.formal_parameters[i];
-            node_state.insert(parameter);
+        if (currentNode.get_state() != oldState) {
+            for(StatefulNode<BitVector>& succ : currentNode.get_successors()){
+                int new_index = node_to_index.at(succ.node.get());
+                worklist.push_back(new_index);
+            }
         }
     }
-}
-
-void TaintAnalyzer::visit_assignReturn(AssignReturnNode &node, std::map<Node*, std::set<std::string>>& states){
-    std::set<std::string>& node_state = states[&node];
-    node_state = join(node, states);
-    if (node_state.find(RETURN_VAR) != node_state.end()){
-        node_state.insert(node.id);
-    }else{
-        node_state.erase(node.id);
-    }
-
-    node_state.erase(RETURN_VAR);
-}
-
-bool evaluateExpression(std::shared_ptr<Expression> expression, std::set<std::string> &state)
-{
-    return expression->evaluate(state);
 }

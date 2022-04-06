@@ -16,14 +16,14 @@ TEST_CASE("bit cuda x=$ -> y=x") {
     node1.first_transfer_index = 0;
     Transfer& transfer1 = transfer_functions.emplace_back();
     transfer1.x = 1;
-    transfer1.rhs[0] = 0;
+    transfer1.rhs |= 1;
     nodes.push_back(node1);
     
     bit_cuda::Node node2;
     node2.first_transfer_index = 1;
     Transfer& transfer2 = transfer_functions.emplace_back();
     transfer2.x = 2;
-    transfer2.rhs[0] = 1;
+    transfer2.rhs |= 2;
     node2.predecessor_index[0] = 0;
     nodes.push_back(node2);
 
@@ -42,13 +42,13 @@ TEST_CASE("worklist cuda x=$ -> y=x") {
     node1.successor_index[0] = 1;
     Transfer& transfer1 = transfer_functions.emplace_back();
     transfer1.x = 1;
-    transfer1.rhs[0] = 0;
+    transfer1.rhs |= 1;
     
     cuda_worklist::Node& node2 = nodes.emplace_back();
     node2.first_transfer_index = 1;
     Transfer& transfer2 = transfer_functions.emplace_back();
     transfer2.x = 2;
-    transfer2.rhs[0] = 1;
+    transfer2.rhs |= 2;
     node2.predecessor_index[0] = 0;
 
     std::set<int> taint_sources = {0};
@@ -68,11 +68,11 @@ TEST_CASE("worklist cuda multi transforms") {
     transfer1.next_transfer_index = 1;
     node1.first_transfer_index = 0;
     transfer1.x = 1;
-    transfer1.rhs[0] = 0;
+    transfer1.rhs |= 1;
 
     Transfer& transfer2 = transfers.emplace_back();
     transfer2.x = 2;
-    transfer2.rhs[0] = 0;
+    transfer2.rhs |= 1;
 
     std::set<int> taint_sources = {0};
     cuda_worklist::execute_analysis(nodes, transfers, taint_sources);
@@ -89,11 +89,11 @@ TEST_CASE("bit cuda multi transforms") {
     node1.first_transfer_index = 0;
     transfer1.next_transfer_index = 1;
     transfer1.x = 1;
-    transfer1.rhs[0] = 0;
+    transfer1.rhs |= 1;
 
     Transfer& transfer2 = transfers.emplace_back();
     transfer2.x = 2;
-    transfer2.rhs[0] = 0;
+    transfer2.rhs |= 1;
 
     bit_cuda::execute_analysis(&nodes[0], nodes.size(), &transfers[0], transfers.size());
 

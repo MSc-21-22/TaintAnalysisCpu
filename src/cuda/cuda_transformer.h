@@ -133,7 +133,7 @@ private:
         int index = transfer_functions.size();
         Transfer& current_transfer = transfer_functions.emplace_back();
         current_transfer.x = variables[x];
-        fill_with_variable_indices(current_transfer.rhs, vars);
+        current_transfer.rhs = get_variable_indices(vars);
 
         return index;
     }
@@ -147,22 +147,19 @@ private:
         return add_transfer_function(x, vars);
     }
 
-    void fill_with_variable_indices(int* arr, std::set<std::string>& vars){
-        int i = 0;
+    BitVector get_variable_indices(std::set<std::string>& vars){
+        BitVector result = 0;
         for(std::string var : vars){
             if (variables.count(var)){
-                arr[i++] = variables[var];
+                result |= 1<<variables[var];
             }
-        } 
+        }
+        return result;
     }
 
     void add_taint_source(int nodeIndex, Transfer& transfer){
-        int size = sizeof(transfer.rhs)/sizeof(transfer.rhs[0]);
-        for (int i = 0; i < size; i++){
-            if(transfer.rhs[i] == variables[TAINT_VAR]){
-                taint_sources.insert(nodeIndex);
-                break;
-            }
+        if((transfer.rhs & 1) == 1){
+            taint_sources.insert(nodeIndex);
         }
     }
 };
