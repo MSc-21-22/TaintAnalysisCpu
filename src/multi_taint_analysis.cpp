@@ -1,108 +1,70 @@
 #include "multi_taint_analysis.h"
+#include <cfg/transformations/taint_locator.h>
 
-SourcedTaintState least_upper_bound(const SourcedTaintState& left, const SourcedTaintState& right){
-    SourcedTaintState state;
-    for (SourcedTaintState::const_iterator it=left.begin(); it!=left.end(); ++it){
-        state[it->first] = it->second;
-    }
-    for (SourcedTaintState::const_iterator it=right.begin(); it!=right.end(); ++it){
-        for(auto& taint_source : it->second){
-            state[it->first].insert(taint_source);
-        }
-    }
-    return state;
-}
+using namespace cpu_analysis;
 
-SourcedTaintState join(Node& node, std::map<Node*, SourcedTaintState>& states){
-    if (node.predecessors.size() == 0)
-        return {};
-
-    SourcedTaintState state = states[&node];
-    auto old_taint_constant = state[TAINT_VAR];
-    auto it = node.predecessors.begin();
-    while(it != node.predecessors.end())
-    {
-        state = least_upper_bound(states[it->get()], state);
-        it++;
+BitVector join(Node& node, std::map<Node*, std::vector<BitVector>>& states, int source_index){
+    BitVector state = states[&node][source_index];
+    bool old_taint_constant = state[0];
+    for(const std::shared_ptr<Node>& pred : node.predecessors){
+        state |= states[pred.get()][source_index];
     }
 
     //Dont propagate taint sources
-    state[TAINT_VAR] = old_taint_constant;
+    if(state[0] != old_taint_constant){
+        state.flip_bit(0);
+    }
 
     return state;
 }
 
-std::set<int> MultiTaintAnalyzer::get_taints(std::shared_ptr<Expression> expression, const Node& node, SourcedTaintState& state)
-{
-    std::set<int> sources;
-    for (auto& var : expression->get_variables()){
-        if(var == TAINT_VAR){
-            if (node_to_source.find((long long int)&node) == node_to_source.end()){
-                node_to_source[(long long int)&node] = next_source++;
-            }
+void analyze(Node& node, std::map<Node*, std::vector<BitVector>>& states, std::vector<Transfer>::const_iterator transfer, int source_count){
+    for(int source_index = 0; source_index < source_count; ++source_index){
+        BitVector joined_state = join(node, states, source_index);
 
-            sources.insert(node_to_source[(long long int)&node]);
-        }else{
-            for(auto& source: state[var]){
-                sources.insert(source);
+        states[&node][source_index] |= joined_state & transfer->join_mask;
+        do{
+            if(transfer->transfer_mask.has_overlap(joined_state)){
+                states[&node][source_index].set_bit(transfer->var_index);
+            }
+        }while(transfer++->uses_next);
+    }
+}
+
+void cpu_multi::worklist(std::vector<StatefulNode<std::vector<BitVector>>>& nodes, const std::vector<int>& node_to_start_transfer, const std::vector<cpu_analysis::Transfer>& transfers, int source_count){
+    std::vector<int> worklist;
+    std::map<Node*, int> node_to_index;
+    TaintSourceLocator locator;
+    for(int i = nodes.size() - 1; i>=0; --i){
+        node_to_index.insert(std::make_pair(nodes[i].node.get(), i));
+        
+        //Allocate and initialize bitvectors
+        nodes[i].get_state().resize(source_count);
+
+        if(locator.is_taintsource(*nodes[i].node)){
+            worklist.push_back(i);
+        }
+    }
+
+    
+    
+    while (!worklist.empty()){
+        int index = worklist.back();
+        worklist.pop_back();
+        
+        StatefulNode<std::vector<BitVector>>& currentNode = nodes[index];
+
+        std::vector<BitVector> oldState = currentNode.get_state();
+
+        analyze(*currentNode.node, *currentNode.states, transfers.cbegin() + node_to_start_transfer[index], source_count);
+
+        if (currentNode.get_state() != oldState) {
+            for(StatefulNode<std::vector<BitVector>>& succ : currentNode.get_successors()){
+                int new_index = node_to_index.at(succ.node.get());
+                worklist.push_back(new_index);
             }
         }
     }
-    return sources;
-}
-
-void MultiTaintAnalyzer::visit_propagation(PropagationNode& node, std::map<Node*, SourcedTaintState>& states){
-    SourcedTaintState& node_state = states[&node];
-    node_state = join(node, states);
-}
-
-void MultiTaintAnalyzer::visit_arrayinit(ArrayInitializerNode& node, std::map<Node*, SourcedTaintState>& states){
-    SourcedTaintState& node_state = states[&node];
-    node_state = join(node, states);
-    for (auto &expression : node.arrayContent)
-    {
-        std::set<int> taints = get_taints(expression, node, states[&node]);
-        std::set_union(node_state[node.id].begin(), node_state[node.id].end(), taints.begin(), taints.end(), std::inserter(node_state[node.id], node_state[node.id].begin()));
-    }
-}
-
-void MultiTaintAnalyzer::visit_assignment(AssignmentNode& node, std::map<Node*, SourcedTaintState>& states){
-    states[&node] = join(node, states);
-    states[&node][node.id] = get_taints(node.expression, node, states[&node]);
-}
-
-void MultiTaintAnalyzer::visit_arrayAssignment(ArrayAssignmentNode& node, std::map<Node*, SourcedTaintState>& states){
-    states[&node] = join(node, states);
-    states[&node][node.id] = get_taints(node.expression, node, states[&node]);
-}
-
-void MultiTaintAnalyzer::visit_return(ReturnNode& node, std::map<Node*, SourcedTaintState>& states){
-    auto state = join(node, states);
-    states[&node][RETURN_VAR] = get_taints(node.expression, node, state);
-}
-void MultiTaintAnalyzer::visit_emptyReturn(EmptyReturnNode& node, std::map<Node*, SourcedTaintState>& states){
-    states[&node][RETURN_VAR] = {};
-}
-void MultiTaintAnalyzer::visit_functionEntry(FunctionEntryNode& node, std::map<Node*, SourcedTaintState>& states){
-    SourcedTaintState& node_state = states[&node];
-    auto state = join(node, states);
-    
-    if (node.successors.size() == 0)
-        return;
-
-    auto previous_node = node.predecessors.begin();
-
-    for(size_t i = 0; i < node.arguments.size(); ++i){
-        auto taint_sources = get_taints(node.arguments[i], **previous_node, states[previous_node->get()]);
-        auto parameter = node.formal_parameters[i];
-        node_state[parameter] = taint_sources;
-    }
-}
-
-void MultiTaintAnalyzer::visit_assignReturn(AssignReturnNode& node, std::map<Node*, SourcedTaintState>& states){
-    states[&node] = join(node, states);
-    states[&node][node.id] = states[&node][RETURN_VAR];
-    states[&node][RETURN_VAR] = {};
 }
 
 void print_taint_source(SourcedTaintState& result, std::ostream& stream){

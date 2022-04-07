@@ -15,6 +15,14 @@ bool BitVector::operator!=(const BitVector& rhs) const{
     return this->bitfield != rhs.bitfield;
 }
 
+bool BitVector::operator==(const BitVector& rhs) const {
+    return bitfield == rhs.bitfield;
+}
+
+bool BitVector::operator<(const BitVector& rhs) const{
+    return bitfield < rhs.bitfield;
+}
+
 BitVector BitVector::operator|(const BitVector& rhs) const{
     return BitVector(this->bitfield | rhs.bitfield);
 }
