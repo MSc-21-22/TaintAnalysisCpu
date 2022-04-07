@@ -13,6 +13,21 @@ void set_bit_vector_state(std::vector<StatefulNode<cpu_analysis::BitVector>>& no
     }   
 }
 
+void set_multi_bit_vector_state(std::vector<StatefulNode<std::vector<cpu_analysis::BitVector>>>& nodes, std::map<std::string, int>& variables, 
+                   std::vector<StatefulNode<SourcedTaintState>>& cfg_nodes){
+    for (int i = 0; i < cfg_nodes.size(); i++)
+    {
+        for (auto& [var_name, var_index] : variables)
+        {
+            for(int j = 0; j < nodes[i].get_state().size(); ++j){
+                if(nodes[i].get_state()[j][var_index]){
+                    cfg_nodes[i].get_state()[var_name].insert(i);
+                }
+            }
+        }                
+    }
+}
+
 void set_bit_cuda_multi_state(DynamicArray<multi_cuda::Node>& nodes, std::map<std::string, int>& variables, int source_count, 
                    std::vector<StatefulNode<SourcedTaintState>>& cfg_nodes){     
     for (int i = 0; i < cfg_nodes.size(); i++)
