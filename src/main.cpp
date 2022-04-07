@@ -273,8 +273,13 @@ int main(int argc, char *argv[]){
             auto program = parse_to_cfg_transformer(prog);
             reduce_variables(program.entryNodes);
             Stopwatch cpu_watch;
-            auto cpu_nodes = run_cpu_analysis(program);
+            TransferCreator analyis_info = get_analysis_information(program.nodes);
+            std::vector<StatefulNode<cpu_analysis::BitVector>> nodes = create_states<cpu_analysis::BitVector>(program.nodes, BitVector(1));
+            time_func("Analyzing: ", 
+                cpu_analysis::worklist, nodes, analyis_info.node_to_index, analyis_info.transfers);
             cpu_watch.save_time<Microseconds>();
+            std::vector<StatefulNode<std::set<std::string>>> cpu_nodes = create_states<std::set<std::string>>(program.nodes, {TAINT_VAR});
+            set_bit_vector_state(nodes, analyis_info.var_map, cpu_nodes);
 
             init_gpu();
 
