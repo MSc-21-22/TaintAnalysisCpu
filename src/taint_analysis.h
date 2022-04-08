@@ -21,6 +21,8 @@ public:
     BitVector(int64_t default_value) : bitfield(default_value){}
 
     bool operator[](int index);
+    bool operator==(const BitVector& rhs) const;
+    bool operator<(const BitVector& rhs) const;
     BitVector& operator|=(const BitVector& rhs);
     BitVector operator|(const BitVector& rhs) const;
     bool operator!=(const BitVector& rhs) const;
