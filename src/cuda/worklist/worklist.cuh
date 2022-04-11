@@ -58,15 +58,14 @@ namespace worklist{
 
         if(node_index < THREAD_COUNT && work_column[node_index] != -1){
             NodeType& current_node = nodes[work_column[node_index]];
-            
             bool add_successors = analyzer.analyze(current_node, nodes, transfers);
+
+            work_column[node_index] = -1;   
 
             if(add_successors){
                 int next_work_column = (current_work_column+1) % work_column_count;
                 add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, next_work_column, worklists_pending);
-            }
-            
-            work_column[node_index] = -1;   
+            }      
         }
     }
 
@@ -86,10 +85,10 @@ namespace worklist{
         Transfer* dev_transfers = nullptr;
         int** dev_worklists = nullptr;
 
-        int worklists_pending = ((nodes.size() + THREAD_COUNT - 1)/THREAD_COUNT);
+        int worklists_pending = ((taint_sources.size() + THREAD_COUNT - 1)/THREAD_COUNT);
         int threadsPerBlock = 128;
         int block_count = THREAD_COUNT/threadsPerBlock;    
-        int work_column_count = worklists_pending + (nodes.size()/EXTRA_WORKLISTS_CONSTANT) + 50;
+        int work_column_count = worklists_pending + (nodes.size()/EXTRA_WORKLISTS_CONSTANT);
 
         std::vector<std::array<int, THREAD_COUNT>> worklists{};
 
@@ -134,7 +133,7 @@ namespace worklist{
             cuda_copy_to_device(dev_worklists_pending, &worklists_pending, sizeof(int));
 
             // Launch a kernel on the GPU with one thread for each element.
-            analyze<<<block_count, threadsPerBlock>>>(analyzer, uploadable_container.container, (int(*)[THREAD_COUNT])dev_worklists, work_column_count+1, dev_transfers, nodes.size(), dev_worklists_pending, current_worklist);
+            analyze<<<block_count, threadsPerBlock>>>(analyzer, uploadable_container.container, (int(*)[THREAD_COUNT])dev_worklists, work_column_count, dev_transfers, nodes.size(), dev_worklists_pending, current_worklist);
             
             // Check for any errors launching the kernel
             cudaStatus = cudaGetLastError();
