@@ -50,27 +50,26 @@ std::vector<StatefulNode<std::set<std::string>>> run_cpu_analysis(ScTransformer 
     return comparable_nodes;
 }
 
-std::vector<StatefulNode<SourcedTaintState>> cpu_multi_taint_analysis(ScTransformer& program){
-    MultiTaintAnalyzer analyzer;
-
-
-    std::vector<StatefulNode<SourcedTaintState>> nodes = create_states<SourcedTaintState>(program.nodes);
+std::vector<StatefulNode<std::vector<cpu_analysis::BitVector>>> cpu_multi_taint_analysis(ScTransformer& program){
+    TransferCreator analyis_info = get_analysis_information(program.nodes);
+    std::vector<StatefulNode<std::vector<cpu_analysis::BitVector>>> nodes = create_states<std::vector<cpu_analysis::BitVector>>(program.nodes);
     
-    //Insert sources
-    int source = 0;
+    //Count sources
+    int source_count = 0;
     TaintSourceLocator locator;
     for(auto& node : nodes){
         if(locator.is_taintsource(*node.node)){
-            node.get_state()[TAINT_VAR].insert(source);
-            ++source;
+            ++source_count;
         }
     }
 
     time_func("Analyzing: ",
-        worklist<SourcedTaintState>, nodes, analyzer);
+        cpu_multi::worklist, nodes, analyis_info.node_to_index, analyis_info.transfers, source_count);
 
     if(!timing::should_benchmark) {
-        print_digraph_subgraph(nodes, std::cout, print_taint_source, "main");
+        std::vector<StatefulNode<SourcedTaintState>> printable_nodes = create_states<SourcedTaintState>(program.nodes);
+        set_multi_bit_vector_state(nodes, analyis_info.var_map, printable_nodes);
+        print_digraph_subgraph(printable_nodes, std::cout, print_taint_source, "main");
     }
     return nodes;
 }
@@ -189,8 +188,25 @@ void benchmark_all_multi_taint(antlr4::ANTLRInputStream& prog, std::string file_
     auto program = parse_to_cfg_transformer(prog);
     reduce_variables(program.entryNodes);
     Stopwatch cpu_watch;
-    auto cpu_nodes = cpu_multi_taint_analysis(program);
+    TransferCreator analyis_info = get_analysis_information(program.nodes);
+    std::vector<StatefulNode<std::vector<cpu_analysis::BitVector>>> nodes = create_states<std::vector<cpu_analysis::BitVector>>(program.nodes);
+    
+    //Count sources
+    int source_count = 0;
+    TaintSourceLocator locator;
+    for(auto& node : nodes){
+        if(locator.is_taintsource(*node.node)){
+            ++source_count;
+        }
+    }
+
+    cpu_multi::worklist(nodes, analyis_info.node_to_index, analyis_info.transfers, source_count);
+
     cpu_watch.save_time<Microseconds>();
+    cpu_watch.print_time<Microseconds>("Run time: ");
+    std::vector<StatefulNode<SourcedTaintState>> comparable_cpu_nodes = create_states<SourcedTaintState>(program.nodes);
+    set_multi_bit_vector_state(nodes, analyis_info.var_map, comparable_cpu_nodes);
+
 
     init_gpu();
     std::cout << "\n⭐ GPU analysis ⭐" << std::endl;
@@ -199,7 +215,7 @@ void benchmark_all_multi_taint(antlr4::ANTLRInputStream& prog, std::string file_
     auto gpu_nodes = multi_bit_cuda_worklist_analysis(program);
     gpu_watch.save_time<Microseconds>();
 
-    if(!state_multi_equality(cpu_nodes, gpu_nodes)){
+    if(!state_multi_equality(comparable_cpu_nodes, gpu_nodes)){
         std::cout << "###### cpu != gpu #####" << std::endl;
     }
     Stopwatch::add_line();
@@ -273,8 +289,13 @@ int main(int argc, char *argv[]){
             auto program = parse_to_cfg_transformer(prog);
             reduce_variables(program.entryNodes);
             Stopwatch cpu_watch;
-            auto cpu_nodes = run_cpu_analysis(program);
+            TransferCreator analyis_info = get_analysis_information(program.nodes);
+            std::vector<StatefulNode<cpu_analysis::BitVector>> nodes = create_states<cpu_analysis::BitVector>(program.nodes, BitVector(1));
+            time_func("Analyzing: ", 
+                cpu_analysis::worklist, nodes, analyis_info.node_to_index, analyis_info.transfers);
             cpu_watch.save_time<Microseconds>();
+            std::vector<StatefulNode<std::set<std::string>>> cpu_nodes = create_states<std::set<std::string>>(program.nodes, {TAINT_VAR});
+            set_bit_vector_state(nodes, analyis_info.var_map, cpu_nodes);
 
             init_gpu();
 
