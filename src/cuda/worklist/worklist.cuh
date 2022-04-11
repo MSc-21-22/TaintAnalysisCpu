@@ -12,7 +12,7 @@
 
 namespace worklist{
     #define THREAD_COUNT 1024
-    #define EXTRA_WORKLISTS 50
+    #define EXTRA_WORKLISTS_CONSTANT 600
     #define COLLISIONS_BEFORE_SWITCH (1) 
 
     template<typename INT>
@@ -89,7 +89,7 @@ namespace worklist{
         int worklists_pending = ((nodes.size() + THREAD_COUNT - 1)/THREAD_COUNT);
         int threadsPerBlock = 128;
         int block_count = THREAD_COUNT/threadsPerBlock;    
-        int work_column_count = worklists_pending + EXTRA_WORKLISTS;
+        int work_column_count = worklists_pending + (nodes.size()/EXTRA_WORKLISTS_CONSTANT) + 50;
 
         std::vector<std::array<int, THREAD_COUNT>> worklists{};
 
