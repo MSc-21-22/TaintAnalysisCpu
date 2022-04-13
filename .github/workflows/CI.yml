@@ -32,11 +32,11 @@ jobs:
       - name: setup ANTLR
         run: | 
           cd /usr/local/lib
-          sudo wget https://www.antlr.org/download/antlr-4.9.3-complete.jar
+          sudo wget https://www.antlr.org/download/antlr-4.10-complete.jar
 
       - name: Compile
         run: |
-          cmake -B build/ -D ANTLR_EXECUTABLE="/usr/local/lib/antlr-4.9.3-complete.jar" -D CMAKE_CUDA_ARCHITECTURES=75
+          cmake -B build/ -D CMAKE_CUDA_ARCHITECTURES=75
           cmake --build build/  
 
       - name: Run CPU analysis
