@@ -14,16 +14,19 @@ std::string stringify_parameters(std::vector<std::string> content){
     return result;
 }
 
-ScTransformer parse_to_cfg_transformer(antlr4::ANTLRInputStream stream)
+ScTransformer parse_to_cfg_transformer(antlr4::ANTLRInputStream& stream)
 {
     scLexer lexer(&stream);
+    
     antlr4::CommonTokenStream tokens(&lexer);
     scParser parser(&tokens);
+    parser.setBuildParseTree(false);
 
     parser.setErrorHandler(std::make_shared<antlr4::BailErrorStrategy>());
 
     ScTransformer transformer;
-    parser.prog()->accept(&transformer);
+    auto prog = parser.prog(); // Fails on large programs
+    prog->accept(&transformer);
 
     remove_function_nodes(transformer);
 

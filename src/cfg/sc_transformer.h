@@ -1,5 +1,6 @@
 #pragma once
 
+#include <any>
 #include "antlr4-runtime/scBaseVisitor.h"
 #include <memory>
 #include "antlr4-runtime/scParser.h"
@@ -50,7 +51,7 @@ private:
 public:
 
 
-    antlrcpp::Any visitFunctionDef(scParser::FunctionDefContext *ctx) override
+    std::any visitFunctionDef(scParser::FunctionDefContext *ctx) override
     {
         std::vector<std::string> parameters{};
 
@@ -96,8 +97,8 @@ public:
 
         if (ctx->expression() != nullptr)
         {
-            antlrcpp::Any result = ctx->expression()->accept(this);
-            std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
+            std::any result = ctx->expression()->accept(this);
+            std::shared_ptr<Expression> expression = std::any_cast<std::shared_ptr<Expression>>(result);
 
             auto node = std::make_shared<ReturnNode>(expression, ctx->ID()->getText());
             link_to_lasts(node);
@@ -110,21 +111,21 @@ public:
         return nullptr;
     }
 
-    virtual antlrcpp::Any visitStatementassign(scParser::StatementassignContext *ctx) override
+    virtual std::any visitStatementassign(scParser::StatementassignContext *ctx) override
     {
         if (ctx->expression().size() == 2)
         {
-            antlrcpp::Any indexResult = ctx->expression()[0]->accept(this);
-            std::shared_ptr<Expression> indexExpression = indexResult.as<std::shared_ptr<Expression>>();
-            antlrcpp::Any result = ctx->expression()[1]->accept(this);
-            std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
+            std::any indexResult = ctx->expression()[0]->accept(this);
+            std::shared_ptr<Expression> indexExpression = std::any_cast<std::shared_ptr<Expression>>(indexResult);
+            std::any result = ctx->expression()[1]->accept(this);
+            std::shared_ptr<Expression> expression = std::any_cast<std::shared_ptr<Expression>>(result);
             std::string id = ctx->ID()->getText() + "[" + indexExpression->dotPrint() + "]";
             auto node = std::make_shared<ArrayAssignmentNode>(id, ctx->ID()->getText(), expression);
             link_to_lasts(node);
             add_node(node);
         }else{
-            antlrcpp::Any result = ctx->expression()[0]->accept(this);
-            std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
+            std::any result = ctx->expression()[0]->accept(this);
+            std::shared_ptr<Expression> expression = std::any_cast<std::shared_ptr<Expression>>(result);
             
             auto node = std::make_shared<AssignmentNode>(ctx->ID()->getText(), expression);
             link_to_lasts(node);
@@ -133,10 +134,10 @@ public:
         return nullptr;
     }
 
-    virtual antlrcpp::Any visitStatementinit(scParser::StatementinitContext *ctx) override
+    virtual std::any visitStatementinit(scParser::StatementinitContext *ctx) override
     {
-        antlrcpp::Any result = ctx->expression()->accept(this);
-        std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
+        std::any result = ctx->expression()->accept(this);
+        std::shared_ptr<Expression> expression = std::any_cast<std::shared_ptr<Expression>>(result);
 
         auto node = std::make_shared<AssignmentNode>(ctx->ID()->getText(), expression);
         link_to_lasts(node);
@@ -145,10 +146,10 @@ public:
         return nullptr;
     }
 
-    virtual antlrcpp::Any visitStatementif(scParser::StatementifContext *ctx) override
+    virtual std::any visitStatementif(scParser::StatementifContext *ctx) override
     {
-        antlrcpp::Any result = ctx->expression()->accept(this);
-        std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
+        std::any result = ctx->expression()->accept(this);
+        std::shared_ptr<Expression> expression = std::any_cast<std::shared_ptr<Expression>>(result);
 
         std::string syntax = "if(" + expression->dotPrint() + ")";
 
@@ -159,20 +160,20 @@ public:
         std::vector<std::shared_ptr<Node>> endif;
         for (auto& s : ctx->statements()){
             last={node};
-            antlrcpp::Any statement = s->accept(this);
+            std::any statement = s->accept(this);
             endif.insert(endif.end(), last.begin(), last.end());
         }
         last=endif;
         return nullptr;
     }
 
-    virtual antlrcpp::Any visitExpression(scParser::ExpressionContext *ctx) override
+    virtual std::any visitExpression(scParser::ExpressionContext *ctx) override
     {
         std::shared_ptr<Expression> expression;
         if (ctx->ID() != nullptr){
             if (ctx->expression() != nullptr){
-                antlrcpp::Any result = ctx->expression()->accept(this);
-                std::shared_ptr<Expression> indexExpression = result.as<std::shared_ptr<Expression>>();
+                std::any result = ctx->expression()->accept(this);
+                std::shared_ptr<Expression> indexExpression = std::any_cast<std::shared_ptr<Expression>>(result);
                 expression = std::make_shared<ArrayExpression>(ctx->ID()->getText(), indexExpression);
             }else{   
                 expression = std::make_shared<VariableExpression>(ctx->ID()->getText());
@@ -180,15 +181,15 @@ public:
         }else if(ctx->INTEGER() != nullptr){
             expression = std::make_shared<LiteralExpression>(ctx->INTEGER()->getText());
         }else{
-            antlrcpp::Any result = ctx->expression()->accept(this);
-            std::shared_ptr<Expression> inner = result.as<std::shared_ptr<Expression>>();
+            std::any result = ctx->expression()->accept(this);
+            std::shared_ptr<Expression> inner = std::any_cast<std::shared_ptr<Expression>>(result);
             expression = std::make_shared<ParanthesisExpression>(inner);
         }
         
         if (ctx->expressionM() != nullptr && ctx->expressionM()->expression() != nullptr){
             
-            antlrcpp::Any result = ctx->expressionM()->accept(this);
-            auto rhs = result.as<std::shared_ptr<BinaryOperatorExpression>>();
+            std::any result = ctx->expressionM()->accept(this);
+            auto rhs = std::any_cast<std::shared_ptr<BinaryOperatorExpression>>(result);
             rhs->lhs = expression;
 
 
@@ -198,9 +199,9 @@ public:
         return expression;
     }
 
-    virtual antlrcpp::Any visitFunctionCallInit(scParser::FunctionCallInitContext *ctx) override {
-        antlrcpp::Any result = ctx->functionCall()->accept(this);
-        auto node = result.as<std::shared_ptr<PropagationNode>>();
+    virtual std::any visitFunctionCallInit(scParser::FunctionCallInitContext *ctx) override {
+        std::any result = ctx->functionCall()->accept(this);
+        auto node = std::any_cast<std::shared_ptr<PropagationNode>>(result);
 
         auto expr = std::make_shared<VariableExpression>(RETURN_VAR);
         last.push_back(node);
@@ -211,12 +212,12 @@ public:
         return nullptr;
     }
 
-    virtual antlrcpp::Any visitFunctionCall(scParser::FunctionCallContext *ctx) override 
+    virtual std::any visitFunctionCall(scParser::FunctionCallContext *ctx) override 
     {
         std::vector<std::shared_ptr<Expression>> args;
         if(ctx->args() != nullptr){
-            antlrcpp::Any result = ctx->args()->accept(this);
-            args = result.as<std::vector<std::shared_ptr<Expression>>>();
+            std::any result = ctx->args()->accept(this);
+            args = std::any_cast<std::vector<std::shared_ptr<Expression>>>(result);
         }
         auto id = ctx->ID()->getText();
         std::shared_ptr<FunctionEntryNode> functionEntry = std::static_pointer_cast<FunctionEntryNode>(functions[id]);
@@ -245,14 +246,14 @@ public:
         return node;
     }
 
-    virtual antlrcpp::Any visitArgs(scParser::ArgsContext *ctx) override
+    virtual std::any visitArgs(scParser::ArgsContext *ctx) override
     {
-        antlrcpp::Any expResult = ctx->expression()->accept(this);
-        auto exp = expResult.as<std::shared_ptr<Expression>>();
+        std::any expResult = ctx->expression()->accept(this);
+        auto exp = std::any_cast<std::shared_ptr<Expression>>(expResult);
 
         if(ctx->args() != nullptr){
-            antlrcpp::Any argResult = ctx->args()->accept(this);
-            auto args = argResult.as<std::vector<std::shared_ptr<Expression>>>();
+            std::any argResult = ctx->args()->accept(this);
+            auto args = std::any_cast<std::vector<std::shared_ptr<Expression>>>(argResult);
             args.push_back(exp);
             return args;
         }else{
@@ -261,9 +262,9 @@ public:
         }
     }
 
-    virtual antlrcpp::Any visitWhileloop(scParser::WhileloopContext *ctx) override {
-        antlrcpp::Any result = ctx->expression()->accept(this);
-        std::shared_ptr<Expression> conditional = result.as<std::shared_ptr<Expression>>();
+    virtual std::any visitWhileloop(scParser::WhileloopContext *ctx) override {
+        std::any result = ctx->expression()->accept(this);
+        std::shared_ptr<Expression> conditional = std::any_cast<std::shared_ptr<Expression>>(result);
 
         std::string syntax = "while(" + conditional->dotPrint() + ")";
 
@@ -278,7 +279,7 @@ public:
         return nullptr;
     }
 
-    virtual antlrcpp::Any visitExpressionM(scParser::ExpressionMContext *ctx) override
+    virtual std::any visitExpressionM(scParser::ExpressionMContext *ctx) override
     {
         if (ctx->expression() == nullptr){
             return nullptr;
@@ -287,33 +288,33 @@ public:
         std::string op = ctx->op->getText();
 
         if (ctx->expressionM() != nullptr && ctx->expressionM()->expression() != nullptr){
-            antlrcpp::Any rhs_result = ctx->expressionM()->accept(this);
-            antlrcpp::Any lhs_result = ctx->expression()->accept(this);
-            std::shared_ptr<BinaryOperatorExpression> rhs_expr = rhs_result.as<std::shared_ptr<BinaryOperatorExpression>>();
-            rhs_expr->lhs = lhs_result.as<std::shared_ptr<Expression>>();
+            std::any rhs_result = ctx->expressionM()->accept(this);
+            std::any lhs_result = ctx->expression()->accept(this);
+            std::shared_ptr<BinaryOperatorExpression> rhs_expr = std::any_cast<std::shared_ptr<BinaryOperatorExpression>>(rhs_result);
+            rhs_expr->lhs = std::any_cast<std::shared_ptr<Expression>>(lhs_result);
 
             return std::make_shared<BinaryOperatorExpression>(nullptr, op, rhs_expr);
         }else{
-            antlrcpp::Any result = ctx->expression()->accept(this);
-            std::shared_ptr<Expression> rhs = result.as<std::shared_ptr<Expression>>();
+            std::any result = ctx->expression()->accept(this);
+            std::shared_ptr<Expression> rhs = std::any_cast<std::shared_ptr<Expression>>(result);
             return std::make_shared<BinaryOperatorExpression>(nullptr, op, rhs);
         }
     }
 
-    virtual antlrcpp::Any visitStatementinitarray(scParser::StatementinitarrayContext *ctx) override
+    virtual std::any visitStatementinitarray(scParser::StatementinitarrayContext *ctx) override
     {
         std::vector<std::shared_ptr<Expression>> arrayExpressions;
 
         
         
 
-        antlrcpp::Any result1 = ctx->expression()->accept(this);
-        std::shared_ptr<Expression> arrayExpression = result1.as<std::shared_ptr<Expression>>();
+        std::any result1 = ctx->expression()->accept(this);
+        std::shared_ptr<Expression> arrayExpression = std::any_cast<std::shared_ptr<Expression>>(result1);
 
         if (ctx->arrayelement() != nullptr)
         {
-            antlrcpp::Any result2 = ctx->arrayelement()->accept(this);
-            std::vector<std::shared_ptr<Expression>> arrayelements = result2.as<std::vector<std::shared_ptr<Expression>>>();
+            std::any result2 = ctx->arrayelement()->accept(this);
+            std::vector<std::shared_ptr<Expression>> arrayelements = std::any_cast<std::vector<std::shared_ptr<Expression>>>(result2);
 
             arrayExpressions.push_back(arrayExpression);
             for (auto &i: arrayelements)
@@ -331,20 +332,20 @@ public:
         return nullptr;
     }
 
-    virtual antlrcpp::Any visitArrayelement(scParser::ArrayelementContext *ctx) override
+    virtual std::any visitArrayelement(scParser::ArrayelementContext *ctx) override
     {
         std::vector<std::shared_ptr<Expression>> expressionIndexes;
         if (ctx->expression() != nullptr){
 
-            antlrcpp::Any result = ctx->expression()->accept(this);
-            std::shared_ptr<Expression> expression = result.as<std::shared_ptr<Expression>>();
+            std::any result = ctx->expression()->accept(this);
+            std::shared_ptr<Expression> expression = std::any_cast<std::shared_ptr<Expression>>(result);
 
             expressionIndexes.push_back(expression);
 
             if (ctx->arrayelement() != nullptr)
             {
-                antlrcpp::Any result2 = ctx->arrayelement()->accept(this);
-                std::vector<std::shared_ptr<Expression>> arrayelements = result2.as<std::vector<std::shared_ptr<Expression>>>();
+                std::any result2 = ctx->arrayelement()->accept(this);
+                std::vector<std::shared_ptr<Expression>> arrayelements = std::any_cast<std::vector<std::shared_ptr<Expression>>>(result2);
                 
                 for (auto &i: arrayelements)
                 {
@@ -358,6 +359,6 @@ public:
     }
 };
 
-ScTransformer parse_to_cfg_transformer(antlr4::ANTLRInputStream stream);
+ScTransformer parse_to_cfg_transformer(antlr4::ANTLRInputStream& stream);
 std::vector<std::shared_ptr<Node>> parse_to_cfg(antlr4::ANTLRInputStream stream);
 void remove_function_nodes(ScTransformer& transformer);

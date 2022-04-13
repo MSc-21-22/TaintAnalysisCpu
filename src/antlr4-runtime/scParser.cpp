@@ -1,21 +1,157 @@
 
-// Generated from .\sc.g4 by ANTLR 4.9.2
+// Generated from sc.g4 by ANTLR 4.10
 
 
+#include "scListener.h"
 #include "scVisitor.h"
 
 #include "scParser.h"
 
 
 using namespace antlrcpp;
+
 using namespace antlr4;
 
-scParser::scParser(TokenStream *input) : Parser(input) {
-  _interpreter = new atn::ParserATNSimulator(this, _atn, _decisionToDFA, _sharedContextCache);
+namespace {
+
+struct ScParserStaticData final {
+  ScParserStaticData(std::vector<std::string> ruleNames,
+                        std::vector<std::string> literalNames,
+                        std::vector<std::string> symbolicNames)
+      : ruleNames(std::move(ruleNames)), literalNames(std::move(literalNames)),
+        symbolicNames(std::move(symbolicNames)),
+        vocabulary(this->literalNames, this->symbolicNames) {}
+
+  ScParserStaticData(const ScParserStaticData&) = delete;
+  ScParserStaticData(ScParserStaticData&&) = delete;
+  ScParserStaticData& operator=(const ScParserStaticData&) = delete;
+  ScParserStaticData& operator=(ScParserStaticData&&) = delete;
+
+  std::vector<antlr4::dfa::DFA> decisionToDFA;
+  antlr4::atn::PredictionContextCache sharedContextCache;
+  const std::vector<std::string> ruleNames;
+  const std::vector<std::string> literalNames;
+  const std::vector<std::string> symbolicNames;
+  const antlr4::dfa::Vocabulary vocabulary;
+  antlr4::atn::SerializedATNView serializedATN;
+  std::unique_ptr<antlr4::atn::ATN> atn;
+};
+
+std::once_flag scParserOnceFlag;
+ScParserStaticData *scParserStaticData = nullptr;
+
+void scParserInitialize() {
+  assert(scParserStaticData == nullptr);
+  auto staticData = std::make_unique<ScParserStaticData>(
+    std::vector<std::string>{
+      "prog", "functionDef", "statements", "statement", "statementassign", 
+      "statementinit", "statementinitarray", "arrayelement", "whileloop", 
+      "statementif", "args", "expression", "expressionM", "functionCallInit", 
+      "functionCall", "opt_parameters", "parameters", "parameter", "type"
+    },
+    std::vector<std::string>{
+      "", "'void'", "'{'", "'}'", "'return'", "';'", "'['", "']'", "','", 
+      "'while'", "'if'", "'else'", "'int'", "", "'+'", "'-'", "'/'", "'*'", 
+      "'='", "'('", "')'", "'<='", "'>='", "'<'", "'>'"
+    },
+    std::vector<std::string>{
+      "", "", "", "", "", "", "", "", "", "", "", "", "", "INTEGER", "PLUS", 
+      "MINUS", "DIVISION", "MULTIPLICATION", "ASSIGN", "LPAREN", "RPAREN", 
+      "LEQ", "GEQ", "LT", "GT", "ID", "WS"
+    }
+  );
+  static const int32_t serializedATNSegment[] = {
+  	4,1,26,206,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
+  	7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,
+  	14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,1,0,5,0,40,8,0,10,0,12,0,43,
+  	9,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  	1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,68,8,1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,
+  	1,2,1,2,1,2,3,2,81,8,2,1,3,1,3,1,3,1,3,3,3,87,8,3,1,4,1,4,1,4,1,4,1,4,
+  	1,4,1,4,1,4,1,4,1,4,3,4,99,8,4,1,5,1,5,1,5,1,5,1,5,1,6,1,6,1,6,1,6,1,
+  	6,1,6,1,6,1,6,1,6,1,6,1,6,1,7,1,7,1,7,1,7,1,7,3,7,122,8,7,1,8,1,8,1,8,
+  	1,8,1,8,1,8,1,8,1,8,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,
+  	10,1,10,1,10,1,10,1,10,3,10,149,8,10,1,11,1,11,1,11,1,11,1,11,1,11,1,
+  	11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,3,11,166,8,11,1,12,1,12,1,
+  	12,1,12,1,12,3,12,173,8,12,1,13,1,13,1,13,1,13,1,13,1,14,1,14,1,14,1,
+  	14,1,14,1,14,1,14,1,14,3,14,188,8,14,1,15,1,15,3,15,192,8,15,1,16,1,16,
+  	1,16,1,16,1,16,3,16,199,8,16,1,17,1,17,1,17,1,18,1,18,1,18,0,0,19,0,2,
+  	4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,0,1,1,0,14,17,204,0,41,
+  	1,0,0,0,2,67,1,0,0,0,4,80,1,0,0,0,6,86,1,0,0,0,8,98,1,0,0,0,10,100,1,
+  	0,0,0,12,105,1,0,0,0,14,121,1,0,0,0,16,123,1,0,0,0,18,131,1,0,0,0,20,
+  	148,1,0,0,0,22,165,1,0,0,0,24,172,1,0,0,0,26,174,1,0,0,0,28,187,1,0,0,
+  	0,30,191,1,0,0,0,32,198,1,0,0,0,34,200,1,0,0,0,36,203,1,0,0,0,38,40,3,
+  	2,1,0,39,38,1,0,0,0,40,43,1,0,0,0,41,39,1,0,0,0,41,42,1,0,0,0,42,44,1,
+  	0,0,0,43,41,1,0,0,0,44,45,5,0,0,1,45,1,1,0,0,0,46,47,5,1,0,0,47,48,5,
+  	25,0,0,48,49,5,19,0,0,49,50,3,30,15,0,50,51,5,20,0,0,51,52,5,2,0,0,52,
+  	53,3,4,2,0,53,54,5,3,0,0,54,68,1,0,0,0,55,56,3,36,18,0,56,57,5,25,0,0,
+  	57,58,5,19,0,0,58,59,3,30,15,0,59,60,5,20,0,0,60,61,5,2,0,0,61,62,3,4,
+  	2,0,62,63,5,4,0,0,63,64,3,22,11,0,64,65,5,5,0,0,65,66,5,3,0,0,66,68,1,
+  	0,0,0,67,46,1,0,0,0,67,55,1,0,0,0,68,3,1,0,0,0,69,70,3,6,3,0,70,71,5,
+  	5,0,0,71,72,3,4,2,0,72,81,1,0,0,0,73,74,3,16,8,0,74,75,3,4,2,0,75,81,
+  	1,0,0,0,76,77,3,18,9,0,77,78,3,4,2,0,78,81,1,0,0,0,79,81,1,0,0,0,80,69,
+  	1,0,0,0,80,73,1,0,0,0,80,76,1,0,0,0,80,79,1,0,0,0,81,5,1,0,0,0,82,87,
+  	3,10,5,0,83,87,3,8,4,0,84,87,3,26,13,0,85,87,3,12,6,0,86,82,1,0,0,0,86,
+  	83,1,0,0,0,86,84,1,0,0,0,86,85,1,0,0,0,87,7,1,0,0,0,88,89,5,25,0,0,89,
+  	90,5,18,0,0,90,99,3,22,11,0,91,92,5,25,0,0,92,93,5,6,0,0,93,94,3,22,11,
+  	0,94,95,5,7,0,0,95,96,5,18,0,0,96,97,3,22,11,0,97,99,1,0,0,0,98,88,1,
+  	0,0,0,98,91,1,0,0,0,99,9,1,0,0,0,100,101,3,36,18,0,101,102,5,25,0,0,102,
+  	103,5,18,0,0,103,104,3,22,11,0,104,11,1,0,0,0,105,106,3,36,18,0,106,107,
+  	5,25,0,0,107,108,5,6,0,0,108,109,5,13,0,0,109,110,5,7,0,0,110,111,5,18,
+  	0,0,111,112,5,2,0,0,112,113,3,22,11,0,113,114,3,14,7,0,114,115,5,3,0,
+  	0,115,13,1,0,0,0,116,117,5,8,0,0,117,118,3,22,11,0,118,119,3,14,7,0,119,
+  	122,1,0,0,0,120,122,1,0,0,0,121,116,1,0,0,0,121,120,1,0,0,0,122,15,1,
+  	0,0,0,123,124,5,9,0,0,124,125,5,19,0,0,125,126,3,22,11,0,126,127,5,20,
+  	0,0,127,128,5,2,0,0,128,129,3,4,2,0,129,130,5,3,0,0,130,17,1,0,0,0,131,
+  	132,5,10,0,0,132,133,5,19,0,0,133,134,3,22,11,0,134,135,5,20,0,0,135,
+  	136,5,2,0,0,136,137,3,4,2,0,137,138,5,3,0,0,138,139,5,11,0,0,139,140,
+  	5,2,0,0,140,141,3,4,2,0,141,142,5,3,0,0,142,19,1,0,0,0,143,144,3,22,11,
+  	0,144,145,5,8,0,0,145,146,3,20,10,0,146,149,1,0,0,0,147,149,3,22,11,0,
+  	148,143,1,0,0,0,148,147,1,0,0,0,149,21,1,0,0,0,150,151,5,19,0,0,151,152,
+  	3,22,11,0,152,153,5,20,0,0,153,154,3,24,12,0,154,166,1,0,0,0,155,156,
+  	5,13,0,0,156,166,3,24,12,0,157,158,5,25,0,0,158,166,3,24,12,0,159,160,
+  	5,25,0,0,160,161,5,6,0,0,161,162,3,22,11,0,162,163,5,7,0,0,163,164,3,
+  	24,12,0,164,166,1,0,0,0,165,150,1,0,0,0,165,155,1,0,0,0,165,157,1,0,0,
+  	0,165,159,1,0,0,0,166,23,1,0,0,0,167,168,7,0,0,0,168,169,3,22,11,0,169,
+  	170,3,24,12,0,170,173,1,0,0,0,171,173,1,0,0,0,172,167,1,0,0,0,172,171,
+  	1,0,0,0,173,25,1,0,0,0,174,175,3,36,18,0,175,176,5,25,0,0,176,177,5,18,
+  	0,0,177,178,3,28,14,0,178,27,1,0,0,0,179,180,5,25,0,0,180,181,5,19,0,
+  	0,181,188,5,20,0,0,182,183,5,25,0,0,183,184,5,19,0,0,184,185,3,20,10,
+  	0,185,186,5,20,0,0,186,188,1,0,0,0,187,179,1,0,0,0,187,182,1,0,0,0,188,
+  	29,1,0,0,0,189,192,3,32,16,0,190,192,1,0,0,0,191,189,1,0,0,0,191,190,
+  	1,0,0,0,192,31,1,0,0,0,193,194,3,34,17,0,194,195,5,8,0,0,195,196,3,32,
+  	16,0,196,199,1,0,0,0,197,199,3,34,17,0,198,193,1,0,0,0,198,197,1,0,0,
+  	0,199,33,1,0,0,0,200,201,3,36,18,0,201,202,5,25,0,0,202,35,1,0,0,0,203,
+  	204,5,12,0,0,204,37,1,0,0,0,12,41,67,80,86,98,121,148,165,172,187,191,
+  	198
+  };
+  staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
+
+  antlr4::atn::ATNDeserializer deserializer;
+  staticData->atn = deserializer.deserialize(staticData->serializedATN);
+
+  const size_t count = staticData->atn->getNumberOfDecisions();
+  staticData->decisionToDFA.reserve(count);
+  for (size_t i = 0; i < count; i++) { 
+    staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
+  }
+  scParserStaticData = staticData.release();
+}
+
+}
+
+scParser::scParser(TokenStream *input) : scParser(input, antlr4::atn::ParserATNSimulatorOptions()) {}
+
+scParser::scParser(TokenStream *input, const antlr4::atn::ParserATNSimulatorOptions &options) : Parser(input) {
+  scParser::initialize();
+  _interpreter = new atn::ParserATNSimulator(this, *scParserStaticData->atn, scParserStaticData->decisionToDFA, scParserStaticData->sharedContextCache, options);
 }
 
 scParser::~scParser() {
   delete _interpreter;
+}
+
+const atn::ATN& scParser::getATN() const {
+  return *scParserStaticData->atn;
 }
 
 std::string scParser::getGrammarFileName() const {
@@ -23,11 +159,15 @@ std::string scParser::getGrammarFileName() const {
 }
 
 const std::vector<std::string>& scParser::getRuleNames() const {
-  return _ruleNames;
+  return scParserStaticData->ruleNames;
 }
 
-dfa::Vocabulary& scParser::getVocabulary() const {
-  return _vocabulary;
+const dfa::Vocabulary& scParser::getVocabulary() const {
+  return scParserStaticData->vocabulary;
+}
+
+antlr4::atn::SerializedATNView scParser::getSerializedATN() const {
+  return scParserStaticData->serializedATN;
 }
 
 
@@ -54,8 +194,20 @@ size_t scParser::ProgContext::getRuleIndex() const {
   return scParser::RuleProg;
 }
 
+void scParser::ProgContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterProg(this);
+}
 
-antlrcpp::Any scParser::ProgContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::ProgContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitProg(this);
+}
+
+
+std::any scParser::ProgContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitProg(this);
   else
@@ -140,8 +292,20 @@ size_t scParser::FunctionDefContext::getRuleIndex() const {
   return scParser::RuleFunctionDef;
 }
 
+void scParser::FunctionDefContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterFunctionDef(this);
+}
 
-antlrcpp::Any scParser::FunctionDefContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::FunctionDefContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitFunctionDef(this);
+}
+
+
+std::any scParser::FunctionDefContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitFunctionDef(this);
   else
@@ -252,8 +416,20 @@ size_t scParser::StatementsContext::getRuleIndex() const {
   return scParser::RuleStatements;
 }
 
+void scParser::StatementsContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterStatements(this);
+}
 
-antlrcpp::Any scParser::StatementsContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::StatementsContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitStatements(this);
+}
+
+
+std::any scParser::StatementsContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitStatements(this);
   else
@@ -353,8 +529,20 @@ size_t scParser::StatementContext::getRuleIndex() const {
   return scParser::RuleStatement;
 }
 
+void scParser::StatementContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterStatement(this);
+}
 
-antlrcpp::Any scParser::StatementContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::StatementContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitStatement(this);
+}
+
+
+std::any scParser::StatementContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitStatement(this);
   else
@@ -445,8 +633,20 @@ size_t scParser::StatementassignContext::getRuleIndex() const {
   return scParser::RuleStatementassign;
 }
 
+void scParser::StatementassignContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterStatementassign(this);
+}
 
-antlrcpp::Any scParser::StatementassignContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::StatementassignContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitStatementassign(this);
+}
+
+
+std::any scParser::StatementassignContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitStatementassign(this);
   else
@@ -537,8 +737,20 @@ size_t scParser::StatementinitContext::getRuleIndex() const {
   return scParser::RuleStatementinit;
 }
 
+void scParser::StatementinitContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterStatementinit(this);
+}
 
-antlrcpp::Any scParser::StatementinitContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::StatementinitContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitStatementinit(this);
+}
+
+
+std::any scParser::StatementinitContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitStatementinit(this);
   else
@@ -612,8 +824,20 @@ size_t scParser::StatementinitarrayContext::getRuleIndex() const {
   return scParser::RuleStatementinitarray;
 }
 
+void scParser::StatementinitarrayContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterStatementinitarray(this);
+}
 
-antlrcpp::Any scParser::StatementinitarrayContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::StatementinitarrayContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitStatementinitarray(this);
+}
+
+
+std::any scParser::StatementinitarrayContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitStatementinitarray(this);
   else
@@ -683,8 +907,20 @@ size_t scParser::ArrayelementContext::getRuleIndex() const {
   return scParser::RuleArrayelement;
 }
 
+void scParser::ArrayelementContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterArrayelement(this);
+}
 
-antlrcpp::Any scParser::ArrayelementContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::ArrayelementContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitArrayelement(this);
+}
+
+
+std::any scParser::ArrayelementContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitArrayelement(this);
   else
@@ -764,8 +1000,20 @@ size_t scParser::WhileloopContext::getRuleIndex() const {
   return scParser::RuleWhileloop;
 }
 
+void scParser::WhileloopContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterWhileloop(this);
+}
 
-antlrcpp::Any scParser::WhileloopContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::WhileloopContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitWhileloop(this);
+}
+
+
+std::any scParser::WhileloopContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitWhileloop(this);
   else
@@ -841,8 +1089,20 @@ size_t scParser::StatementifContext::getRuleIndex() const {
   return scParser::RuleStatementif;
 }
 
+void scParser::StatementifContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterStatementif(this);
+}
 
-antlrcpp::Any scParser::StatementifContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::StatementifContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitStatementif(this);
+}
+
+
+std::any scParser::StatementifContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitStatementif(this);
   else
@@ -914,8 +1174,20 @@ size_t scParser::ArgsContext::getRuleIndex() const {
   return scParser::RuleArgs;
 }
 
+void scParser::ArgsContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterArgs(this);
+}
 
-antlrcpp::Any scParser::ArgsContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::ArgsContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitArgs(this);
+}
+
+
+std::any scParser::ArgsContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitArgs(this);
   else
@@ -1004,8 +1276,20 @@ size_t scParser::ExpressionContext::getRuleIndex() const {
   return scParser::RuleExpression;
 }
 
+void scParser::ExpressionContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterExpression(this);
+}
 
-antlrcpp::Any scParser::ExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::ExpressionContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitExpression(this);
+}
+
+
+std::any scParser::ExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitExpression(this);
   else
@@ -1122,8 +1406,20 @@ size_t scParser::ExpressionMContext::getRuleIndex() const {
   return scParser::RuleExpressionM;
 }
 
+void scParser::ExpressionMContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterExpressionM(this);
+}
 
-antlrcpp::Any scParser::ExpressionMContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::ExpressionMContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitExpressionM(this);
+}
+
+
+std::any scParser::ExpressionMContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitExpressionM(this);
   else
@@ -1149,14 +1445,14 @@ scParser::ExpressionMContext* scParser::expressionM() {
     case 1: {
       enterOuterAlt(_localctx, 1);
       setState(167);
-      dynamic_cast<ExpressionMContext *>(_localctx)->op = _input->LT(1);
+      antlrcpp::downCast<ExpressionMContext *>(_localctx)->op = _input->LT(1);
       _la = _input->LA(1);
       if (!((((_la & ~ 0x3fULL) == 0) &&
         ((1ULL << _la) & ((1ULL << scParser::PLUS)
         | (1ULL << scParser::MINUS)
         | (1ULL << scParser::DIVISION)
         | (1ULL << scParser::MULTIPLICATION))) != 0))) {
-        dynamic_cast<ExpressionMContext *>(_localctx)->op = _errHandler->recoverInline(this);
+        antlrcpp::downCast<ExpressionMContext *>(_localctx)->op = _errHandler->recoverInline(this);
       }
       else {
         _errHandler->reportMatch(this);
@@ -1216,8 +1512,20 @@ size_t scParser::FunctionCallInitContext::getRuleIndex() const {
   return scParser::RuleFunctionCallInit;
 }
 
+void scParser::FunctionCallInitContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterFunctionCallInit(this);
+}
 
-antlrcpp::Any scParser::FunctionCallInitContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::FunctionCallInitContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitFunctionCallInit(this);
+}
+
+
+std::any scParser::FunctionCallInitContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitFunctionCallInit(this);
   else
@@ -1283,8 +1591,20 @@ size_t scParser::FunctionCallContext::getRuleIndex() const {
   return scParser::RuleFunctionCall;
 }
 
+void scParser::FunctionCallContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterFunctionCall(this);
+}
 
-antlrcpp::Any scParser::FunctionCallContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::FunctionCallContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitFunctionCall(this);
+}
+
+
+std::any scParser::FunctionCallContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitFunctionCall(this);
   else
@@ -1359,8 +1679,20 @@ size_t scParser::Opt_parametersContext::getRuleIndex() const {
   return scParser::RuleOpt_parameters;
 }
 
+void scParser::Opt_parametersContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterOpt_parameters(this);
+}
 
-antlrcpp::Any scParser::Opt_parametersContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::Opt_parametersContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitOpt_parameters(this);
+}
+
+
+std::any scParser::Opt_parametersContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitOpt_parameters(this);
   else
@@ -1428,8 +1760,20 @@ size_t scParser::ParametersContext::getRuleIndex() const {
   return scParser::RuleParameters;
 }
 
+void scParser::ParametersContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterParameters(this);
+}
 
-antlrcpp::Any scParser::ParametersContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::ParametersContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitParameters(this);
+}
+
+
+std::any scParser::ParametersContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitParameters(this);
   else
@@ -1502,8 +1846,20 @@ size_t scParser::ParameterContext::getRuleIndex() const {
   return scParser::RuleParameter;
 }
 
+void scParser::ParameterContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterParameter(this);
+}
 
-antlrcpp::Any scParser::ParameterContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::ParameterContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitParameter(this);
+}
+
+
+std::any scParser::ParameterContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitParameter(this);
   else
@@ -1549,8 +1905,20 @@ size_t scParser::TypeContext::getRuleIndex() const {
   return scParser::RuleType;
 }
 
+void scParser::TypeContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterType(this);
+}
 
-antlrcpp::Any scParser::TypeContext::accept(tree::ParseTreeVisitor *visitor) {
+void scParser::TypeContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<scListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitType(this);
+}
+
+
+std::any scParser::TypeContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<scVisitor*>(visitor))
     return parserVisitor->visitType(this);
   else
@@ -1583,202 +1951,6 @@ scParser::TypeContext* scParser::type() {
   return _localctx;
 }
 
-// Static vars and initialization.
-std::vector<dfa::DFA> scParser::_decisionToDFA;
-atn::PredictionContextCache scParser::_sharedContextCache;
-
-// We own the ATN which in turn owns the ATN states.
-atn::ATN scParser::_atn;
-std::vector<uint16_t> scParser::_serializedATN;
-
-std::vector<std::string> scParser::_ruleNames = {
-  "prog", "functionDef", "statements", "statement", "statementassign", "statementinit", 
-  "statementinitarray", "arrayelement", "whileloop", "statementif", "args", 
-  "expression", "expressionM", "functionCallInit", "functionCall", "opt_parameters", 
-  "parameters", "parameter", "type"
-};
-
-std::vector<std::string> scParser::_literalNames = {
-  "", "'void'", "'{'", "'}'", "'return'", "';'", "'['", "']'", "','", "'while'", 
-  "'if'", "'else'", "'int'", "", "'+'", "'-'", "'/'", "'*'", "'='", "'('", 
-  "')'", "'<='", "'>='", "'<'", "'>'"
-};
-
-std::vector<std::string> scParser::_symbolicNames = {
-  "", "", "", "", "", "", "", "", "", "", "", "", "", "INTEGER", "PLUS", 
-  "MINUS", "DIVISION", "MULTIPLICATION", "ASSIGN", "LPAREN", "RPAREN", "LEQ", 
-  "GEQ", "LT", "GT", "ID", "WS"
-};
-
-dfa::Vocabulary scParser::_vocabulary(_literalNames, _symbolicNames);
-
-std::vector<std::string> scParser::_tokenNames;
-
-scParser::Initializer::Initializer() {
-	for (size_t i = 0; i < _symbolicNames.size(); ++i) {
-		std::string name = _vocabulary.getLiteralName(i);
-		if (name.empty()) {
-			name = _vocabulary.getSymbolicName(i);
-		}
-
-		if (name.empty()) {
-			_tokenNames.push_back("<INVALID>");
-		} else {
-      _tokenNames.push_back(name);
-    }
-	}
-
-  static const uint16_t serializedATNSegment0[] = {
-    0x3, 0x608b, 0xa72a, 0x8133, 0xb9ed, 0x417c, 0x3be7, 0x7786, 0x5964, 
-       0x3, 0x1c, 0xd0, 0x4, 0x2, 0x9, 0x2, 0x4, 0x3, 0x9, 0x3, 0x4, 0x4, 
-       0x9, 0x4, 0x4, 0x5, 0x9, 0x5, 0x4, 0x6, 0x9, 0x6, 0x4, 0x7, 0x9, 
-       0x7, 0x4, 0x8, 0x9, 0x8, 0x4, 0x9, 0x9, 0x9, 0x4, 0xa, 0x9, 0xa, 
-       0x4, 0xb, 0x9, 0xb, 0x4, 0xc, 0x9, 0xc, 0x4, 0xd, 0x9, 0xd, 0x4, 
-       0xe, 0x9, 0xe, 0x4, 0xf, 0x9, 0xf, 0x4, 0x10, 0x9, 0x10, 0x4, 0x11, 
-       0x9, 0x11, 0x4, 0x12, 0x9, 0x12, 0x4, 0x13, 0x9, 0x13, 0x4, 0x14, 
-       0x9, 0x14, 0x3, 0x2, 0x7, 0x2, 0x2a, 0xa, 0x2, 0xc, 0x2, 0xe, 0x2, 
-       0x2d, 0xb, 0x2, 0x3, 0x2, 0x3, 0x2, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 
-       0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 
-       0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 
-       0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x5, 0x3, 0x46, 
-       0xa, 0x3, 0x3, 0x4, 0x3, 0x4, 0x3, 0x4, 0x3, 0x4, 0x3, 0x4, 0x3, 
-       0x4, 0x3, 0x4, 0x3, 0x4, 0x3, 0x4, 0x3, 0x4, 0x3, 0x4, 0x5, 0x4, 
-       0x53, 0xa, 0x4, 0x3, 0x5, 0x3, 0x5, 0x3, 0x5, 0x3, 0x5, 0x5, 0x5, 
-       0x59, 0xa, 0x5, 0x3, 0x6, 0x3, 0x6, 0x3, 0x6, 0x3, 0x6, 0x3, 0x6, 
-       0x3, 0x6, 0x3, 0x6, 0x3, 0x6, 0x3, 0x6, 0x3, 0x6, 0x5, 0x6, 0x65, 
-       0xa, 0x6, 0x3, 0x7, 0x3, 0x7, 0x3, 0x7, 0x3, 0x7, 0x3, 0x7, 0x3, 
-       0x8, 0x3, 0x8, 0x3, 0x8, 0x3, 0x8, 0x3, 0x8, 0x3, 0x8, 0x3, 0x8, 
-       0x3, 0x8, 0x3, 0x8, 0x3, 0x8, 0x3, 0x8, 0x3, 0x9, 0x3, 0x9, 0x3, 
-       0x9, 0x3, 0x9, 0x3, 0x9, 0x5, 0x9, 0x7c, 0xa, 0x9, 0x3, 0xa, 0x3, 
-       0xa, 0x3, 0xa, 0x3, 0xa, 0x3, 0xa, 0x3, 0xa, 0x3, 0xa, 0x3, 0xa, 
-       0x3, 0xb, 0x3, 0xb, 0x3, 0xb, 0x3, 0xb, 0x3, 0xb, 0x3, 0xb, 0x3, 
-       0xb, 0x3, 0xb, 0x3, 0xb, 0x3, 0xb, 0x3, 0xb, 0x3, 0xb, 0x3, 0xc, 
-       0x3, 0xc, 0x3, 0xc, 0x3, 0xc, 0x3, 0xc, 0x5, 0xc, 0x97, 0xa, 0xc, 
-       0x3, 0xd, 0x3, 0xd, 0x3, 0xd, 0x3, 0xd, 0x3, 0xd, 0x3, 0xd, 0x3, 
-       0xd, 0x3, 0xd, 0x3, 0xd, 0x3, 0xd, 0x3, 0xd, 0x3, 0xd, 0x3, 0xd, 
-       0x3, 0xd, 0x3, 0xd, 0x5, 0xd, 0xa8, 0xa, 0xd, 0x3, 0xe, 0x3, 0xe, 
-       0x3, 0xe, 0x3, 0xe, 0x3, 0xe, 0x5, 0xe, 0xaf, 0xa, 0xe, 0x3, 0xf, 
-       0x3, 0xf, 0x3, 0xf, 0x3, 0xf, 0x3, 0xf, 0x3, 0x10, 0x3, 0x10, 0x3, 
-       0x10, 0x3, 0x10, 0x3, 0x10, 0x3, 0x10, 0x3, 0x10, 0x3, 0x10, 0x5, 
-       0x10, 0xbe, 0xa, 0x10, 0x3, 0x11, 0x3, 0x11, 0x5, 0x11, 0xc2, 0xa, 
-       0x11, 0x3, 0x12, 0x3, 0x12, 0x3, 0x12, 0x3, 0x12, 0x3, 0x12, 0x5, 
-       0x12, 0xc9, 0xa, 0x12, 0x3, 0x13, 0x3, 0x13, 0x3, 0x13, 0x3, 0x14, 
-       0x3, 0x14, 0x3, 0x14, 0x2, 0x2, 0x15, 0x2, 0x4, 0x6, 0x8, 0xa, 0xc, 
-       0xe, 0x10, 0x12, 0x14, 0x16, 0x18, 0x1a, 0x1c, 0x1e, 0x20, 0x22, 
-       0x24, 0x26, 0x2, 0x3, 0x3, 0x2, 0x10, 0x13, 0x2, 0xce, 0x2, 0x2b, 
-       0x3, 0x2, 0x2, 0x2, 0x4, 0x45, 0x3, 0x2, 0x2, 0x2, 0x6, 0x52, 0x3, 
-       0x2, 0x2, 0x2, 0x8, 0x58, 0x3, 0x2, 0x2, 0x2, 0xa, 0x64, 0x3, 0x2, 
-       0x2, 0x2, 0xc, 0x66, 0x3, 0x2, 0x2, 0x2, 0xe, 0x6b, 0x3, 0x2, 0x2, 
-       0x2, 0x10, 0x7b, 0x3, 0x2, 0x2, 0x2, 0x12, 0x7d, 0x3, 0x2, 0x2, 0x2, 
-       0x14, 0x85, 0x3, 0x2, 0x2, 0x2, 0x16, 0x96, 0x3, 0x2, 0x2, 0x2, 0x18, 
-       0xa7, 0x3, 0x2, 0x2, 0x2, 0x1a, 0xae, 0x3, 0x2, 0x2, 0x2, 0x1c, 0xb0, 
-       0x3, 0x2, 0x2, 0x2, 0x1e, 0xbd, 0x3, 0x2, 0x2, 0x2, 0x20, 0xc1, 0x3, 
-       0x2, 0x2, 0x2, 0x22, 0xc8, 0x3, 0x2, 0x2, 0x2, 0x24, 0xca, 0x3, 0x2, 
-       0x2, 0x2, 0x26, 0xcd, 0x3, 0x2, 0x2, 0x2, 0x28, 0x2a, 0x5, 0x4, 0x3, 
-       0x2, 0x29, 0x28, 0x3, 0x2, 0x2, 0x2, 0x2a, 0x2d, 0x3, 0x2, 0x2, 0x2, 
-       0x2b, 0x29, 0x3, 0x2, 0x2, 0x2, 0x2b, 0x2c, 0x3, 0x2, 0x2, 0x2, 0x2c, 
-       0x2e, 0x3, 0x2, 0x2, 0x2, 0x2d, 0x2b, 0x3, 0x2, 0x2, 0x2, 0x2e, 0x2f, 
-       0x7, 0x2, 0x2, 0x3, 0x2f, 0x3, 0x3, 0x2, 0x2, 0x2, 0x30, 0x31, 0x7, 
-       0x3, 0x2, 0x2, 0x31, 0x32, 0x7, 0x1b, 0x2, 0x2, 0x32, 0x33, 0x7, 
-       0x15, 0x2, 0x2, 0x33, 0x34, 0x5, 0x20, 0x11, 0x2, 0x34, 0x35, 0x7, 
-       0x16, 0x2, 0x2, 0x35, 0x36, 0x7, 0x4, 0x2, 0x2, 0x36, 0x37, 0x5, 
-       0x6, 0x4, 0x2, 0x37, 0x38, 0x7, 0x5, 0x2, 0x2, 0x38, 0x46, 0x3, 0x2, 
-       0x2, 0x2, 0x39, 0x3a, 0x5, 0x26, 0x14, 0x2, 0x3a, 0x3b, 0x7, 0x1b, 
-       0x2, 0x2, 0x3b, 0x3c, 0x7, 0x15, 0x2, 0x2, 0x3c, 0x3d, 0x5, 0x20, 
-       0x11, 0x2, 0x3d, 0x3e, 0x7, 0x16, 0x2, 0x2, 0x3e, 0x3f, 0x7, 0x4, 
-       0x2, 0x2, 0x3f, 0x40, 0x5, 0x6, 0x4, 0x2, 0x40, 0x41, 0x7, 0x6, 0x2, 
-       0x2, 0x41, 0x42, 0x5, 0x18, 0xd, 0x2, 0x42, 0x43, 0x7, 0x7, 0x2, 
-       0x2, 0x43, 0x44, 0x7, 0x5, 0x2, 0x2, 0x44, 0x46, 0x3, 0x2, 0x2, 0x2, 
-       0x45, 0x30, 0x3, 0x2, 0x2, 0x2, 0x45, 0x39, 0x3, 0x2, 0x2, 0x2, 0x46, 
-       0x5, 0x3, 0x2, 0x2, 0x2, 0x47, 0x48, 0x5, 0x8, 0x5, 0x2, 0x48, 0x49, 
-       0x7, 0x7, 0x2, 0x2, 0x49, 0x4a, 0x5, 0x6, 0x4, 0x2, 0x4a, 0x53, 0x3, 
-       0x2, 0x2, 0x2, 0x4b, 0x4c, 0x5, 0x12, 0xa, 0x2, 0x4c, 0x4d, 0x5, 
-       0x6, 0x4, 0x2, 0x4d, 0x53, 0x3, 0x2, 0x2, 0x2, 0x4e, 0x4f, 0x5, 0x14, 
-       0xb, 0x2, 0x4f, 0x50, 0x5, 0x6, 0x4, 0x2, 0x50, 0x53, 0x3, 0x2, 0x2, 
-       0x2, 0x51, 0x53, 0x3, 0x2, 0x2, 0x2, 0x52, 0x47, 0x3, 0x2, 0x2, 0x2, 
-       0x52, 0x4b, 0x3, 0x2, 0x2, 0x2, 0x52, 0x4e, 0x3, 0x2, 0x2, 0x2, 0x52, 
-       0x51, 0x3, 0x2, 0x2, 0x2, 0x53, 0x7, 0x3, 0x2, 0x2, 0x2, 0x54, 0x59, 
-       0x5, 0xc, 0x7, 0x2, 0x55, 0x59, 0x5, 0xa, 0x6, 0x2, 0x56, 0x59, 0x5, 
-       0x1c, 0xf, 0x2, 0x57, 0x59, 0x5, 0xe, 0x8, 0x2, 0x58, 0x54, 0x3, 
-       0x2, 0x2, 0x2, 0x58, 0x55, 0x3, 0x2, 0x2, 0x2, 0x58, 0x56, 0x3, 0x2, 
-       0x2, 0x2, 0x58, 0x57, 0x3, 0x2, 0x2, 0x2, 0x59, 0x9, 0x3, 0x2, 0x2, 
-       0x2, 0x5a, 0x5b, 0x7, 0x1b, 0x2, 0x2, 0x5b, 0x5c, 0x7, 0x14, 0x2, 
-       0x2, 0x5c, 0x65, 0x5, 0x18, 0xd, 0x2, 0x5d, 0x5e, 0x7, 0x1b, 0x2, 
-       0x2, 0x5e, 0x5f, 0x7, 0x8, 0x2, 0x2, 0x5f, 0x60, 0x5, 0x18, 0xd, 
-       0x2, 0x60, 0x61, 0x7, 0x9, 0x2, 0x2, 0x61, 0x62, 0x7, 0x14, 0x2, 
-       0x2, 0x62, 0x63, 0x5, 0x18, 0xd, 0x2, 0x63, 0x65, 0x3, 0x2, 0x2, 
-       0x2, 0x64, 0x5a, 0x3, 0x2, 0x2, 0x2, 0x64, 0x5d, 0x3, 0x2, 0x2, 0x2, 
-       0x65, 0xb, 0x3, 0x2, 0x2, 0x2, 0x66, 0x67, 0x5, 0x26, 0x14, 0x2, 
-       0x67, 0x68, 0x7, 0x1b, 0x2, 0x2, 0x68, 0x69, 0x7, 0x14, 0x2, 0x2, 
-       0x69, 0x6a, 0x5, 0x18, 0xd, 0x2, 0x6a, 0xd, 0x3, 0x2, 0x2, 0x2, 0x6b, 
-       0x6c, 0x5, 0x26, 0x14, 0x2, 0x6c, 0x6d, 0x7, 0x1b, 0x2, 0x2, 0x6d, 
-       0x6e, 0x7, 0x8, 0x2, 0x2, 0x6e, 0x6f, 0x7, 0xf, 0x2, 0x2, 0x6f, 0x70, 
-       0x7, 0x9, 0x2, 0x2, 0x70, 0x71, 0x7, 0x14, 0x2, 0x2, 0x71, 0x72, 
-       0x7, 0x4, 0x2, 0x2, 0x72, 0x73, 0x5, 0x18, 0xd, 0x2, 0x73, 0x74, 
-       0x5, 0x10, 0x9, 0x2, 0x74, 0x75, 0x7, 0x5, 0x2, 0x2, 0x75, 0xf, 0x3, 
-       0x2, 0x2, 0x2, 0x76, 0x77, 0x7, 0xa, 0x2, 0x2, 0x77, 0x78, 0x5, 0x18, 
-       0xd, 0x2, 0x78, 0x79, 0x5, 0x10, 0x9, 0x2, 0x79, 0x7c, 0x3, 0x2, 
-       0x2, 0x2, 0x7a, 0x7c, 0x3, 0x2, 0x2, 0x2, 0x7b, 0x76, 0x3, 0x2, 0x2, 
-       0x2, 0x7b, 0x7a, 0x3, 0x2, 0x2, 0x2, 0x7c, 0x11, 0x3, 0x2, 0x2, 0x2, 
-       0x7d, 0x7e, 0x7, 0xb, 0x2, 0x2, 0x7e, 0x7f, 0x7, 0x15, 0x2, 0x2, 
-       0x7f, 0x80, 0x5, 0x18, 0xd, 0x2, 0x80, 0x81, 0x7, 0x16, 0x2, 0x2, 
-       0x81, 0x82, 0x7, 0x4, 0x2, 0x2, 0x82, 0x83, 0x5, 0x6, 0x4, 0x2, 0x83, 
-       0x84, 0x7, 0x5, 0x2, 0x2, 0x84, 0x13, 0x3, 0x2, 0x2, 0x2, 0x85, 0x86, 
-       0x7, 0xc, 0x2, 0x2, 0x86, 0x87, 0x7, 0x15, 0x2, 0x2, 0x87, 0x88, 
-       0x5, 0x18, 0xd, 0x2, 0x88, 0x89, 0x7, 0x16, 0x2, 0x2, 0x89, 0x8a, 
-       0x7, 0x4, 0x2, 0x2, 0x8a, 0x8b, 0x5, 0x6, 0x4, 0x2, 0x8b, 0x8c, 0x7, 
-       0x5, 0x2, 0x2, 0x8c, 0x8d, 0x7, 0xd, 0x2, 0x2, 0x8d, 0x8e, 0x7, 0x4, 
-       0x2, 0x2, 0x8e, 0x8f, 0x5, 0x6, 0x4, 0x2, 0x8f, 0x90, 0x7, 0x5, 0x2, 
-       0x2, 0x90, 0x15, 0x3, 0x2, 0x2, 0x2, 0x91, 0x92, 0x5, 0x18, 0xd, 
-       0x2, 0x92, 0x93, 0x7, 0xa, 0x2, 0x2, 0x93, 0x94, 0x5, 0x16, 0xc, 
-       0x2, 0x94, 0x97, 0x3, 0x2, 0x2, 0x2, 0x95, 0x97, 0x5, 0x18, 0xd, 
-       0x2, 0x96, 0x91, 0x3, 0x2, 0x2, 0x2, 0x96, 0x95, 0x3, 0x2, 0x2, 0x2, 
-       0x97, 0x17, 0x3, 0x2, 0x2, 0x2, 0x98, 0x99, 0x7, 0x15, 0x2, 0x2, 
-       0x99, 0x9a, 0x5, 0x18, 0xd, 0x2, 0x9a, 0x9b, 0x7, 0x16, 0x2, 0x2, 
-       0x9b, 0x9c, 0x5, 0x1a, 0xe, 0x2, 0x9c, 0xa8, 0x3, 0x2, 0x2, 0x2, 
-       0x9d, 0x9e, 0x7, 0xf, 0x2, 0x2, 0x9e, 0xa8, 0x5, 0x1a, 0xe, 0x2, 
-       0x9f, 0xa0, 0x7, 0x1b, 0x2, 0x2, 0xa0, 0xa8, 0x5, 0x1a, 0xe, 0x2, 
-       0xa1, 0xa2, 0x7, 0x1b, 0x2, 0x2, 0xa2, 0xa3, 0x7, 0x8, 0x2, 0x2, 
-       0xa3, 0xa4, 0x5, 0x18, 0xd, 0x2, 0xa4, 0xa5, 0x7, 0x9, 0x2, 0x2, 
-       0xa5, 0xa6, 0x5, 0x1a, 0xe, 0x2, 0xa6, 0xa8, 0x3, 0x2, 0x2, 0x2, 
-       0xa7, 0x98, 0x3, 0x2, 0x2, 0x2, 0xa7, 0x9d, 0x3, 0x2, 0x2, 0x2, 0xa7, 
-       0x9f, 0x3, 0x2, 0x2, 0x2, 0xa7, 0xa1, 0x3, 0x2, 0x2, 0x2, 0xa8, 0x19, 
-       0x3, 0x2, 0x2, 0x2, 0xa9, 0xaa, 0x9, 0x2, 0x2, 0x2, 0xaa, 0xab, 0x5, 
-       0x18, 0xd, 0x2, 0xab, 0xac, 0x5, 0x1a, 0xe, 0x2, 0xac, 0xaf, 0x3, 
-       0x2, 0x2, 0x2, 0xad, 0xaf, 0x3, 0x2, 0x2, 0x2, 0xae, 0xa9, 0x3, 0x2, 
-       0x2, 0x2, 0xae, 0xad, 0x3, 0x2, 0x2, 0x2, 0xaf, 0x1b, 0x3, 0x2, 0x2, 
-       0x2, 0xb0, 0xb1, 0x5, 0x26, 0x14, 0x2, 0xb1, 0xb2, 0x7, 0x1b, 0x2, 
-       0x2, 0xb2, 0xb3, 0x7, 0x14, 0x2, 0x2, 0xb3, 0xb4, 0x5, 0x1e, 0x10, 
-       0x2, 0xb4, 0x1d, 0x3, 0x2, 0x2, 0x2, 0xb5, 0xb6, 0x7, 0x1b, 0x2, 
-       0x2, 0xb6, 0xb7, 0x7, 0x15, 0x2, 0x2, 0xb7, 0xbe, 0x7, 0x16, 0x2, 
-       0x2, 0xb8, 0xb9, 0x7, 0x1b, 0x2, 0x2, 0xb9, 0xba, 0x7, 0x15, 0x2, 
-       0x2, 0xba, 0xbb, 0x5, 0x16, 0xc, 0x2, 0xbb, 0xbc, 0x7, 0x16, 0x2, 
-       0x2, 0xbc, 0xbe, 0x3, 0x2, 0x2, 0x2, 0xbd, 0xb5, 0x3, 0x2, 0x2, 0x2, 
-       0xbd, 0xb8, 0x3, 0x2, 0x2, 0x2, 0xbe, 0x1f, 0x3, 0x2, 0x2, 0x2, 0xbf, 
-       0xc2, 0x5, 0x22, 0x12, 0x2, 0xc0, 0xc2, 0x3, 0x2, 0x2, 0x2, 0xc1, 
-       0xbf, 0x3, 0x2, 0x2, 0x2, 0xc1, 0xc0, 0x3, 0x2, 0x2, 0x2, 0xc2, 0x21, 
-       0x3, 0x2, 0x2, 0x2, 0xc3, 0xc4, 0x5, 0x24, 0x13, 0x2, 0xc4, 0xc5, 
-       0x7, 0xa, 0x2, 0x2, 0xc5, 0xc6, 0x5, 0x22, 0x12, 0x2, 0xc6, 0xc9, 
-       0x3, 0x2, 0x2, 0x2, 0xc7, 0xc9, 0x5, 0x24, 0x13, 0x2, 0xc8, 0xc3, 
-       0x3, 0x2, 0x2, 0x2, 0xc8, 0xc7, 0x3, 0x2, 0x2, 0x2, 0xc9, 0x23, 0x3, 
-       0x2, 0x2, 0x2, 0xca, 0xcb, 0x5, 0x26, 0x14, 0x2, 0xcb, 0xcc, 0x7, 
-       0x1b, 0x2, 0x2, 0xcc, 0x25, 0x3, 0x2, 0x2, 0x2, 0xcd, 0xce, 0x7, 
-       0xe, 0x2, 0x2, 0xce, 0x27, 0x3, 0x2, 0x2, 0x2, 0xe, 0x2b, 0x45, 0x52, 
-       0x58, 0x64, 0x7b, 0x96, 0xa7, 0xae, 0xbd, 0xc1, 0xc8, 
-  };
-
-  _serializedATN.insert(_serializedATN.end(), serializedATNSegment0,
-    serializedATNSegment0 + sizeof(serializedATNSegment0) / sizeof(serializedATNSegment0[0]));
-
-
-  atn::ATNDeserializer deserializer;
-  _atn = deserializer.deserialize(_serializedATN);
-
-  size_t count = _atn.getNumberOfDecisions();
-  _decisionToDFA.reserve(count);
-  for (size_t i = 0; i < count; i++) { 
-    _decisionToDFA.emplace_back(_atn.getDecisionState(i), i);
-  }
+void scParser::initialize() {
+  std::call_once(scParserOnceFlag, scParserInitialize);
 }
-
-scParser::Initializer scParser::_init;

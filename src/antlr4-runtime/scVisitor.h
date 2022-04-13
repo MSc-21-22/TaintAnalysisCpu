@@ -1,5 +1,5 @@
 
-// Generated from .\sc.g4 by ANTLR 4.9.2
+// Generated from sc.g4 by ANTLR 4.10
 
 #pragma once
 
@@ -19,43 +19,43 @@ public:
   /**
    * Visit parse trees produced by scParser.
    */
-    virtual antlrcpp::Any visitProg(scParser::ProgContext *context) = 0;
+    virtual std::any visitProg(scParser::ProgContext *context) = 0;
 
-    virtual antlrcpp::Any visitFunctionDef(scParser::FunctionDefContext *context) = 0;
+    virtual std::any visitFunctionDef(scParser::FunctionDefContext *context) = 0;
 
-    virtual antlrcpp::Any visitStatements(scParser::StatementsContext *context) = 0;
+    virtual std::any visitStatements(scParser::StatementsContext *context) = 0;
 
-    virtual antlrcpp::Any visitStatement(scParser::StatementContext *context) = 0;
+    virtual std::any visitStatement(scParser::StatementContext *context) = 0;
 
-    virtual antlrcpp::Any visitStatementassign(scParser::StatementassignContext *context) = 0;
+    virtual std::any visitStatementassign(scParser::StatementassignContext *context) = 0;
 
-    virtual antlrcpp::Any visitStatementinit(scParser::StatementinitContext *context) = 0;
+    virtual std::any visitStatementinit(scParser::StatementinitContext *context) = 0;
 
-    virtual antlrcpp::Any visitStatementinitarray(scParser::StatementinitarrayContext *context) = 0;
+    virtual std::any visitStatementinitarray(scParser::StatementinitarrayContext *context) = 0;
 
-    virtual antlrcpp::Any visitArrayelement(scParser::ArrayelementContext *context) = 0;
+    virtual std::any visitArrayelement(scParser::ArrayelementContext *context) = 0;
 
-    virtual antlrcpp::Any visitWhileloop(scParser::WhileloopContext *context) = 0;
+    virtual std::any visitWhileloop(scParser::WhileloopContext *context) = 0;
 
-    virtual antlrcpp::Any visitStatementif(scParser::StatementifContext *context) = 0;
+    virtual std::any visitStatementif(scParser::StatementifContext *context) = 0;
 
-    virtual antlrcpp::Any visitArgs(scParser::ArgsContext *context) = 0;
+    virtual std::any visitArgs(scParser::ArgsContext *context) = 0;
 
-    virtual antlrcpp::Any visitExpression(scParser::ExpressionContext *context) = 0;
+    virtual std::any visitExpression(scParser::ExpressionContext *context) = 0;
 
-    virtual antlrcpp::Any visitExpressionM(scParser::ExpressionMContext *context) = 0;
+    virtual std::any visitExpressionM(scParser::ExpressionMContext *context) = 0;
 
-    virtual antlrcpp::Any visitFunctionCallInit(scParser::FunctionCallInitContext *context) = 0;
+    virtual std::any visitFunctionCallInit(scParser::FunctionCallInitContext *context) = 0;
 
-    virtual antlrcpp::Any visitFunctionCall(scParser::FunctionCallContext *context) = 0;
+    virtual std::any visitFunctionCall(scParser::FunctionCallContext *context) = 0;
 
-    virtual antlrcpp::Any visitOpt_parameters(scParser::Opt_parametersContext *context) = 0;
+    virtual std::any visitOpt_parameters(scParser::Opt_parametersContext *context) = 0;
 
-    virtual antlrcpp::Any visitParameters(scParser::ParametersContext *context) = 0;
+    virtual std::any visitParameters(scParser::ParametersContext *context) = 0;
 
-    virtual antlrcpp::Any visitParameter(scParser::ParameterContext *context) = 0;
+    virtual std::any visitParameter(scParser::ParameterContext *context) = 0;
 
-    virtual antlrcpp::Any visitType(scParser::TypeContext *context) = 0;
+    virtual std::any visitType(scParser::TypeContext *context) = 0;
 
 
 };
