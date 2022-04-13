@@ -11,9 +11,10 @@
 
 
 namespace worklist{
-    #define THREAD_COUNT 1024
+    #define THREAD_COUNT (2048*2)
     #define EXTRA_WORKLISTS_CONSTANT 600
     #define COLLISIONS_BEFORE_SWITCH (1) 
+    #define ITERATIONS_PER_KERNAL 2
 
     template<typename INT>
     __device__ void add_sucessors_to_worklist(INT* successors, int work_columns[][THREAD_COUNT], int work_column_count, int initial_work_column, int* worklists_pending){
@@ -52,20 +53,23 @@ namespace worklist{
     __global__ void analyze(Analyzer analyzer, NodeContainer nodes, int work_columns[][THREAD_COUNT], int work_column_count, Transfer transfers[], int node_count, int* worklists_pending, int current_work_column){
         static_assert(std::is_same<NodeType, std::remove_reference_t<decltype(nodes[0])>>::value, "Node types must be identical");
         
-
         int node_index = threadIdx.x + blockDim.x * blockIdx.x;
-        int* work_column = work_columns[current_work_column];
+        int next_work_column = (current_work_column + ITERATIONS_PER_KERNAL) % work_column_count;
 
-        if(node_index < THREAD_COUNT && work_column[node_index] != -1){
-            NodeType& current_node = nodes[work_column[node_index]];
-            bool add_successors = analyzer.analyze(current_node, nodes, transfers);
+        for (int i = 0; i < ITERATIONS_PER_KERNAL; ++i){
+            int* work_column = work_columns[current_work_column];
 
-            work_column[node_index] = -1;   
+            if(node_index < THREAD_COUNT && work_column[node_index] != -1){
+                NodeType& current_node = nodes[work_column[node_index]];
+                bool add_successors = analyzer.analyze(current_node, nodes, transfers);
 
-            if(add_successors){
-                int next_work_column = (current_work_column+1) % work_column_count;
-                add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, next_work_column, worklists_pending);
-            }      
+                work_column[node_index] = -1;   
+
+                current_work_column = (current_work_column+1) % work_column_count;
+                if(add_successors){
+                    add_sucessors_to_worklist(current_node.successor_index, work_columns, work_column_count, next_work_column, worklists_pending);
+                }      
+            }
         }
     }
 
@@ -149,7 +153,7 @@ namespace worklist{
             }
             
             cuda_copy_to_host((void*)&worklists_pending, dev_worklists_pending, sizeof(int));
-            current_worklist = (current_worklist+1) % work_column_count;
+            current_worklist = (current_worklist + ITERATIONS_PER_KERNAL) % work_column_count;
         }
         lfp_watch.print_time<Microseconds>("LFP time: ");
 
