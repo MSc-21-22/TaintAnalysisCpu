@@ -36,11 +36,14 @@ public:
     __device__ bool analyze(Node& current_node, NodeContainer& nodes, Transfer* transfers){
         bool add_successors = false;
         for(int source = 0; source < source_count; ++source){
+            BitVector joined_data = multi_cuda_join(current_node.predecessor_index, nodes, source);
+
+            if(joined_data == 0){
+                continue;
+            }
             BitVector last = current_node.data[source];
             BitVector current = last;
 
-
-            BitVector joined_data = multi_cuda_join(current_node.predecessor_index, nodes, source);
             current |= joined_data & current_node.join_mask;
             
             joined_data |= current;
