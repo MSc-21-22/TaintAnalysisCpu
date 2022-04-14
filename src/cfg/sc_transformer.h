@@ -63,10 +63,6 @@ private:
 
 public:
 
-    void add_function_call_count(std::string identifier, int count){
-        function_counts[identifier] = count;
-    }
-
     antlrcpp::Any visitStatementcallduping(scParser::StatementcalldupingContext *ctx) override {
         int iterations_left = get_call_count(ctx);
         while(iterations_left-- > 0){
