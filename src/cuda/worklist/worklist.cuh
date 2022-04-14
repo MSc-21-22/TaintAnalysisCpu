@@ -11,7 +11,7 @@
 
 
 namespace worklist{
-    #define THREAD_COUNT 1024
+    #define THREAD_COUNT (1024*2)
     #define EXTRA_WORKLISTS_CONSTANT 600
     #define COLLISIONS_BEFORE_SWITCH (1) 
 
