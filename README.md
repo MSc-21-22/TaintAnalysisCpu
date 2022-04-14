@@ -56,3 +56,6 @@ Then use cmake to compile the dependencies and the project
 
 --benchmark-all-multi | -bam to compare all multi-colored taint analysis options and output results into timings.csv
 
+When using expandable calls with identifiers set count of identifer id to x with
+
+-d {id} {x}
