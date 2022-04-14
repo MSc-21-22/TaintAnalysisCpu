@@ -21,6 +21,7 @@ statement
     |  statementassign
     |  functionCallInit
     |  statementinitarray
+    |  statementcallduping
     ;
 
 statementassign
@@ -34,6 +35,11 @@ statementinit
 
 statementinitarray
     : type ID '[' INTEGER ']' '=' '{' expression arrayelement '}'
+    ;
+
+statementcallduping
+    : '[' INTEGER ']' '{' functionCallInit '}'
+    | '[' ID ']' '{' functionCallInit '}'
     ;
 
 arrayelement
@@ -113,4 +119,4 @@ GT                 : '>' ;
 ID                  : [_]*[a-z][A-Za-z0-9_]*
                     | '$';
 
-WS : (' ' | '\t' | '\n')+ -> channel(HIDDEN);
+WS : (' ' | '\t' | '\n' | '\r')+ -> channel(HIDDEN);
