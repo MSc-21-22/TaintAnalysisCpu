@@ -181,11 +181,11 @@ bool state_multi_equality(std::vector<StatefulNode<SourcedTaintState>>& lhs, std
     return true;
 }
 
-void benchmark_all_multi_taint(antlr4::ANTLRInputStream& prog, std::string file_name){
+void benchmark_all_multi_taint(antlr4::ANTLRInputStream& prog, std::string file_name, std::map<std::string, int>& call_counts){
     Stopwatch::add_header(file_name);
 
     std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
-    auto program = parse_to_cfg_transformer(prog);
+    auto program = parse_to_cfg_transformer(prog, call_counts);
     reduce_variables(program.entryNodes);
     Stopwatch cpu_watch;
     TransferCreator analyis_info = get_analysis_information(program.nodes);
@@ -210,7 +210,7 @@ void benchmark_all_multi_taint(antlr4::ANTLRInputStream& prog, std::string file_
 
     init_gpu();
     std::cout << "\n⭐ GPU analysis ⭐" << std::endl;
-    program = parse_to_cfg_transformer(prog);
+    program = parse_to_cfg_transformer(prog, call_counts);
     Stopwatch gpu_watch;
     auto gpu_nodes = multi_bit_cuda_worklist_analysis(program);
     gpu_watch.save_time<Microseconds>();
@@ -222,12 +222,21 @@ void benchmark_all_multi_taint(antlr4::ANTLRInputStream& prog, std::string file_
 }
 
 int main(int argc, char *argv[]){
+    std::map<std::string, int> call_counts{};
+
     if(argc > 1){
 
         bool gpu_flag = false, multi_taint_flag = false, cpu_flag = false, benchmark_all = false, benchmark_all_multi = false, cuda_flag = false, cuda_worklist_flag = false, multi_source_cuda = false;
         for (int i = 1; i < argc; i++)
         {
             char* arg = argv[i];
+
+            if(strncmp(arg, "-d", 3) == 0){
+                call_counts[argv[i+1]] = std::stoi(argv[i+2]);
+                i += 2;
+                continue;
+            }
+            
             if(strcmp(arg, "--benchmark-all") == 0 || strcmp(arg, "-ba") == 0){
                 timing::should_benchmark = true;
                 benchmark_all = true;
@@ -277,7 +286,7 @@ int main(int argc, char *argv[]){
         antlr4::ANTLRInputStream prog(csfile);
 
         if(benchmark_all_multi){
-            benchmark_all_multi_taint(prog, file_name);
+            benchmark_all_multi_taint(prog, file_name, call_counts);
             return 0;
         }
 
@@ -286,7 +295,7 @@ int main(int argc, char *argv[]){
             Stopwatch::add_header(file_name);
 
             std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
-            auto program = parse_to_cfg_transformer(prog);
+            auto program = parse_to_cfg_transformer(prog, call_counts);
             reduce_variables(program.entryNodes);
             Stopwatch cpu_watch;
             TransferCreator analyis_info = get_analysis_information(program.nodes);
@@ -300,7 +309,7 @@ int main(int argc, char *argv[]){
             init_gpu();
 
             std::cout << "\n⭐ bit-cuda analysis ⭐" << std::endl;
-            program = parse_to_cfg_transformer(prog);
+            program = parse_to_cfg_transformer(prog, call_counts);
             Stopwatch bit_cuda_watch;
             auto bit_cuda_nodes = bit_cuda_analysis(program);
             bit_cuda_watch.save_time<Microseconds>();
@@ -310,7 +319,7 @@ int main(int argc, char *argv[]){
             }
 
             std::cout << "\n⭐ bit-cuda worklist analysis ⭐" << std::endl;
-            program = parse_to_cfg_transformer(prog);
+            program = parse_to_cfg_transformer(prog, call_counts);
             Stopwatch cuda_worklist_watch;
             auto cuda_worklist_nodes = bit_cuda_worklist_analysis(program);
             cuda_worklist_watch.save_time<Microseconds>();
@@ -324,7 +333,7 @@ int main(int argc, char *argv[]){
         }
 
         auto program = time_func<ScTransformer>("Creating CFG nodes: ", 
-                parse_to_cfg_transformer, prog);
+                parse_to_cfg_transformer, prog, call_counts);
 
         if(gpu_flag){
             std::cout << "Running analysis using cuBLAS on GPU" << std::endl;
@@ -363,6 +372,10 @@ int main(int argc, char *argv[]){
             std::cout << " --cuda-worklist -cw for bit-cuda implementation using worklist\n";
             std::cout << " --multi-cuda -mc for multi colored taint analysis using cuda and worklist\n";
             std::cout << " --benchmark -b to enable benchmarking where possible\n";
+            std::cout << "  when using expandable calls with identifiers\n";
+            std::cout << "  set count of identifer id to x with\n";
+            std::cout << "  -d {id} {x}\n";
+
         }
 
     }else{
@@ -371,7 +384,7 @@ int main(int argc, char *argv[]){
         antlr4::ANTLRInputStream prog(csfile);
 
         auto program = time_func<ScTransformer>("Creating CFG nodes: ", 
-            parse_to_cfg_transformer, prog);
+            parse_to_cfg_transformer, prog, call_counts);
 
         std::vector<StatefulNode<std::set<std::string>>> result1 = bit_cuda_worklist_analysis(program);
         std::cout << "#######\n";

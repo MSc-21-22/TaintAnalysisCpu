@@ -1,5 +1,5 @@
 
-// Generated from .\sc.g4 by ANTLR 4.9.2
+// Generated from sc.g4 by ANTLR 4.9.3
 
 #pragma once
 
@@ -40,6 +40,10 @@ public:
   }
 
   virtual antlrcpp::Any visitStatementinitarray(scParser::StatementinitarrayContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitStatementcallduping(scParser::StatementcalldupingContext *ctx) override {
     return visitChildren(ctx);
   }
 

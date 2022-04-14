@@ -20,8 +20,12 @@ public:
     std::vector<std::shared_ptr<FunctionEntryNode>> entryNodes{};
     std::vector<std::shared_ptr<Node>> nodes{};
 
+    ScTransformer() = default;
+    ScTransformer(std::map<std::string, int> function_counts) : function_counts(function_counts){}
 private:
+    std::map<std::string, int> function_counts{};
     std::vector<std::shared_ptr<Node>> last{};
+
 
     void link_to_lasts(std::shared_ptr<Node> node){
         for(auto& other : last){
@@ -47,8 +51,25 @@ private:
         return entry;
     }
 
+    int get_call_count(scParser::StatementcalldupingContext *ctx){
+        if(ctx->INTEGER() != nullptr){
+            return std::stoi(ctx->INTEGER()->getText());
+        } else if(ctx->ID() != nullptr){
+            return function_counts[ctx->ID()->getText()];
+        }else{
+            throw "Something went wrong with duplicate calls";
+        }
+    }
+
 public:
 
+    antlrcpp::Any visitStatementcallduping(scParser::StatementcalldupingContext *ctx) override {
+        int iterations_left = get_call_count(ctx);
+        while(iterations_left-- > 0){
+            ctx->functionCallInit()->accept(this);
+        }
+        return nullptr;
+    }
 
     antlrcpp::Any visitFunctionDef(scParser::FunctionDefContext *ctx) override
     {
@@ -358,6 +379,6 @@ public:
     }
 };
 
-ScTransformer parse_to_cfg_transformer(antlr4::ANTLRInputStream stream);
-std::vector<std::shared_ptr<Node>> parse_to_cfg(antlr4::ANTLRInputStream stream);
+ScTransformer parse_to_cfg_transformer(antlr4::ANTLRInputStream stream,  std::map<std::string, int>& call_counts);
+std::vector<std::shared_ptr<Node>> parse_to_cfg(antlr4::ANTLRInputStream stream,  std::map<std::string, int>& call_counts);
 void remove_function_nodes(ScTransformer& transformer);
