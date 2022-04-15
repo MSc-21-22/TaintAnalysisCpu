@@ -3,10 +3,11 @@
 #include <map>
 
 class VariableReducer : public CfgVisitor {
-    std::map<FunctionEntryNode*, std::map<std::string, std::string>> args;
+    std::map<FunctionEntryNode*, std::map<std::string, std::string>> args{};
     std::map<std::string, std::string> name_map;
+    std::set<intptr_t> nodes_traversed{};
+    std::vector<Node*> node_stack{};
     std::map<std::string, std::string> initial_map{};
-    std::set<intptr_t> nodes_traversed;
 
 public:
     VariableReducer() = default;
@@ -16,6 +17,15 @@ public:
         }
     }
 
+    void visit_node(Node& node) {
+        node_stack = {};
+        node.accept(*this);
+        while(node_stack.size() > 0){
+            Node* other_node = node_stack.back();
+            node_stack.pop_back();
+            other_node->accept(*this);
+        }
+    }
 private:
     std::string get_new_variable(const std::string& variable) {
         auto new_id = name_map.find(variable);
@@ -34,7 +44,7 @@ private:
             if(!function_entry){
                 if (nodes_traversed.count((intptr_t)child.get()) == 0){
                     nodes_traversed.insert((intptr_t)child.get());
-                    child->accept(*this);
+                    node_stack.push_back(child.get());
                 }
             }else{
                 for(auto& arg: function_entry->arguments){

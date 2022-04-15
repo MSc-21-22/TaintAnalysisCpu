@@ -13,7 +13,7 @@ std::set<std::string> get_variables(std::vector<std::shared_ptr<Node>>& nodes){
 void reduce_variables(std::vector<std::shared_ptr<FunctionEntryNode>>& entry_nodes) {
     VariableReducer reducer({TAINT_VAR, RETURN_VAR});
     for(auto &entry : entry_nodes){
-        entry->accept(reducer);
+        reducer.visit_node(*entry);
     }
 }
 
