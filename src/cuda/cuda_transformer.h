@@ -15,7 +15,6 @@ class CudaTransformer : public CfgVisitor
 public:
     DynamicArray<NodeType> nodes;
     std::vector<Transfer> transfer_functions{};
-    std::map<Node*, int> node_to_index{};
     std::map<std::string, int> variables{};
     std::set<int> taint_sources{};
 
@@ -37,7 +36,7 @@ public:
 
     void visit_assignment(AssignmentNode& node) {
         int id = nodes.size();
-        node_to_index[&node] = id;
+        node.node_index = id;
         NodeType& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(node.id, node.expression);
@@ -47,7 +46,7 @@ public:
 
     void visit_return(ReturnNode& node) {
         int id = nodes.size();
-        node_to_index[&node] = id;
+        node.node_index = id;
         NodeType& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(RETURN_VAR, node.expression);
@@ -56,14 +55,14 @@ public:
     }
 
     void visit_emptyReturn(EmptyReturnNode& node) {
-        node_to_index[&node] = nodes.size();
+        node.node_index = nodes.size();
         NodeType& node_struct = nodes.emplace_back();
         node_struct.join_mask = 0;
     }
 
     void visit_functionEntry(FunctionEntryNode& node) { 
         int id = nodes.size();
-        node_to_index[&node] = id;
+        node.node_index = id;
         NodeType& node_struct = nodes.emplace_back();
 
         node_struct.join_mask = 0;
@@ -84,7 +83,7 @@ public:
 
     void visit_assignReturn(AssignReturnNode& node) { 
         int id = nodes.size();
-        node_to_index[&node] = id;
+        node.node_index = id;
         NodeType& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(node.id, {RETURN_VAR});
@@ -95,7 +94,7 @@ public:
 
     void visit_arrayAssignment(ArrayAssignmentNode& node) { 
         int id = nodes.size();
-        node_to_index[&node] = id;
+        node.node_index = id;
         NodeType& node_struct = nodes.emplace_back();
 
         node_struct.first_transfer_index = add_transfer_function(node.id, node.expression);
@@ -105,7 +104,7 @@ public:
     
     void visit_arrayinit(ArrayInitializerNode& node) { 
         int id = nodes.size();
-        node_to_index[&node] = id;
+        node.node_index = id;
         NodeType& node_struct = nodes.emplace_back();
 
         node_struct.join_mask ^= 1 << variables[node.id];
@@ -124,7 +123,7 @@ public:
     }
 
     void visit_propagation(PropagationNode& node) { 
-        node_to_index[&node] = nodes.size();
+        node.node_index = nodes.size();
         NodeType& node_struct = nodes.emplace_back();
     }
 
@@ -168,9 +167,8 @@ template<typename NodeType>
 void add_predecessors(std::vector<std::shared_ptr<Node>>& nodes, CudaTransformer<NodeType>& transformer){
     for(int i = 0; i < nodes.size(); i++){
         int pred_index = 0;
-        for (auto pred_it = nodes[i]->predecessors.begin(); pred_it != nodes[i]->predecessors.end(); ++pred_it){
-            assert(pred_index < 5);
-            transformer.nodes[i].predecessor_index[pred_index++] = transformer.node_to_index[pred_it->get()];
+        for (auto& pred : nodes[i]->predecessors) {
+            transformer.nodes[i].predecessor_index[pred_index++] = pred->node_index;
         }
     }
 }
@@ -179,15 +177,13 @@ template<typename NodeType>
 void add_neighbours(std::vector<std::shared_ptr<Node>>& nodes, CudaTransformer<NodeType>& transformer){
     for(int i = 0; i < nodes.size(); i++){
         int pred_index = 0;
-        for (auto pred_it = nodes[i]->predecessors.begin(); pred_it != nodes[i]->predecessors.end(); ++pred_it){
-            assert(pred_index < 5);
-            transformer.nodes[i].predecessor_index[pred_index++] = transformer.node_to_index[pred_it->get()];
+        for (auto& pred : nodes[i]->predecessors) {
+            transformer.nodes[i].predecessor_index[pred_index++] = pred->node_index;
         }
 
         int succ_index = 0;
-        for (auto succ = nodes[i]->successors.begin(); succ != nodes[i]->successors.end(); ++succ){
-            assert(succ_index < 5);
-            transformer.nodes[i].successor_index[succ_index++] = transformer.node_to_index[succ->get()];
+        for (auto& succ : nodes[i]->successors){
+            transformer.nodes[i].successor_index[succ_index++] = succ->node_index;
         }
     }
 }

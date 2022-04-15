@@ -50,6 +50,7 @@ class Node {
 public:
     std::vector<std::shared_ptr<Node>> predecessors;
     std::vector<std::shared_ptr<Node>> successors;
+    int node_index{ -1 };
 
     virtual void accept(CfgVisitor& visitor)=0;
 
