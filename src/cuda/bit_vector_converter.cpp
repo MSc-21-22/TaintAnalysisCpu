@@ -6,7 +6,7 @@ void set_bit_vector_state(std::vector<StatefulNode<cpu_analysis::BitVector>>& no
     {
         for (int j = 0; j < cfg_nodes[i].node->entry_node->variable_reduction.size(); ++j)
         {
-            if(nodes[i].get_state()[j]){
+            if(nodes[i].get_state(i)[j]){
                 auto var_name = cfg_nodes[i].node->entry_node->variable_reduction[j];
                 cfg_nodes[i].get_state(i).insert(var_name);
             }
@@ -19,8 +19,8 @@ void set_multi_bit_vector_state(std::vector<StatefulNode<std::vector<cpu_analysi
     {
         for (int z = 0; z < cfg_nodes[i].node->entry_node->variable_reduction.size(); ++z)
         {
-            for(int j = 0; j < nodes[i].get_state().size(); ++j){
-                if(nodes[i].get_state()[j][z]){
+            for(int j = 0; j < nodes[i].get_state(i).size(); ++j){
+                if(nodes[i].get_state(i)[j][z]){
                     auto var_name = cfg_nodes[i].node->entry_node->variable_reduction[z];
                     cfg_nodes[i].get_state(i)[var_name].insert(i);
                 }
