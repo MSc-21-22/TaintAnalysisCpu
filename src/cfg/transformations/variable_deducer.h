@@ -1,21 +1,24 @@
 #pragma once
 #include <cfg/cfg.h>
-#include <map>
-#include <assert.h>
-#include <iostream>
+#include <taint_analysis.h>
+#include <algorithm>
+using namespace cpu_analysis;
 
-class VariableReducer : public CfgVisitor {
+
+class VariableDeducer : public CfgVisitor {
     int next_index{ 0 };
     std::set<intptr_t> nodes_traversed{};
     std::vector<Node*> node_stack{};
-    std::map<std::string, int> initial_map{};
+    std::vector<std::string> initial_map{};
+    std::map<Node*, cpu_analysis::BitVector>& states;
+    std::map<Node*, std::set<std::string>>& result;
 
 public:
-    std::map<std::string, int>* name_map;
+    std::vector<std::string> variables;
 
-    VariableReducer() {
-        initial_map[TAINT_VAR] = 0;
-        initial_map[RETURN_VAR] = 1;
+    VariableDeducer(std::map<Node*, cpu_analysis::BitVector>& states, std::map<Node*, std::set<std::string>>& result) : states(states), result(result)  {
+        initial_map.emplace_back(TAINT_VAR);
+        initial_map.emplace_back(RETURN_VAR);
     }
 
     void visit_node(Node& node) {
@@ -28,13 +31,21 @@ public:
         }
     }
 private:
-    int get_new_variable(const std::string& variable) {
-        auto new_id = name_map->find(variable);
-        if(new_id != name_map->end()){
-            return new_id->second;
-        }else{
-            name_map->insert(std::make_pair(variable, name_map->size()));
-            return name_map->size() - 1;
+
+    void add_variable(std::string& var){
+        if(std::count(variables.begin(), variables.end(), var) == 0){
+            variables.emplace_back(var);
+        }
+    }
+
+    void set_state(Node& node){
+        int comparator = 1;
+        for(int i = 0; i < variables.size(); ++i){
+            if(states[&node][comparator]){
+                result[&node].insert(variables[i]);
+            }
+
+            comparator << 1;
         }
     }
 
@@ -48,62 +59,62 @@ private:
                     node_stack.push_back(child.get());
                 }
             }else{
-                for(auto& arg: function_entry->arguments){
-                    arg->replace_names(*name_map);
-                }
+                
             }
         }
     }
 
     void visit_assignment(AssignmentNode& node){
-        node.var_index = get_new_variable(node.id);
-        node.expression->replace_names(*name_map);
+        add_variable(node.id);
 
+        set_state(node);
         visit_children(node);
     }
     void visit_propagation(PropagationNode& node){
-        if(node.syntax != "Exit")
+        if(node.syntax != "Exit"){
+            set_state(node);
             visit_children(node);
+        }
     }
     void visit_return(ReturnNode& node){
-        node.expression->replace_names(*name_map);
-
+        set_state(node);
         visit_children(node);
     }
     void visit_emptyReturn(EmptyReturnNode& node){
+        set_state(node);
         visit_children(node);
     }
     void visit_functionEntry(FunctionEntryNode& node){
-        name_map = &node.variable_reduction;
-        *name_map = initial_map;
         nodes_traversed = {};
+        variables = initial_map;
 
         for(auto& param : node.formal_parameters){
-            node.formal_parameter_indexes.push_back(get_new_variable(param));
+            add_variable(param);
         }
 
+        set_state(node);
         visit_children(node);
     }
     void visit_assignReturn(AssignReturnNode& node){
-        node.var_index = get_new_variable(node.id);
+        add_variable(node.id);
 
+        set_state(node);
         visit_children(node);
     }
 
     void visit_arrayinit(ArrayInitializerNode& node){
-        node.var_index = get_new_variable(node.id);
-        for (auto& expression : node.arrayContent){
-            expression->replace_names(*name_map);
-        }
+        add_variable(node.id);
+
+        set_state(node);
         visit_children(node);
     }
 
     void visit_arrayAssignment(ArrayAssignmentNode& node){
-        node.var_index = get_new_variable(node.id);
-        node.expression->replace_names(*name_map);
+        add_variable(node.id);
 
+        set_state(node);
         visit_children(node);
     }
 };
 
-void reduce_variables(std::vector<std::shared_ptr<FunctionEntryNode>>& entry_nodes);
+void deduce_variables(std::vector<std::shared_ptr<Node>> entry_nodes, std::map<Node*, cpu_analysis::BitVector>& states, std::map<Node*, std::set<std::string>>& result);

@@ -50,6 +50,7 @@ class Node {
 public:
     std::vector<std::shared_ptr<Node>> predecessors;
     std::vector<std::shared_ptr<Node>> successors;
+    std::shared_ptr<FunctionEntryNode> entry_node;
     int node_index{ -1 };
 
     virtual void accept(CfgVisitor& visitor)=0;
@@ -62,6 +63,7 @@ class ArrayInitializerNode : public Node {
 public:
     std::string type;
     std::string id;
+    int var_index{ -1 };
     std::string arraySize;
     std::vector<std::shared_ptr<Expression>> arrayContent;
 
@@ -80,6 +82,7 @@ public:
 class AssignmentNode : public Node {
 public:
     std::string id;
+    int var_index{ -1 };
     std::shared_ptr<Expression> expression;
 
     AssignmentNode(std::string id, std::shared_ptr<Expression> expression) : id(id), expression(expression){}
@@ -93,6 +96,7 @@ public:
 class ArrayAssignmentNode : public Node {
 public:
     std::string id;
+    int var_index{ -1 };
     std::string arrayid;
     std::shared_ptr<Expression> expression;
 
@@ -139,6 +143,9 @@ public:
     std::string function_id;
     std::vector<std::shared_ptr<Expression>> arguments;
     std::vector<std::string> formal_parameters;
+    std::vector<int> formal_parameter_indexes{};
+
+    std::map<std::string, int> variable_reduction;
 
     FunctionEntryNode(std::string function_id, std::vector<std::string> formal_parameters) : function_id(function_id), formal_parameters(formal_parameters) {
         exit = std::make_shared<PropagationNode>("Exit");
@@ -152,6 +159,7 @@ public:
 class AssignReturnNode : public Node {
 public:
     std::string id;
+    int var_index{ -1 };
 
     AssignReturnNode(std::string id) : id(id) {}
     AssignReturnNode() = default;

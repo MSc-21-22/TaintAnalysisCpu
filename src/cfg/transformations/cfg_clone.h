@@ -6,6 +6,7 @@
 class Cloner : public CfgVisitor {
 public:
     std::map<void*, std::shared_ptr<Node>> nodeConverter;
+    std::vector<std::shared_ptr<FunctionEntryNode>>& entry_nodes;
 private:
     std::vector<std::shared_ptr<Node>>* node_vector;
 
@@ -45,11 +46,13 @@ private:
         node_vector->push_back(clone);
         set_successors(clone);
 
+        clone->entry_node = entry_nodes.back();
+
         return clone;
     }
 public:
 
-    Cloner(std::vector<std::shared_ptr<Node>>* node_vector): node_vector(node_vector){}
+    Cloner(std::vector<std::shared_ptr<Node>>* node_vector, std::vector<std::shared_ptr<FunctionEntryNode>>& entry_nodes): node_vector(node_vector), entry_nodes(entry_nodes) {}
 
     void visit_assignment(AssignmentNode& node){
         auto new_node = clone_node<AssignmentNode>(node);
@@ -76,8 +79,11 @@ public:
         if(has_created(node))
             return;
 
-        visit_children(node, *this);
         auto clone = std::make_shared<FunctionEntryNode>(node);
+        entry_nodes.push_back(clone);
+        clone->entry_node = clone;
+
+        visit_children(node, *this);
         clone->predecessors = {};
         nodeConverter[&node] = clone;
 
@@ -106,4 +112,4 @@ public:
     }
 };
 
-std::shared_ptr<FunctionEntryNode> clone_entry(std::shared_ptr<FunctionEntryNode> entry, std::vector<std::shared_ptr<Node>>* node_vector);
+std::shared_ptr<FunctionEntryNode> clone_entry(std::shared_ptr<FunctionEntryNode> entry, std::vector<std::shared_ptr<Node>>* node_vector, std::vector<std::shared_ptr<FunctionEntryNode>>& entry_nodes);

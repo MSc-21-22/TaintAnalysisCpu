@@ -5,9 +5,7 @@
 
 class TransferCreator : public CfgVisitor{
 private:
-    int next_var_index{1};
-
-    int get_var_index(const std::string& var);
+    int next_var_index{2};
 
 public:
     std::map<std::string, int> var_map{};

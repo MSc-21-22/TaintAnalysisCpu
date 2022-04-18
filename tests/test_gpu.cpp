@@ -8,6 +8,8 @@
 #include <cuda/bit_cuda/analysis.h>
 #include <cuda/cuda_worklist/analysis.h>
 
+using namespace cuda;
+
 TEST_CASE("bit cuda x=$ -> y=x") {
     std::vector<bit_cuda::Node> nodes;
     std::vector<Transfer> transfer_functions{};

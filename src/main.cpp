@@ -36,21 +36,23 @@ void print_cpu_result(cpu_analysis::BitVector& result, std::ostream& stream){
 }
 
 std::vector<StatefulNode<std::set<std::string>>> run_cpu_analysis(ScTransformer program){
+    reduce_variables(program.entryNodes);
     TransferCreator analyis_info = get_analysis_information(program.nodes);
-    std::vector<StatefulNode<cpu_analysis::BitVector>> nodes = create_states<cpu_analysis::BitVector>(program.nodes, BitVector(1));
+    std::vector<StatefulNode<cpu_analysis::BitVector>> nodes = create_states<cpu_analysis::BitVector>(program.nodes, cpu_analysis::BitVector(1));
     time_func("Analyzing: ", 
         cpu_analysis::worklist, nodes, analyis_info.node_to_index, analyis_info.transfers);
 
     std::vector<StatefulNode<std::set<std::string>>> comparable_nodes = create_states<std::set<std::string>>(program.nodes, {TAINT_VAR});
-    set_bit_vector_state(nodes, analyis_info.var_map, comparable_nodes);
+    set_bit_vector_state(nodes, comparable_nodes);
 
     if(!timing::should_benchmark) {
-        print_digraph_subgraph(comparable_nodes, std::cout, print_result, "main");
+        print_digraph_with_result(comparable_nodes, std::cout, print_result);
     }
     return comparable_nodes;
 }
 
 std::vector<StatefulNode<std::vector<cpu_analysis::BitVector>>> cpu_multi_taint_analysis(ScTransformer& program){
+    reduce_variables(program.entryNodes);
     TransferCreator analyis_info = get_analysis_information(program.nodes);
     std::vector<StatefulNode<std::vector<cpu_analysis::BitVector>>> nodes = create_states<std::vector<cpu_analysis::BitVector>>(program.nodes);
     
@@ -68,7 +70,7 @@ std::vector<StatefulNode<std::vector<cpu_analysis::BitVector>>> cpu_multi_taint_
 
     if(!timing::should_benchmark) {
         std::vector<StatefulNode<SourcedTaintState>> printable_nodes = create_states<SourcedTaintState>(program.nodes);
-        set_multi_bit_vector_state(nodes, analyis_info.var_map, printable_nodes);
+        set_multi_bit_vector_state(nodes, printable_nodes);
         print_digraph_subgraph(printable_nodes, std::cout, print_taint_source, "main");
     }
     return nodes;
@@ -86,18 +88,18 @@ std::vector<StatefulNode<std::set<std::string>>> bit_cuda_analysis(ScTransformer
 
     std::vector<StatefulNode<std::set<std::string>>> nodes = create_states<std::set<std::string>>(program.nodes);
     time_func("Save into nodes", 
-                set_bit_cuda_state<bit_cuda::Node>, transformer.nodes, transformer.variables, nodes);
+                set_bit_cuda_state<bit_cuda::Node>, transformer.nodes, nodes);
 
     if(!timing::should_benchmark)
-        print_digraph_subgraph(nodes, std::cout, print_result, "main");
+        print_digraph_with_result(nodes, std::cout, print_result);
 
     return nodes;
 }
 
 std::vector<StatefulNode<std::set<std::string>>> bit_cuda_worklist_analysis(ScTransformer& program){
     init_gpu();
-    time_func("Variable reduction: ", 
-                reduce_variables, program.entryNodes);
+    time_func("Variable reduction: ",
+        reduce_variables, program.entryNodes);
     auto transformer = time_func<CudaTransformer<cuda_worklist::Node>>("Gpu structure transformation: ", 
                 transform_cuda_worklist, program.nodes);
     time_func("Least fixed point algorithm: ",
@@ -105,7 +107,7 @@ std::vector<StatefulNode<std::set<std::string>>> bit_cuda_worklist_analysis(ScTr
 
     std::vector<StatefulNode<std::set<std::string>>> nodes = create_states<std::set<std::string>>(program.nodes);
     time_func("Save into nodes", 
-                set_bit_cuda_state<cuda_worklist::Node>, transformer.nodes, transformer.variables, nodes);
+            set_bit_cuda_state<cuda_worklist::Node>, transformer.nodes, nodes);
     if(!timing::should_benchmark)
         print_digraph_subgraph(nodes, std::cout, print_result, "main");
 
@@ -114,8 +116,8 @@ std::vector<StatefulNode<std::set<std::string>>> bit_cuda_worklist_analysis(ScTr
 
 std::vector<StatefulNode<SourcedTaintState>> multi_bit_cuda_worklist_analysis(ScTransformer& program){
     init_gpu();
-    time_func("Variable reduction: ", 
-                reduce_variables, program.entryNodes);
+    time_func("Variable reduction: ",
+        reduce_variables, program.entryNodes);
     int source_count = count_taint_sources(program.nodes);
     auto transformer = time_func<CudaTransformer<multi_cuda::Node>>("Gpu structure transformation: ", 
                 transform_multi_cuda, program.nodes, source_count);
@@ -125,7 +127,7 @@ std::vector<StatefulNode<SourcedTaintState>> multi_bit_cuda_worklist_analysis(Sc
 
     std::vector<StatefulNode<SourcedTaintState>> nodes = create_states<SourcedTaintState>(program.nodes);
     time_func("Save into nodes", 
-                set_bit_cuda_multi_state, transformer.nodes, transformer.variables, source_count, nodes);
+                set_bit_cuda_multi_state, transformer.nodes, source_count, nodes);
     if(!timing::should_benchmark)
         print_digraph_subgraph(nodes, std::cout, print_taint_source, "main");
 
@@ -205,7 +207,7 @@ void benchmark_all_multi_taint(antlr4::ANTLRInputStream& prog, std::string file_
     cpu_watch.save_time<Microseconds>();
     cpu_watch.print_time<Microseconds>("Run time: ");
     std::vector<StatefulNode<SourcedTaintState>> comparable_cpu_nodes = create_states<SourcedTaintState>(program.nodes);
-    set_multi_bit_vector_state(nodes, analyis_info.var_map, comparable_cpu_nodes);
+    set_multi_bit_vector_state(nodes, comparable_cpu_nodes);
 
 
     init_gpu();
@@ -223,7 +225,6 @@ void benchmark_all_multi_taint(antlr4::ANTLRInputStream& prog, std::string file_
 
 int main(int argc, char *argv[]){
     std::map<std::string, int> call_counts{};
-
     if(argc > 1){
 
         bool gpu_flag = false, multi_taint_flag = false, cpu_flag = false, benchmark_all = false, benchmark_all_multi = false, cuda_flag = false, cuda_worklist_flag = false, multi_source_cuda = false;
@@ -299,12 +300,12 @@ int main(int argc, char *argv[]){
             reduce_variables(program.entryNodes);
             Stopwatch cpu_watch;
             TransferCreator analyis_info = get_analysis_information(program.nodes);
-            std::vector<StatefulNode<cpu_analysis::BitVector>> nodes = create_states<cpu_analysis::BitVector>(program.nodes, BitVector(1));
+            std::vector<StatefulNode<cpu_analysis::BitVector>> nodes = create_states<cpu_analysis::BitVector>(program.nodes, cpu_analysis::BitVector(1));
             time_func("Analyzing: ", 
                 cpu_analysis::worklist, nodes, analyis_info.node_to_index, analyis_info.transfers);
             cpu_watch.save_time<Microseconds>();
             std::vector<StatefulNode<std::set<std::string>>> cpu_nodes = create_states<std::set<std::string>>(program.nodes, {TAINT_VAR});
-            set_bit_vector_state(nodes, analyis_info.var_map, cpu_nodes);
+            set_bit_vector_state(nodes, cpu_nodes);
 
             init_gpu();
 

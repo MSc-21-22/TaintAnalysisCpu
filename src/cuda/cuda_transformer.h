@@ -14,34 +14,20 @@ class CudaTransformer : public CfgVisitor
 {
 public:
     DynamicArray<NodeType> nodes;
-    std::vector<Transfer> transfer_functions{};
-    std::map<std::string, int> variables{};
+    std::vector<cuda::Transfer> transfer_functions{};
     std::set<int> taint_sources{};
 
-    CudaTransformer(std::set<std::string> progVariables, int node_count, int node_size) : nodes(node_count, node_size){
-        int i = 0;
-        variables[TAINT_VAR] = i++;
-        variables[RETURN_VAR] = i++;
-
-        std::set<std::string>::iterator it;
-        for (it=progVariables.begin(); it!=progVariables.end(); it++){
-            if(*it != TAINT_VAR && *it != RETURN_VAR){
-                variables[*it] = i++;
-            }
-        }
-
-    }
-
-    CudaTransformer(std::set<std::string> progVariables, int node_count) : CudaTransformer(progVariables, node_count, sizeof(NodeType)){}
+    CudaTransformer(int node_count, int node_size) : nodes(node_count, node_size){}
+    CudaTransformer(int node_count) : CudaTransformer(node_count, sizeof(NodeType)){}
 
     void visit_assignment(AssignmentNode& node) {
         int id = nodes.size();
         node.node_index = id;
         NodeType& node_struct = nodes.emplace_back();
 
-        node_struct.first_transfer_index = add_transfer_function(node.id, node.expression);
+        node_struct.first_transfer_index = add_transfer_function(node.var_index, node.expression);
         add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
-        node_struct.join_mask ^= 1 << variables[node.id];
+        node_struct.join_mask ^= 1 << node.var_index;
     }
 
     void visit_return(ReturnNode& node) {
@@ -49,7 +35,7 @@ public:
         node.node_index = id;
         NodeType& node_struct = nodes.emplace_back();
 
-        node_struct.first_transfer_index = add_transfer_function(RETURN_VAR, node.expression);
+        node_struct.first_transfer_index = add_transfer_function(1, node.expression); // index 1 is RETURN VAR
         add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
         node_struct.join_mask = 0;
     }
@@ -67,13 +53,13 @@ public:
 
         node_struct.join_mask = 0;
         if(node.arguments.size() >= 1){
-            node_struct.first_transfer_index = add_transfer_function(node.formal_parameters[0], node.arguments[0]);
+            node_struct.first_transfer_index = add_transfer_function(node.formal_parameter_indexes[0], node.arguments[0]);
             add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
             int last_index = node_struct.first_transfer_index;
 
             for (int i = 1; i < node.arguments.size(); i++)
             {
-                int current_index = add_transfer_function(node.formal_parameters[i], node.arguments[i]);
+                int current_index = add_transfer_function(node.formal_parameter_indexes[i], node.arguments[i]);
                 transfer_functions[last_index].next_transfer_index = current_index;
                 add_taint_source(id, transfer_functions[current_index]);
                 last_index = current_index;
@@ -86,10 +72,10 @@ public:
         node.node_index = id;
         NodeType& node_struct = nodes.emplace_back();
 
-        node_struct.first_transfer_index = add_transfer_function(node.id, {RETURN_VAR});
+        node_struct.first_transfer_index = add_transfer_function(node.var_index, cuda::BitVector(2)); // Return var bitfield
         add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
-        node_struct.join_mask ^= 1 << variables[node.id];
-        node_struct.join_mask ^= 1 << variables[RETURN_VAR];
+        node_struct.join_mask ^= 1 << node.var_index;
+        node_struct.join_mask ^= 1 << 1; // index 1 is RETURN_VAR
     }
 
     void visit_arrayAssignment(ArrayAssignmentNode& node) { 
@@ -97,9 +83,9 @@ public:
         node.node_index = id;
         NodeType& node_struct = nodes.emplace_back();
 
-        node_struct.first_transfer_index = add_transfer_function(node.id, node.expression);
+        node_struct.first_transfer_index = add_transfer_function(node.var_index, node.expression);
         add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
-        node_struct.join_mask ^= 1 << variables[node.id];
+        node_struct.join_mask ^= 1 << node.var_index;
     }
     
     void visit_arrayinit(ArrayInitializerNode& node) { 
@@ -107,18 +93,17 @@ public:
         node.node_index = id;
         NodeType& node_struct = nodes.emplace_back();
 
-        node_struct.join_mask ^= 1 << variables[node.id];
+        node_struct.join_mask ^= 1 << node.var_index;
 
-        // Get vars from all array element expressions 
-        std::set<std::string> expr_vars;
+        // Get vars from all array element expressions
+        cuda::BitVector rhs(0);
         for(auto& element : node.arrayContent){
-            auto vars = element->get_variables();
-            std::set_union(expr_vars.begin(), expr_vars.end(),
-                           vars.begin(), vars.end(),
-                           std::inserter(expr_vars, expr_vars.begin()));
+            element->each_variable([&rhs](int index) {
+                rhs |= 1 << index;
+            });
         }
 
-        node_struct.first_transfer_index = add_transfer_function(node.id, expr_vars);
+        node_struct.first_transfer_index = add_transfer_function(node.var_index, rhs);
         add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
     }
 
@@ -128,26 +113,31 @@ public:
     }
 
 private:
-    int add_transfer_function(std::string x, std::set<std::string>& vars){
+
+
+    int add_transfer_function(int x, std::shared_ptr<Expression>& expression){
         int index = transfer_functions.size();
-        Transfer& current_transfer = transfer_functions.emplace_back();
-        current_transfer.x = variables[x];
-        current_transfer.rhs = get_variable_indices(vars);
+        cuda::Transfer& current_transfer = transfer_functions.emplace_back();
+        current_transfer.x = x;
+
+        expression->each_variable([&](int var_index) {
+            current_transfer.rhs |= 1 << var_index;
+        });
 
         return index;
     }
 
-    int add_transfer_function(std::string x, std::set<std::string>&& vars){
-        return add_transfer_function(x, vars);
+    int add_transfer_function(int x, cuda::BitVector rhs) {
+        int index = transfer_functions.size();
+        cuda::Transfer& current_transfer = transfer_functions.emplace_back();
+        current_transfer.x = x;
+        current_transfer.rhs = rhs;
+
+        return index;
     }
 
-    int add_transfer_function(std::string x, std::shared_ptr<Expression>& expression){
-        auto vars = expression->get_variables();
-        return add_transfer_function(x, vars);
-    }
-
-    BitVector get_variable_indices(std::set<std::string>& vars){
-        BitVector result = 0;
+    cuda::BitVector get_variable_indices(std::set<std::string>& vars){
+        cuda::BitVector result = 0;
         for(std::string var : vars){
             if (variables.count(var)){
                 result |= 1<<variables[var];
@@ -156,7 +146,7 @@ private:
         return result;
     }
 
-    void add_taint_source(int nodeIndex, Transfer& transfer){
+    void add_taint_source(int nodeIndex, cuda::Transfer& transfer){
         if((transfer.rhs & 1) == 1){
             taint_sources.insert(nodeIndex);
         }

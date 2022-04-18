@@ -4,13 +4,16 @@
 #include <memory>
 #include <cstring>
 
+namespace cuda {
+
 using BitVector = int32_t;
 
 struct Transfer{ // x = y + z     { x, [y, z]}
     int x;
-    BitVector rhs = 0;
+    int32_t rhs = 0;
     int next_transfer_index = -1;
 };
+}
 
 template<typename Item>
 class DynamicArray {
