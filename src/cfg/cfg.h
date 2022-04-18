@@ -36,14 +36,14 @@ public:
 template<typename LatticeType>
 class CfgStateVisitor {
 public:
-    virtual void visit_assignment(AssignmentNode& node, std::map<Node*, LatticeType>& states) = 0;
-    virtual void visit_return(ReturnNode& node, std::map<Node*, LatticeType>& states) = 0;
-    virtual void visit_emptyReturn(EmptyReturnNode& node, std::map<Node*, LatticeType>& states) = 0;
-    virtual void visit_functionEntry(FunctionEntryNode& node, std::map<Node*, LatticeType>& states) = 0;
-    virtual void visit_assignReturn(AssignReturnNode& node, std::map<Node*, LatticeType>& states) = 0;
-    virtual void visit_arrayAssignment(ArrayAssignmentNode& node, std::map<Node*, LatticeType>& states) = 0;
-    virtual void visit_arrayinit(ArrayInitializerNode& node, std::map<Node*, LatticeType>& states) = 0;
-    virtual void visit_propagation(PropagationNode& node, std::map<Node*, LatticeType>& states) = 0;
+    virtual void visit_assignment(AssignmentNode& node, std::map<Node*, LatticeType*>& states) = 0;
+    virtual void visit_return(ReturnNode& node, std::map<Node*, LatticeType*>& states) = 0;
+    virtual void visit_emptyReturn(EmptyReturnNode& node, std::map<Node*, LatticeType*>& states) = 0;
+    virtual void visit_functionEntry(FunctionEntryNode& node, std::map<Node*, LatticeType*>& states) = 0;
+    virtual void visit_assignReturn(AssignReturnNode& node, std::map<Node*, LatticeType*>& states) = 0;
+    virtual void visit_arrayAssignment(ArrayAssignmentNode& node, std::map<Node*, LatticeType*>& states) = 0;
+    virtual void visit_arrayinit(ArrayInitializerNode& node, std::map<Node*, LatticeType*>& states) = 0;
+    virtual void visit_propagation(PropagationNode& node, std::map<Node*, LatticeType*>& states) = 0;
 };
 
 class Node {
@@ -145,7 +145,7 @@ public:
     std::vector<std::string> formal_parameters;
     std::vector<int> formal_parameter_indexes{};
 
-    std::map<std::string, int> variable_reduction;
+    std::vector<std::string> variable_reduction;
 
     FunctionEntryNode(std::string function_id, std::vector<std::string> formal_parameters) : function_id(function_id), formal_parameters(formal_parameters) {
         exit = std::make_shared<PropagationNode>("Exit");
@@ -185,20 +185,22 @@ template<typename LatticeType>
 class StatefulNode {
 public:
     std::shared_ptr<Node> node;
-    std::shared_ptr<std::map<Node*, LatticeType>> states;
+    std::shared_ptr<std::map<Node*, LatticeType*>> states;
+    std::shared_ptr<std::vector<LatticeType>> states_vec;
 
     StatefulNode(std::shared_ptr<Node> node) : node(node) {
-        states = std::make_shared<std::map<Node*, LatticeType>>();
+        states = std::make_shared<std::map<Node*, LatticeType*>>();
+        states_vec = std::make_shared<std::vector<LatticeType>>();
     }
 
-    StatefulNode(std::shared_ptr<Node> node, std::shared_ptr<std::map<Node*, LatticeType>> states) : node(node), states(states) {
+    StatefulNode(std::shared_ptr<Node> node, std::shared_ptr<std::map<Node*, LatticeType*>> states, std::shared_ptr<std::vector<LatticeType>> states_vec) : node(node), states(states), states_vec(states_vec) {
         
     }
 
     std::vector<StatefulNode<LatticeType>> get_successors() {
         std::vector<StatefulNode<LatticeType>> nodes;
         for(std::shared_ptr<Node> succ : node->successors){
-            nodes.emplace_back(succ, states);
+            nodes.emplace_back(succ, states, states_vec);
         }
         return nodes;
     }
@@ -206,13 +208,17 @@ public:
     std::vector<StatefulNode<LatticeType>> get_predecessors() {
         std::vector<StatefulNode<LatticeType>> nodes;
         for(std::shared_ptr<Node> pred : node->predecessors){
-            nodes.emplace_back(pred, states);
+            nodes.emplace_back(pred, states, states_vec);
         }
         return nodes;
     }
 
     LatticeType& get_state() {
-        return (*states)[node.get()];
+        return *(*states)[node.get()];
+    }
+
+    LatticeType& get_state(int absolute_index) {
+        return (*states_vec)[absolute_index];
     }
 
     void accept(CfgStateVisitor<LatticeType>& visitor) {
@@ -266,11 +272,16 @@ template<typename LatticeType>
 std::vector<StatefulNode<LatticeType>> create_states(std::vector<std::shared_ptr<Node>>& nodes, const LatticeType default_state = {}){
     std::vector<StatefulNode<LatticeType>> stateful_nodes;
     
-    auto states = std::make_shared<std::map<Node*, LatticeType>>();
+    auto states = std::make_shared<std::map<Node*, LatticeType*>>();
+    //Preallocate to avoid dangling pointer upon resize
+    auto states_vec = std::make_shared<std::vector<LatticeType>>(nodes.size());
     
+    int i = 0;
     for(std::shared_ptr<Node>& node : nodes) {
-        stateful_nodes.emplace_back(node, states);
-        (*states)[node.get()] = default_state;
+        stateful_nodes.emplace_back(node, states, states_vec);
+        (*states_vec)[i] = default_state;
+        (*states)[node.get()] = &(*states_vec)[i];
+        ++i;
     }
 
     return stateful_nodes;

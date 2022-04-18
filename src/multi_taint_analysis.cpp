@@ -3,11 +3,11 @@
 
 using namespace cpu_analysis;
 
-BitVector join(Node& node, std::map<Node*, std::vector<BitVector>>& states, int source_index){
-    BitVector state = states[&node][source_index];
+BitVector join(Node& node, std::map<Node*, std::vector<BitVector>*>& states, int source_index){
+    BitVector state = (*states[&node])[source_index];
     bool old_taint_constant = state[0];
     for(const std::shared_ptr<Node>& pred : node.predecessors){
-        state |= states[pred.get()][source_index];
+        state |= (*states[pred.get()])[source_index];
     }
 
     //Dont propagate taint sources
@@ -18,14 +18,14 @@ BitVector join(Node& node, std::map<Node*, std::vector<BitVector>>& states, int 
     return state;
 }
 
-void analyze(Node& node, std::map<Node*, std::vector<BitVector>>& states, std::vector<Transfer>::const_iterator transfer, int source_count){
+void analyze(Node& node, std::map<Node*, std::vector<BitVector>*>& states, std::vector<Transfer>::const_iterator transfer, int source_count){
     for(int source_index = 0; source_index < source_count; ++source_index){
         BitVector joined_state = join(node, states, source_index);
 
-        states[&node][source_index] |= joined_state & transfer->join_mask;
+        (*states[&node])[source_index] |= joined_state & transfer->join_mask;
         do{
             if(transfer->transfer_mask.has_overlap(joined_state)){
-                states[&node][source_index].set_bit(transfer->var_index);
+                (*states[&node])[source_index].set_bit(transfer->var_index);
             }
         }while(transfer++->uses_next);
     }

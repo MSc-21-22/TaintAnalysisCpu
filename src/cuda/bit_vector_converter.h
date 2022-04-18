@@ -10,10 +10,11 @@ template<typename NodeType>
 void set_bit_cuda_state(DynamicArray<NodeType>& nodes, std::vector<StatefulNode<std::set<std::string>>>& cfg_nodes){
     for (int i = 0; i < cfg_nodes.size(); i++)
     {
-        for (auto& [var_name, var_index] : cfg_nodes[i].node->entry_node->variable_reduction)
+        for (int j = 0; j < cfg_nodes[i].node->entry_node->variable_reduction.size(); ++j)
         {
-            if(((1 << var_index) & (nodes[i].data)) != 0){
-                cfg_nodes[i].get_state().insert(var_name.data());
+            if(((1 << j) & (nodes[i].data)) != 0){
+                auto var_name = cfg_nodes[i].node->entry_node->variable_reduction[j];
+                cfg_nodes[i].get_state(i).insert(var_name.data());
             }
         }                
     }   

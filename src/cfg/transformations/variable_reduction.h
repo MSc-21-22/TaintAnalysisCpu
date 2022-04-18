@@ -11,7 +11,8 @@ class VariableReducer : public CfgVisitor {
     std::map<std::string, int> initial_map{};
 
 public:
-    std::map<std::string, int>* name_map;
+    std::map<std::string, int> name_map;
+    FunctionEntryNode* last_entry;
 
     VariableReducer() {
         initial_map[TAINT_VAR] = 0;
@@ -29,12 +30,12 @@ public:
     }
 private:
     int get_new_variable(const std::string& variable) {
-        auto new_id = name_map->find(variable);
-        if(new_id != name_map->end()){
+        auto new_id = name_map.find(variable);
+        if(new_id != name_map.end()){
             return new_id->second;
         }else{
-            name_map->insert(std::make_pair(variable, name_map->size()));
-            return name_map->size() - 1;
+            name_map.insert(std::make_pair(variable, name_map.size()));
+            return name_map.size() - 1;
         }
     }
 
@@ -49,7 +50,7 @@ private:
                 }
             }else{
                 for(auto& arg: function_entry->arguments){
-                    arg->replace_names(*name_map);
+                    arg->replace_names(name_map);
                 }
             }
         }
@@ -57,7 +58,7 @@ private:
 
     void visit_assignment(AssignmentNode& node){
         node.var_index = get_new_variable(node.id);
-        node.expression->replace_names(*name_map);
+        node.expression->replace_names(name_map);
 
         visit_children(node);
     }
@@ -66,7 +67,7 @@ private:
             visit_children(node);
     }
     void visit_return(ReturnNode& node){
-        node.expression->replace_names(*name_map);
+        node.expression->replace_names(name_map);
 
         visit_children(node);
     }
@@ -74,8 +75,7 @@ private:
         visit_children(node);
     }
     void visit_functionEntry(FunctionEntryNode& node){
-        name_map = &node.variable_reduction;
-        *name_map = initial_map;
+        name_map = initial_map;
         nodes_traversed = {};
 
         for(auto& param : node.formal_parameters){
@@ -83,6 +83,11 @@ private:
         }
 
         visit_children(node);
+
+        node.variable_reduction = std::vector<std::string>(name_map.size());
+        for(auto& [var_name, index] : name_map){
+            node.variable_reduction[index] = var_name;
+        }
     }
     void visit_assignReturn(AssignReturnNode& node){
         node.var_index = get_new_variable(node.id);
@@ -93,14 +98,14 @@ private:
     void visit_arrayinit(ArrayInitializerNode& node){
         node.var_index = get_new_variable(node.id);
         for (auto& expression : node.arrayContent){
-            expression->replace_names(*name_map);
+            expression->replace_names(name_map);
         }
         visit_children(node);
     }
 
     void visit_arrayAssignment(ArrayAssignmentNode& node){
         node.var_index = get_new_variable(node.id);
-        node.expression->replace_names(*name_map);
+        node.expression->replace_names(name_map);
 
         visit_children(node);
     }
