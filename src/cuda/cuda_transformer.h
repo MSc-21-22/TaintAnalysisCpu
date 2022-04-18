@@ -136,16 +136,6 @@ private:
         return index;
     }
 
-    cuda::BitVector get_variable_indices(std::set<std::string>& vars){
-        cuda::BitVector result = 0;
-        for(std::string var : vars){
-            if (variables.count(var)){
-                result |= 1<<variables[var];
-            }
-        }
-        return result;
-    }
-
     void add_taint_source(int nodeIndex, cuda::Transfer& transfer){
         if((transfer.rhs & 1) == 1){
             taint_sources.insert(nodeIndex);
