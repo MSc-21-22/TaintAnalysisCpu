@@ -117,15 +117,12 @@ private:
 
 
     int add_transfer_function(int x, std::shared_ptr<Expression>& expression){
-        int index = transfer_functions.size();
-        cuda::Transfer& current_transfer = transfer_functions.emplace_back();
-        current_transfer.x = x;
-
+        cuda::BitVector rhs = 0;
         expression->each_variable([&](int var_index) {
-            current_transfer.rhs |= 1 << var_index;
+            rhs |= 1 << var_index;
         });
 
-        return index;
+        return add_transfer_function(x, rhs);
     }
 
     int add_transfer_function(int x, cuda::BitVector rhs) {
@@ -149,6 +146,7 @@ void add_predecessors(std::vector<std::shared_ptr<Node>>& nodes, CudaTransformer
     for(int i = 0; i < nodes.size(); i++){
         int pred_index = 0;
         for (auto& pred : nodes[i]->predecessors) {
+            assert(pred_index < 5);
             transformer.nodes[i].predecessor_index[pred_index++] = pred->node_index;
         }
     }
@@ -159,11 +157,13 @@ void add_neighbours(std::vector<std::shared_ptr<Node>>& nodes, CudaTransformer<N
     for(int i = 0; i < nodes.size(); i++){
         int pred_index = 0;
         for (auto& pred : nodes[i]->predecessors) {
+            assert(pred_index < 5);
             transformer.nodes[i].predecessor_index[pred_index++] = pred->node_index;
         }
 
         int succ_index = 0;
         for (auto& succ : nodes[i]->successors){
+            assert(succ_index < 5);
             transformer.nodes[i].successor_index[succ_index++] = succ->node_index;
         }
     }

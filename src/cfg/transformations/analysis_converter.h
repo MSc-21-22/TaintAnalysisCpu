@@ -5,7 +5,7 @@
 
 class TransferCreator : public CfgVisitor{
 private:
-    int next_var_index{2};
+    int next_var_index{RETURN_VAR_INDEX + 1};
 
 public:
     std::vector<cpu_analysis::Transfer> transfers;

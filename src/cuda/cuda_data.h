@@ -10,7 +10,7 @@ using BitVector = int32_t;
 
 struct Transfer{ // x = y + z     { x, [y, z]}
     int x;
-    int32_t rhs = 0;
+    BitVector rhs = 0;
     int next_transfer_index = -1;
 };
 }
