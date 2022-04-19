@@ -7,6 +7,7 @@
 #include <cfg/cfg.h>
 #include <cfg/transformations/var_visitor.h>
 #include <cfg/transformations/taint_locator.h>
+#include <taint_analysis.h>
 #include <assert.h>
 
 template <typename NodeType>
@@ -35,7 +36,7 @@ public:
         node.node_index = id;
         NodeType& node_struct = nodes.emplace_back();
 
-        node_struct.first_transfer_index = add_transfer_function(1, node.expression); // index 1 is RETURN VAR
+        node_struct.first_transfer_index = add_transfer_function(RETURN_VAR_INDEX, node.expression);
         add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
         node_struct.join_mask = 0;
     }
@@ -72,10 +73,10 @@ public:
         node.node_index = id;
         NodeType& node_struct = nodes.emplace_back();
 
-        node_struct.first_transfer_index = add_transfer_function(node.var_index, cuda::BitVector(2)); // Return var bitfield
+        node_struct.first_transfer_index = add_transfer_function(node.var_index, cuda::BitVector(1 << RETURN_VAR_INDEX));
         add_taint_source(id, transfer_functions[node_struct.first_transfer_index]);
         node_struct.join_mask ^= 1 << node.var_index;
-        node_struct.join_mask ^= 1 << 1; // index 1 is RETURN_VAR
+        node_struct.join_mask ^= 1 << RETURN_VAR_INDEX;
     }
 
     void visit_arrayAssignment(ArrayAssignmentNode& node) { 

@@ -3,14 +3,6 @@
 
 using namespace cpu_analysis;
 
-#define TAINT_VAR_INDEX 0 
-#define RETURN_VAR_INDEX 1
-
-TransferCreator::TransferCreator(){
-    var_map[TAINT_VAR] = 0;
-    var_map[RETURN_VAR] = 1;
-}
-
 void TransferCreator::visit_assignment(AssignmentNode& node) {
     Transfer& transfer = transfers.emplace_back();
     transfer.var_index = node.var_index;
