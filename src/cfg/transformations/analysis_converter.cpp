@@ -1,35 +1,22 @@
 #include "analysis_converter.h"
+#include <assert.h>
 
 using namespace cpu_analysis;
 
-TransferCreator::TransferCreator(){
-    var_map[TAINT_VAR] = 0;
-}
-
-int TransferCreator::get_var_index(const std::string& var){
-    if(var_map.count(var) == 0){
-        var_map[var] = next_var_index;
-        return next_var_index++;
-    }else{
-        return var_map[var];
-    }
-}
-
 void TransferCreator::visit_assignment(AssignmentNode& node) {
     Transfer& transfer = transfers.emplace_back();
-    transfer.var_index = get_var_index(node.id);
+    transfer.var_index = node.var_index;
     transfer.join_mask.flip_bit(transfer.var_index);
-    for(auto& variable : node.expression->get_variables()){
-        auto index = get_var_index(variable);
+    for(auto& index : node.expression->get_indicies()){
         transfer.transfer_mask.set_bit(index);
     }
 }
 void TransferCreator::visit_return(ReturnNode& node) {
     Transfer& transfer = transfers.emplace_back();
-    transfer.var_index = get_var_index(RETURN_VAR);
+    transfer.var_index = RETURN_VAR_INDEX;
     transfer.join_mask = 0;
-    for(auto& variable : node.expression->get_variables()){
-        transfer.transfer_mask.set_bit(get_var_index(variable));
+    for(auto& index : node.expression->get_indicies()){
+        transfer.transfer_mask.set_bit(index);
     }
 }
 void TransferCreator::visit_emptyReturn(EmptyReturnNode& node) {
@@ -41,9 +28,9 @@ void TransferCreator::visit_functionEntry(FunctionEntryNode& node) {
         Transfer& transfer = transfers.emplace_back();
         transfer.join_mask = 0;
 
-        transfer.var_index = get_var_index(node.formal_parameters[i]);
-        for(auto& variable : node.arguments[i]->get_variables()){
-            transfer.transfer_mask.set_bit(get_var_index(variable));
+        transfer.var_index = node.formal_parameter_indexes[i];
+        for(auto& index : node.arguments[i]->get_indicies()){
+            transfer.transfer_mask.set_bit(index);
         }
         transfer.uses_next = true;
     }
@@ -57,26 +44,26 @@ void TransferCreator::visit_functionEntry(FunctionEntryNode& node) {
 }
 void TransferCreator::visit_assignReturn(AssignReturnNode& node) {
     Transfer& transfer = transfers.emplace_back();
-    transfer.var_index = get_var_index(node.id);
+    transfer.var_index = node.var_index;
     transfer.join_mask.flip_bit(transfer.var_index);
-    transfer.join_mask.flip_bit(get_var_index(RETURN_VAR));
-    transfer.transfer_mask.set_bit(get_var_index(RETURN_VAR));
+    transfer.join_mask.flip_bit(RETURN_VAR_INDEX);
+    transfer.transfer_mask.set_bit(RETURN_VAR_INDEX);
 }
 void TransferCreator::visit_arrayAssignment(ArrayAssignmentNode& node) {
     Transfer& transfer = transfers.emplace_back();
-    transfer.var_index = get_var_index(node.id);
+    transfer.var_index = node.var_index;
     transfer.join_mask.flip_bit(transfer.var_index);
-    for(auto& variable : node.expression->get_variables()){
-        transfer.transfer_mask.set_bit(get_var_index(variable));
+    for(auto& index : node.expression->get_indicies()){
+        transfer.transfer_mask.set_bit(index);
     }
 }
 void TransferCreator::visit_arrayinit(ArrayInitializerNode& node) {
     Transfer& transfer = transfers.emplace_back();
-    transfer.var_index = get_var_index(RETURN_VAR);
+    transfer.var_index = RETURN_VAR_INDEX;
     transfer.join_mask.flip_bit(transfer.var_index);
     for(auto& expr : node.arrayContent) {
-        for(auto& variable : expr->get_variables()){
-            transfer.transfer_mask.set_bit(get_var_index(variable));
+        for(auto& index : expr->get_indicies()){
+            transfer.transfer_mask.set_bit(index);
         }
     }
 }

@@ -2,6 +2,7 @@
 #include "../worklist/worklist.cuh"
 
 using namespace multi_cuda;
+using namespace cuda;
 
 template<typename Node>
 struct SizedArray{

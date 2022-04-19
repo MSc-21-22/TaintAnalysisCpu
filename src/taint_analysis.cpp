@@ -42,23 +42,23 @@ void BitVector::flip_bit(int index){
     bitfield ^= 1<<index;
 }
 
-BitVector join(const Node &node, std::map<Node*, BitVector> &states)
+BitVector join(const Node &node, std::map<Node*, BitVector*> &states)
 {   
     BitVector state(1);
     for(const std::shared_ptr<Node>& pred : node.predecessors)
     {
-        state |= states[pred.get()];
+        state |= *states[pred.get()];
     }
     return state;
 }
 
-void analyze(Node& node, std::map<Node*, BitVector>& states, std::vector<Transfer>::const_iterator transfer){
+void analyze(Node& node, std::map<Node*, BitVector*>& states, std::vector<Transfer>::const_iterator transfer){
     BitVector joined_state = join(node, states);
 
-    states[&node] |= joined_state & transfer->join_mask;
+    *states[&node] |= joined_state & transfer->join_mask;
     do{
         if(transfer->transfer_mask.has_overlap(joined_state)){
-            states[&node].set_bit(transfer->var_index);
+            states[&node]->set_bit(transfer->var_index);
         }
     }while(transfer++->uses_next);
 }

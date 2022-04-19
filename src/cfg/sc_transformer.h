@@ -35,6 +35,7 @@ private:
     }
 
     void add_node(std::shared_ptr<Node> node){
+        node->entry_node = entryNodes.back();
         last = {node};
         nodes.push_back(node);
     }
@@ -241,11 +242,9 @@ public:
         }
         auto id = ctx->ID()->getText();
         std::shared_ptr<FunctionEntryNode> functionEntry = std::static_pointer_cast<FunctionEntryNode>(functions[id]);
-        auto successor = clone_entry(functionEntry, &nodes);
+        auto successor = clone_entry(functionEntry, &nodes, entryNodes);
         std::reverse(args.begin(), args.end());
         successor->arguments = args;
-    
-        entryNodes.push_back(successor);
 
         std::string args_string = "(";
         if(args.size() > 0){

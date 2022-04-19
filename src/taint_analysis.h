@@ -6,6 +6,9 @@
 #include <vector>
 #include <limits>
 
+#define TAINT_VAR_INDEX 0 
+#define RETURN_VAR_INDEX 1
+
 namespace cpu_analysis{
 
 

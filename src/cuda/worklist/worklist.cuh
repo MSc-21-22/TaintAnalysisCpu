@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <timing.h>
 
-
+using namespace cuda;
 namespace worklist{
     #define THREAD_COUNT (1024*2)
     #define EXTRA_WORKLISTS_CONSTANT 600

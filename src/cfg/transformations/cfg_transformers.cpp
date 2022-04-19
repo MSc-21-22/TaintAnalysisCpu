@@ -11,14 +11,14 @@ std::set<std::string> get_variables(std::vector<std::shared_ptr<Node>>& nodes){
 }
 
 void reduce_variables(std::vector<std::shared_ptr<FunctionEntryNode>>& entry_nodes) {
-    VariableReducer reducer({TAINT_VAR, RETURN_VAR});
+    VariableReducer reducer;
     for(auto &entry : entry_nodes){
         reducer.visit_node(*entry);
     }
 }
 
-std::shared_ptr<FunctionEntryNode> clone_entry(std::shared_ptr<FunctionEntryNode> entry, std::vector<std::shared_ptr<Node>>* node_vector){
-    Cloner cloner(node_vector);
+std::shared_ptr<FunctionEntryNode> clone_entry(std::shared_ptr<FunctionEntryNode> entry, std::vector<std::shared_ptr<Node>>* node_vector, std::vector<std::shared_ptr<FunctionEntryNode>>& entry_nodes){
+    Cloner cloner(node_vector, entry_nodes);
     entry->accept(cloner);
 
     auto result = cloner.nodeConverter.at(entry.get());

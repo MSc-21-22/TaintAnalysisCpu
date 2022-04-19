@@ -3,17 +3,25 @@
 #include <cfg/cfg.h>
 #include <cuda/cuda_transformer.h>
 #include <cfg/transformations/transforms_matrix.h>
+#include <iostream>
 
 TEST_CASE("cuda multiple transferfunctions"){
+    std::cout << "Hello world" <<  std::endl;
+
     std::vector<std::string> parameters = {"a", "b", "c"};
+    std::vector<int> parameter_indexes = {3, 4, 5};
 
     auto i = std::make_shared<VariableExpression>("i");
+    i->var_index = 0;
     auto j = std::make_shared<VariableExpression>("j");
+    j->var_index = 1;
     auto h = std::make_shared<VariableExpression>("h");
+    h->var_index = 2;
     std::vector<std::shared_ptr<Expression>> arguments = {i,j,h};
 
     auto funcEntry = std::make_shared<FunctionEntryNode>("f", parameters);
     funcEntry->arguments = arguments;
+    funcEntry->formal_parameter_indexes = parameter_indexes;
 
     std::vector<std::shared_ptr<Node>> nodes = {funcEntry};
     CudaTransformer<bit_cuda::Node> transformer = transform_bit_cuda(nodes);

@@ -2,6 +2,7 @@
 #include "../worklist/worklist.cuh"
 
 using namespace cuda_worklist;
+using namespace cuda;
 
 class Analyzer {
 public:

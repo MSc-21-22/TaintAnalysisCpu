@@ -7,6 +7,7 @@
 #include "analysis.h"
 
 using namespace bit_cuda;
+using namespace cuda;
 
 __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, int node_count){
     int node_index = threadIdx.x + blockDim.x * blockIdx.x;
