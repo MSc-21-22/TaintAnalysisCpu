@@ -210,19 +210,17 @@ void benchmark_all_multi_taint(antlr4::ANTLRInputStream& prog, std::string file_
     set_multi_bit_vector_state(nodes, comparable_cpu_nodes);
 
 
-    {
-        init_gpu();
-        std::cout << "\n⭐ GPU analysis ⭐" << std::endl;
-        program = parse_to_cfg_transformer(prog, call_counts);
-        Stopwatch gpu_watch;
-        auto gpu_nodes = multi_bit_cuda_worklist_analysis(program);
-        gpu_watch.save_time<Microseconds>();
+    init_gpu();
+    std::cout << "\n⭐ GPU analysis ⭐" << std::endl;
+    program = parse_to_cfg_transformer(prog, call_counts);
+    Stopwatch gpu_watch;
+    auto gpu_nodes = multi_bit_cuda_worklist_analysis(program);
+    gpu_watch.save_time<Microseconds>();
 
-        if(!state_multi_equality(comparable_cpu_nodes, gpu_nodes)){
-            std::cout << "###### cpu != gpu #####" << std::endl;
-        }
-        Stopwatch::add_line();
+    if(!state_multi_equality(comparable_cpu_nodes, gpu_nodes)){
+        std::cout << "###### cpu != gpu #####" << std::endl;
     }
+    Stopwatch::add_line();
 }
 
 int main(int argc, char *argv[]){
