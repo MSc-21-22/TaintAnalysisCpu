@@ -64,7 +64,6 @@ void cpu_multi::worklist(std::vector<StatefulNode<std::vector<BitVector>>>& node
 
         std::vector<BitVector> oldState = currentNode.get_state();
         int offset = node_to_start_transfer[index];
-        auto begin = transfers.cbegin();
         auto transfer = transfers.cbegin() + offset;
         analyze(*currentNode.node, *currentNode.states, transfer, source_count);
 
