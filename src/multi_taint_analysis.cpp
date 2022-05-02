@@ -27,11 +27,8 @@ void analyze(Node& node, std::map<Node*, std::vector<BitVector>*>& states, std::
         if(joined_state.bitfield == 0)
             continue;
 
-        int iterations = 0;
-
         state[source_index] |= joined_state & transfer->join_mask;
         do{
-            iterations++;
             if(transfer->transfer_mask.has_overlap(joined_state)){
                 state[source_index].set_bit(transfer->var_index);
             }
