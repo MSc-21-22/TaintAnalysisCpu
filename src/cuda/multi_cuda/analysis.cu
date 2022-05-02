@@ -39,17 +39,13 @@ public:
         for(int source = 0; source < source_count; ++source){
             BitVector joined_data = multi_cuda_join(current_node.predecessor_index, nodes, source);
 
-            if(joined_data == 0){
-                continue;
-            }
             BitVector last = current_node.data[source];
             BitVector current = last;
-
-            current |= joined_data & current_node.join_mask;
             
             joined_data |= current;
             transfer_function(current_node.first_transfer_index, transfers, joined_data, current);
 
+            current |= joined_data & current_node.join_mask;
             if(last != current){
                 current_node.data[source] = current;
                 add_successors = true;
@@ -61,7 +57,7 @@ public:
 
 void multi_cuda::execute_analysis(DynamicArray<Node>& nodes, std::vector<Transfer>& transfers, const std::set<int>& taint_sources, int source_count){
     Analyzer analyzer(source_count);
-    
+
     worklist::NodeUploader<SizedArray<Node>> uploader;
     uploader.container.item_size = nodes.get_item_size();
     uploader.dev_nodes = (void**)&uploader.container.items;

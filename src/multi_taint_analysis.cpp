@@ -18,14 +18,22 @@ BitVector join(Node& node, std::map<Node*, std::vector<BitVector>*>& states, int
     return state;
 }
 
-void analyze(Node& node, std::map<Node*, std::vector<BitVector>*>& states, std::vector<Transfer>::const_iterator transfer, int source_count){
+void analyze(Node& node, std::map<Node*, std::vector<BitVector>*>& states, std::vector<Transfer>::const_iterator start_transfer, int source_count){
+    std::vector<BitVector>& state = *states[&node];
     for(int source_index = 0; source_index < source_count; ++source_index){
+        auto transfer = start_transfer;
         BitVector joined_state = join(node, states, source_index);
 
-        (*states[&node])[source_index] |= joined_state & transfer->join_mask;
+        if(joined_state.bitfield == 0)
+            continue;
+
+        int iterations = 0;
+
+        state[source_index] |= joined_state & transfer->join_mask;
         do{
+            iterations++;
             if(transfer->transfer_mask.has_overlap(joined_state)){
-                (*states[&node])[source_index].set_bit(transfer->var_index);
+                state[source_index].set_bit(transfer->var_index);
             }
         }while(transfer++->uses_next);
     }
@@ -35,13 +43,16 @@ void cpu_multi::worklist(std::vector<StatefulNode<std::vector<BitVector>>>& node
     std::vector<int> worklist;
     std::map<Node*, int> node_to_index;
     TaintSourceLocator locator;
-    for(int i = nodes.size() - 1; i>=0; --i){
+
+    int taint_index = 0;
+    for(int i = 0; i < nodes.size(); ++i){
         node_to_index.insert(std::make_pair(nodes[i].node.get(), i));
         
         //Allocate and initialize bitvectors
         nodes[i].get_state().resize(source_count);
 
         if(locator.is_taintsource(*nodes[i].node)){
+            nodes[i].get_state(i)[taint_index++].set_bit(0);
             worklist.push_back(i);
         }
     }
@@ -55,8 +66,10 @@ void cpu_multi::worklist(std::vector<StatefulNode<std::vector<BitVector>>>& node
         StatefulNode<std::vector<BitVector>>& currentNode = nodes[index];
 
         std::vector<BitVector> oldState = currentNode.get_state();
-
-        analyze(*currentNode.node, *currentNode.states, transfers.cbegin() + node_to_start_transfer[index], source_count);
+        int offset = node_to_start_transfer[index];
+        auto begin = transfers.cbegin();
+        auto transfer = transfers.cbegin() + offset;
+        analyze(*currentNode.node, *currentNode.states, transfer, source_count);
 
         if (currentNode.get_state() != oldState) {
             for(StatefulNode<std::vector<BitVector>>& succ : currentNode.get_successors()){
