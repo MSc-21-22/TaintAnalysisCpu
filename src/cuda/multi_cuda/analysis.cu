@@ -43,6 +43,10 @@ public:
             BitVector current = last;
             
             joined_data |= current;
+
+            if(joined_data == 0)
+                continue;
+
             transfer_function(current_node.first_transfer_index, transfers, joined_data, current);
 
             current |= joined_data & current_node.join_mask;
