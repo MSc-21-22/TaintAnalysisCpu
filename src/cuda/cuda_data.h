@@ -102,6 +102,28 @@ public:
         return *next; 
     }
 
+    template<typename ... Args>
+    Item& emplace_back_resizable(Args ... args){
+        //Expand array with factor of 2 in case we exceed capacity
+        if(current_size >= max_size){
+            int new_max_size = max_size*2;
+            char* new_memory = alloc.allocate(new_max_size * item_size);
+            std::memcpy(new_memory, items, max_size * item_size);
+            alloc.deallocate(items, max_size * item_size);
+
+            items = new_memory;
+            max_size = new_max_size;
+        }
+
+        Item* next = (Item*)(items + current_size * item_size);
+        current_size++;
+        new (next) Item(std::forward<Args>(args)...); //Placement new, i.e. not an allocation
+
+        std::memset(next+1, 0, item_size - sizeof(Item));
+
+        return *next; 
+    }
+
     Item& back() {
         return *(Item*) (items + (current_size - 1) * item_size);
     }
