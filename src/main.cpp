@@ -20,7 +20,6 @@
 #include "cuda/cuda_transformer.h"
 #include <cuda/common.h>
 #include <cfg/transformations/analysis_converter.h>
-#include <format>
 
 void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "\\n{ ";
