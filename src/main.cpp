@@ -308,10 +308,12 @@ int main(int argc, char *argv[]){
             else {
                 header << file_name << " : " << call_counts["f"];
             }
+            auto program = parse_to_cfg_transformer(prog, call_counts);
+            std::cout << "CFG Nodes: " << program.nodes.size() << "\n" << std::endl;
+            header << ";" << program.nodes.size();
             Stopwatch::add_header(header.str());
 
             std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
-            auto program = parse_to_cfg_transformer(prog, call_counts);
             reduce_variables(program.entryNodes);
             Stopwatch cpu_watch;
             TransferCreator analyis_info = get_analysis_information(program.nodes);
