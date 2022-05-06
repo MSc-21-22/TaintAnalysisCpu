@@ -110,7 +110,7 @@ namespace worklist{
             fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
             return;
         }
-
+        
         // Allocate work columns
         dev_worklists = cuda_allocate_memory<int*>(sizeof(int) * THREAD_COUNT * work_column_count);
         cudaMemset(dev_worklists, -1, sizeof(int) * THREAD_COUNT * work_column_count);
@@ -148,7 +148,7 @@ namespace worklist{
                 fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
             }
             
-            cuda_copy_to_host((void*)&worklists_pending, dev_worklists_pending, sizeof(int));
+            cuda_copy_to_host(&worklists_pending, dev_worklists_pending, sizeof(int));
             current_worklist = (current_worklist+1) % work_column_count;
         }
         lfp_watch.print_time<Microseconds>("LFP time: ");
