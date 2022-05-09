@@ -52,13 +52,13 @@ BitVector join(const Node &node, std::map<Node*, BitVector*> &states)
     return state;
 }
 
-void analyze(Node& node, std::map<Node*, BitVector*>& states, std::vector<Transfer>::const_iterator transfer){
+void analyze(Node& node, BitVector& state, std::map<Node*, BitVector*>& states, std::vector<Transfer>::const_iterator transfer){
     BitVector joined_state = join(node, states);
 
-    *states[&node] |= joined_state & transfer->join_mask;
+    state |= joined_state & transfer->join_mask;
     do{
         if(transfer->transfer_mask.has_overlap(joined_state)){
-            states[&node]->set_bit(transfer->var_index);
+            state.set_bit(transfer->var_index);
         }
     }while(transfer++->uses_next);
 }
@@ -83,7 +83,7 @@ void cpu_analysis::worklist(std::vector<StatefulNode<BitVector>>& nodes, const s
 
         BitVector oldState = currentNode.get_state();
 
-        analyze(*currentNode.node, *currentNode.states, transfers.cbegin() + node_to_start_transfer[index]);
+        analyze(*currentNode.node, currentNode.get_state(index), *currentNode.states, transfers.cbegin() + node_to_start_transfer[index]);
 
         if (currentNode.get_state() != oldState) {
             for(StatefulNode<BitVector>& succ : currentNode.get_successors()){
