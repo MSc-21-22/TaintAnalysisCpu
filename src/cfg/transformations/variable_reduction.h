@@ -84,6 +84,10 @@ private:
 
         visit_children(node);
 
+        for (Node* node : node_stack) {
+            node->accept(*this);
+        }
+
         node.variable_reduction = std::vector<std::string>(name_map.size());
         for(auto& [var_name, index] : name_map){
             node.variable_reduction[index] = var_name;
