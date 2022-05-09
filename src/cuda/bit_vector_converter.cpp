@@ -22,7 +22,7 @@ void set_multi_bit_vector_state(std::vector<StatefulNode<std::vector<cpu_analysi
             for(int j = 0; j < nodes[i].get_state(i).size(); ++j){
                 if(nodes[i].get_state(i)[j][z]){
                     auto var_name = cfg_nodes[i].node->entry_node->variable_reduction[z];
-                    cfg_nodes[i].get_state(i)[var_name].insert(i);
+                    cfg_nodes[i].get_state(i)[var_name].insert(j);
                 }
             }
         }                
