@@ -184,7 +184,14 @@ bool state_multi_equality(std::vector<StatefulNode<SourcedTaintState>>& lhs, std
 }
 
 void benchmark_all_multi_taint(antlr4::ANTLRInputStream& prog, std::string file_name, std::map<std::string, int>& call_counts){
-    Stopwatch::add_header(file_name);
+    std::stringstream header;
+    if (call_counts.find("f") == call_counts.end()) {
+        header << file_name;
+    }
+    else {
+        header << file_name << " : " << call_counts["f"];
+    }
+    Stopwatch::add_header(header.str());
 
     std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
     auto program = parse_to_cfg_transformer(prog, call_counts);
@@ -293,10 +300,19 @@ int main(int argc, char *argv[]){
 
         if(benchmark_all){
 
-            Stopwatch::add_header(file_name);
+            std::stringstream header;
+            if (call_counts.find("f") == call_counts.end()) {
+                header << file_name;
+            }
+            else {
+                header << file_name << " : " << call_counts["f"];
+            }
+            auto program = parse_to_cfg_transformer(prog, call_counts);
+            std::cout << "CFG Nodes: " << program.nodes.size() << "\n" << std::endl;
+            header << ";" << program.nodes.size();
+            Stopwatch::add_header(header.str());
 
             std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
-            auto program = parse_to_cfg_transformer(prog, call_counts);
             reduce_variables(program.entryNodes);
             Stopwatch cpu_watch;
             TransferCreator analyis_info = get_analysis_information(program.nodes);
