@@ -121,7 +121,8 @@ ScCudaTransformer<cuda_worklist::Node> bit_cuda_worklist_analysis(antlr4::ANTLRI
     time_func("Least fixed point algorithm: ",
             cuda_worklist::execute_analysis, transformer.get_nodes(), transformer.get_transfers(), transformer.get_sources());
 
-    cuda::print_digraph(transformer.get_nodes());
+    if (!timing::should_benchmark)
+        cuda::print_digraph(transformer.get_nodes());
 
     return transformer;
 }
@@ -350,14 +351,6 @@ int main(int argc, char *argv[]){
         Stopwatch cuda_worklist_watch;
         auto cuda_worklist_nodes = bit_cuda_worklist_analysis(prog, call_counts);
         cuda_worklist_watch.save_time<Microseconds>();
-
-        if(!is_equal(cuda_worklist_nodes.get_nodes(), nodes.front())) {
-            std::cout << "###### bit-cuda worklist != cpu nodes #####" << std::endl;
-        }
-        else {
-            std::cout << "Seemingly correct" << std::endl;
-
-        }
 
         Stopwatch::add_line();
         return 0;
