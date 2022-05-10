@@ -58,10 +58,12 @@ class ScCudaTransformer : public scBaseVisitor {
         return node;
     }
 
-    int get_var_index(std::string& name){
+    //Use pass by value to take advantage of Copy elision and avoid copying
+
+    int get_var_index(std::string name){
         auto it = var_to_index.find(name);
         if (it == var_to_index.end()) {
-            var_to_index.insert(std::make_pair(name, next_var_index));
+            var_to_index.insert(std::make_pair(std::move(name), next_var_index));
             return next_var_index++;
         }
         else {
@@ -165,8 +167,7 @@ class ScCudaTransformer : public scBaseVisitor {
         next_var_index = RETURN_VAR_INDEX+1;
         var_to_index = default_var_to_index;
 
-        std::string function_name = ctx->ID()->getText();
-        Function<Node>& function = functions[function_name];
+        Function<Node>& function = functions[ctx->ID()->getText()];
         nodes = &function.nodes;
         taint_sources = &function.sources;
 
@@ -176,13 +177,12 @@ class ScCudaTransformer : public scBaseVisitor {
             auto *param = ctx->opt_parameters()->parameters();
             while (param != nullptr)
             {
-                std::string formal_parameter = param->parameter()->ID()->getText();
-                function.formal_parameters.push_back(get_var_index(formal_parameter));
+                function.formal_parameters.push_back(get_var_index(param->parameter()->ID()->getText()));
                 param = param->parameters();
             }
         }
 
-        Node& entry = add_node(); //TODO: add entry transfer information
+        Node& entry = add_node();
         next_layer();
         if (ctx->type() != nullptr)
         {
