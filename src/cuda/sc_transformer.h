@@ -6,7 +6,7 @@
 #include <map>
 #include <cfg/transformations/cfg_clone.h>
 #include <algorithm>
-#include <cuda/cuda_data.h>
+#include <dynamic_array.h>
 #include <taint_analysis.h>
 #include <antlr4-runtime.h>
 #include <antlr4-runtime/scLexer.h>
