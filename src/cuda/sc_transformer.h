@@ -63,7 +63,7 @@ class ScCudaTransformer : public scBaseVisitor {
     int get_var_index(std::string name){
         auto it = var_to_index.find(name);
         if (it == var_to_index.end()) {
-            var_to_index.insert(std::make_pair(std::move(name), next_var_index));
+            var_to_index.emplace(std::move(name), next_var_index);
             return next_var_index++;
         }
         else {
