@@ -363,8 +363,8 @@ public:
 
             if (ctx->arrayelement() != nullptr)
             {
-                antlrcpp::Any result2 = ctx->arrayelement()->accept(this);
-                std::vector<std::shared_ptr<Expression>> arrayelements = result2.as<std::vector<std::shared_ptr<Expression>>>();
+                antlrcpp::Any result = ctx->arrayelement()->accept(this);
+                std::vector<std::shared_ptr<Expression>> arrayelements = result.as<std::vector<std::shared_ptr<Expression>>>();
                 
                 for (auto &i: arrayelements)
                 {

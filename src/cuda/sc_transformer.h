@@ -396,13 +396,13 @@ class ScCudaTransformer : public scBaseVisitor {
 
     virtual antlrcpp::Any visitStatementinitarray(scParser::StatementinitarrayContext *ctx) override
     {
-        antlrcpp::Any result1 = ctx->expression()->accept(this);
-        BitVector arrayExpression = result1.as<BitVector>();
+        antlrcpp::Any result = ctx->expression()->accept(this);
+        BitVector arrayExpression = result.as<BitVector>();
 
         if (ctx->arrayelement() != nullptr)
         {
-            antlrcpp::Any result2 = ctx->arrayelement()->accept(this);
-            BitVector arrayelements = result2.as<BitVector>();
+            antlrcpp::Any result = ctx->arrayelement()->accept(this);
+            BitVector arrayelements = result.as<BitVector>();
 
             arrayExpression |= arrayelements;
         }      
@@ -425,8 +425,8 @@ class ScCudaTransformer : public scBaseVisitor {
 
             if (ctx->arrayelement() != nullptr)
             {
-                antlrcpp::Any result2 = ctx->arrayelement()->accept(this);
-                BitVector arrayelements = result2.as<BitVector>();
+                antlrcpp::Any result = ctx->arrayelement()->accept(this);
+                BitVector arrayelements = result.as<BitVector>();
                 
                 expression |= arrayelements;   
             }
