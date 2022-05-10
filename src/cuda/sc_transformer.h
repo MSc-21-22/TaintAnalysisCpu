@@ -71,30 +71,30 @@ class ScCudaTransformer : public scBaseVisitor {
         }
     }
 
-    cuda::Transfer& add_transfer(Node& node, int lhs_index, cpu_analysis::BitVector expression) {
+    cuda::Transfer& add_transfer(Node& node, int lhs_index, BitVector expression) {
         return add_transfer(node, lhs_index, expression, nodes->size() - 1);
     }
 
-    cuda::Transfer& add_transfer(Node& node, int lhs_index, cpu_analysis::BitVector expression, int index){
+    cuda::Transfer& add_transfer(Node& node, int lhs_index, BitVector expression, int index){
         check_for_new_taint_source(expression, index);
 
         node.first_transfer_index = transfer_index++;
         return create_transfer(lhs_index, expression);
     }
 
-    cuda::Transfer& add_transfer(cuda::Transfer& transfer, int lhs_index, cpu_analysis::BitVector expression, int index){
+    cuda::Transfer& add_transfer(cuda::Transfer& transfer, int lhs_index, BitVector expression, int index){
         check_for_new_taint_source(expression, index);
         
         transfer.next_transfer_index = transfer_index++;
         return create_transfer(lhs_index, expression);
     }
 
-    void check_for_new_taint_source(cpu_analysis::BitVector expression, int index) {
+    void check_for_new_taint_source(BitVector expression, int index) {
         if (expression[TAINT_VAR_INDEX] && (taint_sources->size() == 0 || taint_sources->back() != index))
             taint_sources->push_back(index);
     }
 
-    cuda::Transfer& create_transfer(int lhs_index, cpu_analysis::BitVector expression) {
+    cuda::Transfer& create_transfer(int lhs_index, BitVector expression) {
         cuda::Transfer& new_transfer = transfers.emplace_back();
         new_transfer.rhs = expression.bitfield;
         new_transfer.x = lhs_index;
@@ -208,7 +208,7 @@ class ScCudaTransformer : public scBaseVisitor {
         if (ctx->expression() != nullptr)
         {
             antlrcpp::Any result = ctx->expression()->accept(this);
-            cpu_analysis::BitVector expression = result.as<cpu_analysis::BitVector>();
+            BitVector expression = result.as<BitVector>();
 
             Node& return_node = add_node();
             return_node.join_mask = 0;
@@ -226,7 +226,7 @@ class ScCudaTransformer : public scBaseVisitor {
     virtual antlrcpp::Any visitStatementassign(scParser::StatementassignContext *ctx) override
     {
         antlrcpp::Any result = ctx->expression().back()->accept(this);
-        cpu_analysis::BitVector rhs_expression = result.as<cpu_analysis::BitVector>();
+        BitVector rhs_expression = result.as<BitVector>();
 
         Node& assignment = add_node();
         int var_index = get_var_index(ctx->ID()->getText());
@@ -240,7 +240,7 @@ class ScCudaTransformer : public scBaseVisitor {
     virtual antlrcpp::Any visitStatementinit(scParser::StatementinitContext *ctx) override
     {
         antlrcpp::Any result = ctx->expression()->accept(this);
-        cpu_analysis::BitVector expression = result.as<cpu_analysis::BitVector>();
+        BitVector expression = result.as<BitVector>();
 
         Node& init = add_node();
         int var_index = get_var_index(ctx->ID()->getText());
@@ -254,7 +254,7 @@ class ScCudaTransformer : public scBaseVisitor {
     virtual antlrcpp::Any visitStatementif(scParser::StatementifContext *ctx) override
     {
         antlrcpp::Any result = ctx->expression()->accept(this);
-        cpu_analysis::BitVector expression = result.as<cpu_analysis::BitVector>();
+        BitVector expression = result.as<BitVector>();
 
         int if_node_index = nodes->size();
         Node& if_node = add_node();
@@ -276,20 +276,20 @@ class ScCudaTransformer : public scBaseVisitor {
 
     virtual antlrcpp::Any visitExpression(scParser::ExpressionContext *ctx) override
     {
-        cpu_analysis::BitVector expression(0);
+        BitVector expression(0);
         if (ctx->ID() != nullptr){
             expression.set_bit(get_var_index(ctx->ID()->getText()));
         }else if(ctx->INTEGER() != nullptr){
             // empty case
         }else if(ctx->expression() != nullptr) {
             antlrcpp::Any result = ctx->expression()->accept(this);
-            expression = result.as<cpu_analysis::BitVector>();
+            expression = result.as<BitVector>();
         }
         
         if (ctx->expressionM() != nullptr && ctx->expressionM()->expression() != nullptr){
             
             antlrcpp::Any result = ctx->expressionM()->accept(this);
-            expression |= result.as<cpu_analysis::BitVector>();
+            expression |= result.as<BitVector>();
         }
 
         return expression;
@@ -310,10 +310,10 @@ class ScCudaTransformer : public scBaseVisitor {
 
     virtual antlrcpp::Any visitFunctionCall(scParser::FunctionCallContext *ctx) override 
     {
-        std::vector<cpu_analysis::BitVector> args;
+        std::vector<BitVector> args;
         if(ctx->args() != nullptr){
             antlrcpp::Any result = ctx->args()->accept(this);
-            args = result.as<std::vector<cpu_analysis::BitVector>>();
+            args = result.as<std::vector<BitVector>>();
         }
 
         int func_call_index = nodes->size();
@@ -346,15 +346,15 @@ class ScCudaTransformer : public scBaseVisitor {
     virtual antlrcpp::Any visitArgs(scParser::ArgsContext *ctx) override
     {
         antlrcpp::Any expResult = ctx->expression()->accept(this);
-        auto exp = expResult.as<cpu_analysis::BitVector>();
+        auto exp = expResult.as<BitVector>();
 
         if(ctx->args() != nullptr){
             antlrcpp::Any argResult = ctx->args()->accept(this);
-            auto args = argResult.as<std::vector<cpu_analysis::BitVector>>();
+            auto args = argResult.as<std::vector<BitVector>>();
             args.push_back(exp);
             return args;
         }else{
-            std::vector<cpu_analysis::BitVector> args{exp};
+            std::vector<BitVector> args{exp};
             return args;
         }
     }
@@ -386,10 +386,10 @@ class ScCudaTransformer : public scBaseVisitor {
             antlrcpp::Any rhs_result = ctx->expressionM()->accept(this);
             antlrcpp::Any lhs_result = ctx->expression()->accept(this);
             
-            return lhs_result.as<cpu_analysis::BitVector>() | rhs_result.as<cpu_analysis::BitVector>();
+            return lhs_result.as<BitVector>() | rhs_result.as<BitVector>();
         }else{
             antlrcpp::Any result = ctx->expression()->accept(this);
-            cpu_analysis::BitVector rhs = result.as<cpu_analysis::BitVector>();
+            BitVector rhs = result.as<BitVector>();
             return rhs;
         }
     }
@@ -397,12 +397,12 @@ class ScCudaTransformer : public scBaseVisitor {
     virtual antlrcpp::Any visitStatementinitarray(scParser::StatementinitarrayContext *ctx) override
     {
         antlrcpp::Any result1 = ctx->expression()->accept(this);
-        cpu_analysis::BitVector arrayExpression = result1.as<cpu_analysis::BitVector>();
+        BitVector arrayExpression = result1.as<BitVector>();
 
         if (ctx->arrayelement() != nullptr)
         {
             antlrcpp::Any result2 = ctx->arrayelement()->accept(this);
-            cpu_analysis::BitVector arrayelements = result2.as<cpu_analysis::BitVector>();
+            BitVector arrayelements = result2.as<BitVector>();
 
             arrayExpression |= arrayelements;
         }      
@@ -421,12 +421,12 @@ class ScCudaTransformer : public scBaseVisitor {
         if (ctx->expression() != nullptr){
 
             antlrcpp::Any result = ctx->expression()->accept(this);
-            cpu_analysis::BitVector expression = result.as<cpu_analysis::BitVector>();
+            BitVector expression = result.as<BitVector>();
 
             if (ctx->arrayelement() != nullptr)
             {
                 antlrcpp::Any result2 = ctx->arrayelement()->accept(this);
-                cpu_analysis::BitVector arrayelements = result2.as<cpu_analysis::BitVector>();
+                BitVector arrayelements = result2.as<BitVector>();
                 
                 expression |= arrayelements;   
             }
@@ -434,7 +434,7 @@ class ScCudaTransformer : public scBaseVisitor {
             return expression;
         }
 
-        return cpu_analysis::BitVector(0);
+        return BitVector(0);
     }
 };
 

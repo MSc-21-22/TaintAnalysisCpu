@@ -31,14 +31,14 @@ void print_result(std::set<std::string>& result, std::ostream& stream){
     stream << "}";
 }
 
-void print_cpu_result(cpu_analysis::BitVector& result, std::ostream& stream){
+void print_cpu_result(BitVector& result, std::ostream& stream){
     stream << "\\n{ ";
     stream << result.bitfield;
     stream << "}";
 }
 
 template<typename Node>
-bool is_equal(DynamicArray<Node>& nodes, StatefulNode<cpu_analysis::BitVector>& cpu_nodes) {
+bool is_equal(DynamicArray<Node>& nodes, StatefulNode<BitVector>& cpu_nodes) {
     if (nodes.size() != cpu_nodes.states_vec->size())
         return false;
 
@@ -55,7 +55,7 @@ bool is_equal(DynamicArray<Node>& nodes, StatefulNode<cpu_analysis::BitVector>& 
 std::vector<StatefulNode<std::set<std::string>>> run_cpu_analysis(ScTransformer program){
     reduce_variables(program.entryNodes);
     TransferCreator analyis_info = get_analysis_information(program.nodes);
-    std::vector<StatefulNode<cpu_analysis::BitVector>> nodes = create_states<cpu_analysis::BitVector>(program.nodes, cpu_analysis::BitVector(1));
+    std::vector<StatefulNode<BitVector>> nodes = create_states<BitVector>(program.nodes, BitVector(1));
     time_func("Analyzing: ", 
         cpu_analysis::worklist, nodes, analyis_info.node_to_index, analyis_info.transfers);
 
@@ -68,10 +68,10 @@ std::vector<StatefulNode<std::set<std::string>>> run_cpu_analysis(ScTransformer 
     return comparable_nodes;
 }
 
-std::vector<StatefulNode<std::vector<cpu_analysis::BitVector>>> cpu_multi_taint_analysis(ScTransformer& program){
+std::vector<StatefulNode<std::vector<BitVector>>> cpu_multi_taint_analysis(ScTransformer& program){
     reduce_variables(program.entryNodes);
     TransferCreator analyis_info = get_analysis_information(program.nodes);
-    std::vector<StatefulNode<std::vector<cpu_analysis::BitVector>>> nodes = create_states<std::vector<cpu_analysis::BitVector>>(program.nodes);
+    std::vector<StatefulNode<std::vector<BitVector>>> nodes = create_states<std::vector<BitVector>>(program.nodes);
     
     //Count sources
     int source_count = 0;
@@ -211,7 +211,7 @@ void benchmark_all_multi_taint(antlr4::ANTLRInputStream& prog, std::string file_
     reduce_variables(program.entryNodes);
     Stopwatch cpu_watch;
     TransferCreator analyis_info = get_analysis_information(program.nodes);
-    std::vector<StatefulNode<std::vector<cpu_analysis::BitVector>>> nodes = create_states<std::vector<cpu_analysis::BitVector>>(program.nodes);
+    std::vector<StatefulNode<std::vector<BitVector>>> nodes = create_states<std::vector<BitVector>>(program.nodes);
     
     //Count sources
     int source_count = 0;
@@ -328,7 +328,7 @@ int main(int argc, char *argv[]){
         reduce_variables(program.entryNodes);
         Stopwatch cpu_watch;
         TransferCreator analyis_info = get_analysis_information(program.nodes);
-        std::vector<StatefulNode<cpu_analysis::BitVector>> nodes = create_states<cpu_analysis::BitVector>(program.nodes, cpu_analysis::BitVector(1));
+        std::vector<StatefulNode<BitVector>> nodes = create_states<BitVector>(program.nodes, BitVector(1));
         time_func("Analyzing: ", 
             cpu_analysis::worklist, nodes, analyis_info.node_to_index, analyis_info.transfers);
         cpu_watch.save_time<Microseconds>();

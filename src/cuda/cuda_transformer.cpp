@@ -26,7 +26,7 @@ CudaTransformer<cuda_worklist::Node> transform_cuda_worklist(std::vector<std::sh
 
 CudaTransformer<multi_cuda::Node> transform_multi_cuda(std::vector<std::shared_ptr<Node>>& nodes, int max_taint_sources) {
     auto variables = get_variables(nodes);
-    CudaTransformer<multi_cuda::Node> transformer(nodes.size(), sizeof(multi_cuda::Node) + max_taint_sources * sizeof(BitVector));
+    CudaTransformer<multi_cuda::Node> transformer(nodes.size(), sizeof(multi_cuda::Node) + max_taint_sources * sizeof(cuda::BitVector));
 
     TaintSourceLocator taint_locator;
     int taint_index = 0;
