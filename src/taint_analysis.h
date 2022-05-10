@@ -13,7 +13,7 @@ namespace cpu_analysis{
 
 
 struct BitVector{
-    int64_t bitfield;
+    int64_t bitfield{0};
 public:
     BitVector() = default;
     BitVector(const BitVector&) = default;
