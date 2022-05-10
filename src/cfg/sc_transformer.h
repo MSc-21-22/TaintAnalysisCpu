@@ -327,13 +327,13 @@ public:
         
         
 
-        antlrcpp::Any result1 = ctx->expression()->accept(this);
-        std::shared_ptr<Expression> arrayExpression = result1.as<std::shared_ptr<Expression>>();
+        antlrcpp::Any result = ctx->expression()->accept(this);
+        std::shared_ptr<Expression> arrayExpression = result.as<std::shared_ptr<Expression>>();
 
         if (ctx->arrayelement() != nullptr)
         {
-            antlrcpp::Any result2 = ctx->arrayelement()->accept(this);
-            std::vector<std::shared_ptr<Expression>> arrayelements = result2.as<std::vector<std::shared_ptr<Expression>>>();
+            antlrcpp::Any result = ctx->arrayelement()->accept(this);
+            std::vector<std::shared_ptr<Expression>> arrayelements = result.as<std::vector<std::shared_ptr<Expression>>>();
 
             arrayExpressions.push_back(arrayExpression);
             for (auto &i: arrayelements)
