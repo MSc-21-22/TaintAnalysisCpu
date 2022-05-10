@@ -1,4 +1,6 @@
 #include "cuda_transformer.h"
+#include "sc_transformer.h"
+
 
 using namespace cuda;
 

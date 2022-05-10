@@ -76,8 +76,8 @@ namespace worklist{
         void** dev_nodes;
     };
 
-    template<typename Analyzer, typename NodeContainer, typename NodeType = typename Analyzer::NodeType>
-    void execute_some_analysis(Analyzer analyzer, DynamicArray<NodeType>& nodes, NodeUploader<NodeContainer>& uploadable_container, Transfer* transfers, int transfer_count, const std::set<int>& taint_sources){
+    template<typename Analyzer, typename NodeContainer, typename NodeType = typename Analyzer::NodeType, typename SourceCollection>
+    void execute_some_analysis(Analyzer analyzer, DynamicArray<NodeType>& nodes, NodeUploader<NodeContainer>& uploadable_container, Transfer* transfers, int transfer_count, const SourceCollection& taint_sources){
         static_assert(std::is_same<NodeType, typename NodeUploader<NodeContainer>::Item>::value, "Node uploader Item type must match NodeType");
         static_assert(std::is_same<typename Analyzer::NodeContainer, NodeContainer>::value, "Container types must match");
 
@@ -92,7 +92,7 @@ namespace worklist{
 
         std::vector<std::array<int, THREAD_COUNT>> worklists{};
 
-        std::set<int>::iterator it = taint_sources.cbegin();
+        typename SourceCollection::const_iterator it = taint_sources.cbegin();
         for(int i = 0; i < work_column_count; i++){
             worklists.emplace_back(); 
             for(int j = 0; j < THREAD_COUNT; j++){

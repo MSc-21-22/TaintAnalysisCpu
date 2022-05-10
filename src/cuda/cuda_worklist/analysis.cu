@@ -22,11 +22,11 @@ public:
     }
 };
 
-void cuda_worklist::execute_analysis(DynamicArray<Node>& nodes, std::vector<Transfer>& transfers, const std::set<int>& taint_sources){
+void cuda_worklist::execute_analysis(DynamicArray<Node>& nodes, std::vector<Transfer>& transfers, const std::vector<int>& taint_sources) {
     Analyzer analyzer;
 
     worklist::NodeUploader<Node*> uploader;
     uploader.dev_nodes = (void**)&uploader.container;
-    
+
     worklist::execute_some_analysis(analyzer, nodes, uploader, &transfers[0], transfers.size(), taint_sources);
 }

@@ -24,6 +24,10 @@ private:
     size_t max_size;
     unsigned int item_size;
 public:
+    DynamicArray() : max_size(128), item_size(sizeof(Item)), current_size(0){
+        items = alloc.allocate(max_size * item_size);
+    }
+
     DynamicArray(size_t item_count, unsigned int item_size) : max_size(item_count), item_size(item_size), current_size(0){
         items = alloc.allocate(max_size * item_size);
     }
@@ -79,12 +83,28 @@ public:
         return *(Item*)(items + index * item_size);
     }
 
-    size_t size() {
+    const Item& operator[](int index) const {
+        return *(Item*)(items + index * item_size);
+    }
+
+    size_t size() const{
         return current_size;
     }
 
     size_t capacity(){
         return max_size;
+    }
+
+    void reserve(int amount){
+        if(current_size + amount >= max_size){
+            int new_max_size = (max_size + amount)*2;
+            char* new_memory = alloc.allocate(new_max_size * item_size);
+            std::memcpy(new_memory, items, max_size * item_size);
+            alloc.deallocate(items, max_size * item_size);
+
+            items = new_memory;
+            max_size = new_max_size;
+        }
     }
 
     template<typename ... Args>
