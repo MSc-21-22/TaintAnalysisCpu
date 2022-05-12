@@ -1,6 +1,6 @@
 #include "bit_vector_converter.h"
 
-void set_bit_vector_state(std::vector<StatefulNode<cpu_analysis::BitVector>>& nodes,
+void set_bit_vector_state(std::vector<StatefulNode<BitVector>>& nodes,
                    std::vector<StatefulNode<std::set<std::string>>>& cfg_nodes){     
     for (int i = 0; i < cfg_nodes.size(); i++)
     {
@@ -14,7 +14,7 @@ void set_bit_vector_state(std::vector<StatefulNode<cpu_analysis::BitVector>>& no
     }   
 }
 
-void set_multi_bit_vector_state(std::vector<StatefulNode<std::vector<cpu_analysis::BitVector>>>& nodes, std::vector<StatefulNode<SourcedTaintState>>& cfg_nodes){
+void set_multi_bit_vector_state(std::vector<StatefulNode<std::vector<BitVector>>>& nodes, std::vector<StatefulNode<SourcedTaintState>>& cfg_nodes){
     for (int i = 0; i < cfg_nodes.size(); i++)
     {
         for (int z = 0; z < cfg_nodes[i].node->entry_node->variable_reduction.size(); ++z)

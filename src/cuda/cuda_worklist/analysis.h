@@ -12,5 +12,5 @@ namespace cuda_worklist{
         cuda::BitVector data = 1;
     };
 
-    void execute_analysis(DynamicArray<Node>& nodes, std::vector<cuda::Transfer>& transfers, const std::set<int>& taint_sources);
+    void execute_analysis(DynamicArray<Node>& nodes, std::vector<cuda::Transfer>& transfers, const std::vector<int>& taint_sources);
 };
