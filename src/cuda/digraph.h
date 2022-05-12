@@ -1,5 +1,4 @@
 #pragma once
-#include "cuda_data.h"
 #include <iostream>
 #include <stdint.h>
 

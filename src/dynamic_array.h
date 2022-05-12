@@ -80,6 +80,10 @@ public:
         return max_size;
     }
 
+    size_t full_size() const {
+        return current_size * item_size;
+    }
+
     void reserve(int amount) {
         if (current_size + amount >= max_size) {
             int new_max_size = (max_size + amount) * 2;

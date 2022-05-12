@@ -2,49 +2,28 @@
 #include <string>
 #include "antlr4-runtime/scLexer.h"
 #include "antlr4-runtime/scParser.h"
-#include <cfg/sc_transformer.h>
-#include "worklist.h"
 #include "taint_analysis.h"
 #include "multi_taint_analysis.h"
-#include <cfg/digraph.h>
-#include <cfg/transformations/taint_locator.h>
-#include "matrix_analysis.h"
-#include "GpuManagement.h"
-#include "cfg/transformations/variable_reduction.h"
 #include <chrono>
 #include "timing.h"
 #include <stdio.h>
 #include <fcntl.h>
 #include <cstring>
-#include "cuda/bit_vector_converter.h"
-#include "cuda/cuda_transformer.h"
 #include <cuda/common.h>
-#include <cfg/transformations/analysis_converter.h>
 #include <cuda/sc_transformer.h>
 #include <cuda/digraph.h>
+#include <base_taint_analysis.h>
+#include <cuda/bit_cuda/analysis.h>
+#include <cuda/cuda_worklist/analysis.h>
 
-void print_result(std::set<std::string>& result, std::ostream& stream){
-    stream << "\\n{ ";
-    for (auto& x : result){
-        stream << x << " ";
-    }
-    stream << "}";
-}
-
-void print_cpu_result(BitVector& result, std::ostream& stream){
-    stream << "\\n{ ";
-    stream << result.bitfield;
-    stream << "}";
-}
 
 template<typename Node>
-bool is_equal(DynamicArray<Node>& nodes, StatefulNode<BitVector>& cpu_nodes) {
-    if (nodes.size() != cpu_nodes.states_vec->size())
+bool is_equal(DynamicArray<Node>& nodes, DynamicArray<Node>& other_nodes) {
+    if (nodes.size() != other_nodes.size())
         return false;
 
     for (int i = 0; i < nodes.size(); ++i) {
-        std::cout << "Node[" << i << "] " << nodes[i].data << " == " << cpu_nodes.get_state(i).bitfield << std::endl;
-        if (!(nodes[i].data == cpu_nodes.get_state(i).bitfield)) {
+        if (!(nodes[i].data == other_nodes[i].data)) {
             return false;
         }
     }
@@ -52,71 +31,61 @@ bool is_equal(DynamicArray<Node>& nodes, StatefulNode<BitVector>& cpu_nodes) {
     return true;
 }
 
-std::vector<StatefulNode<std::set<std::string>>> run_cpu_analysis(ScTransformer program){
-    reduce_variables(program.entryNodes);
-    TransferCreator analyis_info = get_analysis_information(program.nodes);
-    std::vector<StatefulNode<BitVector>> nodes = create_states<BitVector>(program.nodes, BitVector(1));
+DynamicArray<taint::Node> run_cpu_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+    auto transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
+        parse_to_cuda_transformer<taint::Node>, program, call_counts);
     time_func("Analyzing: ", 
-        cpu_analysis::worklist, nodes, analyis_info.node_to_index, analyis_info.transfers);
+        cpu_analysis::worklist, transformer.get_nodes(), transformer.get_transfers(), std::move(transformer.get_sources()));
 
-    std::vector<StatefulNode<std::set<std::string>>> comparable_nodes = create_states<std::set<std::string>>(program.nodes, {TAINT_VAR});
-    set_bit_vector_state(nodes, comparable_nodes);
+    if (!timing::should_benchmark)
+        cuda::print_digraph(transformer.get_nodes());
 
-    if(!timing::should_benchmark) {
-        print_digraph_with_result(comparable_nodes, std::cout, print_result);
-    }
-    return comparable_nodes;
+    return transformer.get_nodes();
 }
 
-std::vector<StatefulNode<std::vector<BitVector>>> cpu_multi_taint_analysis(ScTransformer& program){
-    reduce_variables(program.entryNodes);
-    TransferCreator analyis_info = get_analysis_information(program.nodes);
-    std::vector<StatefulNode<std::vector<BitVector>>> nodes = create_states<std::vector<BitVector>>(program.nodes);
-    
-    //Count sources
-    int source_count = 0;
-    TaintSourceLocator locator;
-    for(auto& node : nodes){
-        if(locator.is_taintsource(*node.node)){
-            ++source_count;
-        }
-    }
+DynamicArray<multi_taint::Node> cpu_multi_taint_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+    std::cout << "Feature currently unsupported\n";
+    //reduce_variables(program.entryNodes);
+    //TransferCreator analyis_info = get_analysis_information(program.nodes);
+    //std::vector<StatefulNode<std::vector<BitVector>>> nodes = create_states<std::vector<BitVector>>(program.nodes);
+    //
+    ////Count sources
+    //int source_count = 0;
+    //TaintSourceLocator locator;
+    //for(auto& node : nodes){
+    //    if(locator.is_taintsource(*node.node)){
+    //        ++source_count;
+    //    }
+    //}
 
-    time_func("Analyzing: ",
-        cpu_multi::worklist, nodes, analyis_info.node_to_index, analyis_info.transfers, source_count);
+    //time_func("Analyzing: ",
+    //    cpu_multi::worklist, nodes, analyis_info.node_to_index, analyis_info.transfers, source_count);
 
-    if(!timing::should_benchmark) {
-        std::vector<StatefulNode<SourcedTaintState>> printable_nodes = create_states<SourcedTaintState>(program.nodes);
-        set_multi_bit_vector_state(nodes, printable_nodes);
-        print_digraph_subgraph(printable_nodes, std::cout, print_taint_source, "main");
-    }
-    return nodes;
+    //if(!timing::should_benchmark) {
+    //    std::vector<StatefulNode<SourcedTaintState>> printable_nodes = create_states<SourcedTaintState>(program.nodes);
+    //    set_multi_bit_vector_state(nodes, printable_nodes);
+    //    print_digraph_subgraph(printable_nodes, std::cout, print_taint_source, "main");
+    //}
+    //return nodes;
+    return DynamicArray<multi_taint::Node>();
 }
 
-std::vector<StatefulNode<std::set<std::string>>> bit_cuda_analysis(ScTransformer& program){
-    init_gpu();
-    time_func("Variable reduction: ", 
-                reduce_variables, program.entryNodes);
-    auto transformer = time_func<CudaTransformer<bit_cuda::Node>>("Gpu structure transformation: ", 
-                transform_bit_cuda, program.nodes);
+DynamicArray<taint::Node> bit_cuda_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+    auto transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
+        parse_to_cuda_transformer<taint::Node>, program, call_counts);
         
     time_func("Least fixed point algorithm: ",
-            bit_cuda::execute_analysis, &transformer.nodes[0], transformer.nodes.size(), &*transformer.transfer_functions.begin(), transformer.transfer_functions.size());
-
-    std::vector<StatefulNode<std::set<std::string>>> nodes = create_states<std::set<std::string>>(program.nodes);
-    time_func("Save into nodes", 
-                set_bit_cuda_state<bit_cuda::Node>, transformer.nodes, nodes);
+            bit_cuda::execute_analysis, transformer.get_nodes(), transformer.get_transfers());
 
     if(!timing::should_benchmark)
-        print_digraph_with_result(nodes, std::cout, print_result);
+        cuda::print_digraph(transformer.get_nodes());
 
-    return nodes;
+    return transformer.get_nodes();
 }
 
-ScCudaTransformer<cuda_worklist::Node> bit_cuda_worklist_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
-    init_gpu();
-    auto transformer = time_func<ScCudaTransformer<cuda_worklist::Node>>("Parsing: ",
-        parse_to_cuda_transformer<cuda_worklist::Node>, program, call_counts);
+DynamicArray<taint::Node> bit_cuda_worklist_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+    auto transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
+        parse_to_cuda_transformer<taint::Node>, program, call_counts);
 
     time_func("Least fixed point algorithm: ",
             cuda_worklist::execute_analysis, transformer.get_nodes(), transformer.get_transfers(), transformer.get_sources());
@@ -124,123 +93,78 @@ ScCudaTransformer<cuda_worklist::Node> bit_cuda_worklist_analysis(antlr4::ANTLRI
     if (!timing::should_benchmark)
         cuda::print_digraph(transformer.get_nodes());
 
-    return transformer;
+    return transformer.get_nodes();
 }
 
-std::vector<StatefulNode<SourcedTaintState>> multi_bit_cuda_worklist_analysis(ScTransformer& program){
-    init_gpu();
-    time_func("Variable reduction: ",
-        reduce_variables, program.entryNodes);
-    int source_count = count_taint_sources(program.nodes);
-    auto transformer = time_func<CudaTransformer<multi_cuda::Node>>("Gpu structure transformation: ", 
-                transform_multi_cuda, program.nodes, source_count);
-                
-    time_func("Least fixed point algorithm: ",
-            multi_cuda::execute_analysis, transformer.nodes, transformer.transfer_functions, transformer.taint_sources, source_count);
+DynamicArray<multi_taint::Node> multi_bit_cuda_worklist_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+    std::cout << "Feature currently unsupported\n";
+    //init_gpu();
+    //time_func("Variable reduction: ",
+    //    reduce_variables, program.entryNodes);
+    //int source_count = count_taint_sources(program.nodes);
+    //auto transformer = time_func<CudaTransformer<multi_cuda::Node>>("Gpu structure transformation: ", 
+    //            transform_multi_cuda, program.nodes, source_count);
+    //            
+    //time_func("Least fixed point algorithm: ",
+    //        multi_cuda::execute_analysis, transformer.nodes, transformer.transfer_functions, transformer.taint_sources, source_count);
 
-    std::vector<StatefulNode<SourcedTaintState>> nodes = create_states<SourcedTaintState>(program.nodes);
-    time_func("Save into nodes", 
-                set_bit_cuda_multi_state, transformer.nodes, source_count, nodes);
-    if(!timing::should_benchmark)
-        print_digraph_subgraph(nodes, std::cout, print_taint_source, "main");
+    //std::vector<StatefulNode<SourcedTaintState>> nodes = create_states<SourcedTaintState>(program.nodes);
+    //time_func("Save into nodes", 
+    //            set_bit_cuda_multi_state, transformer.nodes, source_count, nodes);
+    //if(!timing::should_benchmark)
+    //    print_digraph_subgraph(nodes, std::cout, print_taint_source, "main");
 
-    return nodes;
-}
-
-bool state_equality(std::vector<StatefulNode<std::set<std::string>>>& lhs, std::vector<StatefulNode<std::set<std::string>>>& rhs){
-    int size = lhs.size();
-    if (size != rhs.size())
-        return false;
-
-    DigraphPrinter printer(std::cout);
-
-    for(int i = 0; i < size; ++i){
-        for(const std::string& item : lhs[i].get_state()){
-            if(rhs[i].get_state().count(item) == 0){
-                std::cout << "Difference on node " << i << "    "; 
-                lhs[i].accept(printer);
-                print_result(lhs[i].get_state(), std::cout);
-                std::cout << "    !=    ";
-                rhs[i].accept(printer);
-                print_result(rhs[i].get_state(), std::cout);
-                std::cout << '\n';
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-bool state_multi_equality(std::vector<StatefulNode<SourcedTaintState>>& lhs, std::vector<StatefulNode<SourcedTaintState>>& rhs){
-    int size = lhs.size();
-    if (size != rhs.size())
-        return false;
-
-    DigraphPrinter printer(std::cout);
-
-    for(int i = 0; i < size; ++i){
-        for(auto &[var_name, sources_set1] : lhs[i].get_state()){
-            auto& sources_set2 = rhs[i].get_state()[var_name];
-            if(sources_set1 != sources_set2){
-                std::cout << "Difference on node " << i << "    "; 
-                lhs[i].accept(printer);
-                print_taint_source(lhs[i].get_state(), std::cout);
-                std::cout << "    !=    ";
-                rhs[i].accept(printer);
-                print_taint_source(rhs[i].get_state(), std::cout);
-                std::cout << '\n';
-                return false;
-            }
-        }
-    }
-    return true;
+    //return nodes;
+    return DynamicArray<multi_taint::Node>();
 }
 
 void benchmark_all_multi_taint(antlr4::ANTLRInputStream& prog, std::string file_name, std::map<std::string, int>& call_counts){
-    std::stringstream header;
-    if (call_counts.find("f") == call_counts.end()) {
-        header << file_name;
-    }
-    else {
-        header << file_name << " : " << call_counts["f"];
-    }
-    Stopwatch::add_header(header.str());
+    std::cout << "Feature currently unsupported\n";
 
-    std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
-    auto program = parse_to_cfg_transformer(prog, call_counts);
-    reduce_variables(program.entryNodes);
-    Stopwatch cpu_watch;
-    TransferCreator analyis_info = get_analysis_information(program.nodes);
-    std::vector<StatefulNode<std::vector<BitVector>>> nodes = create_states<std::vector<BitVector>>(program.nodes);
-    
-    //Count sources
-    int source_count = 0;
-    TaintSourceLocator locator;
-    for(auto& node : nodes){
-        if(locator.is_taintsource(*node.node)){
-            ++source_count;
-        }
-    }
+    //std::stringstream header;
+    //if (call_counts.find("f") == call_counts.end()) {
+    //    header << file_name;
+    //}
+    //else {
+    //    header << file_name << " : " << call_counts["f"];
+    //}
+    //Stopwatch::add_header(header.str());
 
-    cpu_multi::worklist(nodes, analyis_info.node_to_index, analyis_info.transfers, source_count);
+    //std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
+    //auto program = parse_to_cfg_transformer(prog, call_counts);
+    //reduce_variables(program.entryNodes);
+    //Stopwatch cpu_watch;
+    //TransferCreator analyis_info = get_analysis_information(program.nodes);
+    //std::vector<StatefulNode<std::vector<BitVector>>> nodes = create_states<std::vector<BitVector>>(program.nodes);
+    //
+    ////Count sources
+    //int source_count = 0;
+    //TaintSourceLocator locator;
+    //for(auto& node : nodes){
+    //    if(locator.is_taintsource(*node.node)){
+    //        ++source_count;
+    //    }
+    //}
 
-    cpu_watch.save_time<Microseconds>();
-    cpu_watch.print_time<Microseconds>("Run time: ");
-    std::vector<StatefulNode<SourcedTaintState>> comparable_cpu_nodes = create_states<SourcedTaintState>(program.nodes);
-    set_multi_bit_vector_state(nodes, comparable_cpu_nodes);
+    //cpu_multi::worklist(nodes, analyis_info.node_to_index, analyis_info.transfers, source_count);
+
+    //cpu_watch.save_time<Microseconds>();
+    //cpu_watch.print_time<Microseconds>("Run time: ");
+    //std::vector<StatefulNode<SourcedTaintState>> comparable_cpu_nodes = create_states<SourcedTaintState>(program.nodes);
+    //set_multi_bit_vector_state(nodes, comparable_cpu_nodes);
 
 
-    init_gpu();
-    std::cout << "\n⭐ GPU analysis ⭐" << std::endl;
-    program = parse_to_cfg_transformer(prog, call_counts);
-    Stopwatch gpu_watch;
-    auto gpu_nodes = multi_bit_cuda_worklist_analysis(program);
-    gpu_watch.save_time<Microseconds>();
+    //init_gpu();
+    //std::cout << "\n⭐ GPU analysis ⭐" << std::endl;
+    //program = parse_to_cfg_transformer(prog, call_counts);
+    //Stopwatch gpu_watch;
+    //auto gpu_nodes = multi_bit_cuda_worklist_analysis(program);
+    //gpu_watch.save_time<Microseconds>();
 
-    if(!state_multi_equality(comparable_cpu_nodes, gpu_nodes)){
-        std::cout << "###### cpu != gpu #####" << std::endl;
-    }
-    Stopwatch::add_line();
+    //if(!state_multi_equality(comparable_cpu_nodes, gpu_nodes)){
+    //    std::cout << "###### cpu != gpu #####" << std::endl;
+    //}
+    //Stopwatch::add_line();
 }
 
 int main(int argc, char *argv[]){
@@ -260,19 +184,18 @@ int main(int argc, char *argv[]){
         if(strcmp(arg, "--benchmark-all") == 0 || strcmp(arg, "-ba") == 0){
             timing::should_benchmark = true;
             benchmark_all = true;
+            gpu_flag = true;
         }
 
         if(strcmp(arg, "--benchmark-all-multi") == 0 || strcmp(arg, "-bam") == 0){
             timing::should_benchmark = true;
             benchmark_all_multi = true;
-        }
-
-        if(strcmp(arg, "--gpu") == 0 || strcmp(arg, "-g") == 0){
             gpu_flag = true;
         }
 
         if(strcmp(arg, "--cuda") == 0 || strcmp(arg, "-cu") == 0){
             cuda_flag = true;
+            gpu_flag = true;
         }
 
         if(strcmp(arg, "--multi") == 0 || strcmp(arg, "-m") == 0){
@@ -281,10 +204,12 @@ int main(int argc, char *argv[]){
 
         if(strcmp(arg, "--multi-cuda") == 0 || strcmp(arg, "-mc") == 0){
             multi_source_cuda = true;
+            gpu_flag = true;
         }
 
         if(strcmp(arg, "--cuda-worklist") == 0 || strcmp(arg, "-cw") == 0){
             cuda_worklist_flag = true;
+            gpu_flag = true;
         }
 
         if(strcmp(arg, "--benchmark") == 0 || strcmp(arg, "-b") == 0){
@@ -298,6 +223,10 @@ int main(int argc, char *argv[]){
                 }
             }
         }
+    }
+
+    if (gpu_flag) {
+        init_gpu();
     }
 
     antlr4::ANTLRFileStream csfile;
@@ -319,31 +248,27 @@ int main(int argc, char *argv[]){
         else {
             header << file_name << " : " << call_counts["f"];
         }
-        auto program = parse_to_cfg_transformer(prog, call_counts);
-        std::cout << "CFG Nodes: " << program.nodes.size() << "\n" << std::endl;
-        header << ";" << program.nodes.size();
+
+        auto debug_transformer = parse_to_cuda_transformer<taint::Node>(prog, call_counts);
+
+        std::cout << "CFG Nodes: " << debug_transformer.get_nodes().size() << "\n" << std::endl;
+        header << ";" << debug_transformer.get_nodes().size();
         Stopwatch::add_header(header.str());
 
         std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
-        reduce_variables(program.entryNodes);
         Stopwatch cpu_watch;
-        TransferCreator analyis_info = get_analysis_information(program.nodes);
-        std::vector<StatefulNode<BitVector>> nodes = create_states<BitVector>(program.nodes, BitVector(1));
-        time_func("Analyzing: ", 
-            cpu_analysis::worklist, nodes, analyis_info.node_to_index, analyis_info.transfers);
+        auto cpu_transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
+            parse_to_cuda_transformer<taint::Node>, prog, call_counts);
+        time_func("Analyzing: ",
+            cpu_analysis::worklist, cpu_transformer.get_nodes(), cpu_transformer.get_transfers(), std::move(cpu_transformer.get_sources()));
         cpu_watch.save_time<Microseconds>();
-        std::vector<StatefulNode<std::set<std::string>>> cpu_nodes = create_states<std::set<std::string>>(program.nodes, {TAINT_VAR});
-        set_bit_vector_state(nodes, cpu_nodes);
-
-        init_gpu();
 
         std::cout << "\n⭐ bit-cuda analysis ⭐" << std::endl;
-        program = parse_to_cfg_transformer(prog, call_counts);
         Stopwatch bit_cuda_watch;
-        auto bit_cuda_nodes = bit_cuda_analysis(program);
+        auto bit_cuda_nodes = bit_cuda_analysis(prog, call_counts);
         bit_cuda_watch.save_time<Microseconds>();
 
-        if(!state_equality(cpu_nodes, bit_cuda_nodes)){
+        if(!is_equal(cpu_transformer.get_nodes(), bit_cuda_nodes)) {
             std::cout << "###### cpu != bit-cuda #####" << std::endl;
         }
 
@@ -352,46 +277,36 @@ int main(int argc, char *argv[]){
         auto cuda_worklist_nodes = bit_cuda_worklist_analysis(prog, call_counts);
         cuda_worklist_watch.save_time<Microseconds>();
 
+        if (!is_equal(bit_cuda_nodes, cuda_worklist_nodes)) {
+            std::cout << "##### bit cuda != bit cuda worklist #####" << std::endl;
+        }
+
         Stopwatch::add_line();
         return 0;
     }
 
-    auto program = time_func<ScTransformer>("Creating CFG nodes: ", 
-            parse_to_cfg_transformer, prog, call_counts);
-
-    if(gpu_flag){
-        std::cout << "Running analysis using cuBLAS on GPU" << std::endl;
-        time_func("Cublas creation: ", 
-            create_cublas);
-        time_func("Variable reduction: ", 
-            reduce_variables, program.entryNodes);
-        auto stateful_nodes = gpu_analysis(program.nodes);
-        if(!timing::should_benchmark){
-            print_digraph_subgraph(stateful_nodes, std::cout, print_result, "main");
-        }
-    }else if(cuda_flag){
+    if(cuda_flag){
         std::cout << "Running bit-cuda analysis" << std::endl;
-        bit_cuda_analysis(program);
+        bit_cuda_analysis(prog, call_counts);
     }else if(cuda_worklist_flag){
         std::cout << "Running bit-cuda analysis using worklists" << std::endl;
         bit_cuda_worklist_analysis(prog, call_counts);
     }else if(multi_source_cuda){
         std::cout << "Running multi-colored bit-cuda analysis using worklists" << std::endl;
-        multi_bit_cuda_worklist_analysis(program);
+        multi_bit_cuda_worklist_analysis(prog, call_counts);
     }else if(cpu_flag){
         if(multi_taint_flag){
             std::cout << "Running multi-taint analysis using CPU" << std::endl;
-            cpu_multi_taint_analysis(program);
+            cpu_multi_taint_analysis(prog, call_counts);
         }else{
             std::cout << "Running analysis using CPU" << std::endl;
-            run_cpu_analysis(program);
+            run_cpu_analysis(prog, call_counts);
         }
     }else{
         std::cout << "Invalid command\n";
         std::cout << " --cpu -c for use on cpu\n";
         std::cout << " with cpu flag:\n";
-        std::cout << " --multi -m for multi taint analysis\n";
-        std::cout << " --gpu -g for use on gpu\n";
+        std::cout << " --multi -m for multi taint analysis\n\n";
         std::cout << " --cuda -cu for bit-cuda implementation\n";
         std::cout << " --cuda-worklist -cw for bit-cuda implementation using worklist\n";
         std::cout << " --multi-cuda -mc for multi colored taint analysis using cuda and worklist\n";

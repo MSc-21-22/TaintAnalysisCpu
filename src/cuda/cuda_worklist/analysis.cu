@@ -2,7 +2,7 @@
 #include "../worklist/worklist.cuh"
 
 using namespace cuda_worklist;
-using namespace cuda;
+using namespace taint;
 
 class Analyzer {
 public:
@@ -14,11 +14,11 @@ public:
         BitVector current = current_node.data;
         
         BitVector joined_data = join(current_node.predecessor_index, nodes);
-        current |= joined_data & current_node.join_mask;
+        current.bitfield |= joined_data.bitfield & current_node.join_mask.bitfield;
 
         transfer_function(current_node.first_transfer_index, transfers, joined_data, current);
         current_node.data = current;
-        return last != current;
+        return last.bitfield != current.bitfield;
     }
 };
 

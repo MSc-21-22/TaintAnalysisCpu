@@ -29,10 +29,11 @@ include_directories(src/
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     tests/)
 
-add_library(gpu_lib src/matrix_analysis.cu src/kernel.cu src/GpuManagement.cu src/timing.cpp src/cuda/bit_cuda/analysis.cu src/cuda/cuda_worklist/analysis.cu src/cuda/cuda_common.cu src/cfg/transformations/cfg_transformers.cpp src/cuda/multi_cuda/analysis.cu src/cfg/cfg.cpp)
+add_library(gpu_lib src/timing.cpp src/cuda/bit_cuda/analysis.cu src/cuda/cuda_worklist/analysis.cu
+            src/cuda/cuda_common.cu src/cuda/multi_cuda/analysis.cu)
 
-add_library(analyze_lib src/antlr4-runtime/scBaseVisitor.cpp src/antlr4-runtime/scLexer.cpp src/antlr4-runtime/scParser.cpp src/antlr4-runtime/scVisitor.cpp src/cfg/transformations/analysis_converter.cpp
-                src/taint_analysis.cpp src/cfg/digraph.cpp src/multi_taint_analysis.cpp src/timing.cpp src/cfg/sc_transformer.cpp src/cfg/transformations/taint_locator.cpp src/cuda/cuda_transformer.cpp src/cuda/bit_vector_converter.cpp "src/bit_vector.cpp")
+add_library(analyze_lib src/antlr4-runtime/scBaseVisitor.cpp src/antlr4-runtime/scLexer.cpp src/antlr4-runtime/scParser.cpp src/antlr4-runtime/scVisitor.cpp
+                src/taint_analysis.cpp src/multi_taint_analysis.cpp src/timing.cpp src/bit_vector.cpp)
 add_dependencies(analyze_lib antlr4_static)
 target_link_libraries(analyze_lib cublas antlr4_static)
 
@@ -43,7 +44,3 @@ target_link_libraries(analyzer antlr4_static analyze_lib gpu_lib)
 add_executable(test-gpu tests/test_gpu.cpp)
 add_dependencies(test-gpu analyze_lib gpu_lib)
 target_link_libraries(test-gpu analyze_lib gpu_lib)
-
-add_executable(test-cpu tests/test_cpu.cpp)
-add_dependencies(test-cpu analyze_lib gpu_lib)
-target_link_libraries(test-cpu analyze_lib gpu_lib)
