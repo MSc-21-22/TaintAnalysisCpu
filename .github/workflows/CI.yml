@@ -42,11 +42,3 @@ jobs:
       - name: Run CPU analysis
         run: | 
           build/analyzer --cpu prog.sc
-
-      - name: Run multi-taint CPU analysis
-        run: |
-          build/analyzer --cpu --multi prog.sc
-
-      - name: Run cpu capable test
-        run: | 
-          build/test-cpu  
