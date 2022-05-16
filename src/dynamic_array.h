@@ -1,4 +1,5 @@
 #pragma once
+#include <cstring>
 
 template<typename Item>
 class DynamicArray {
@@ -78,6 +79,10 @@ public:
 
     size_t capacity() {
         return max_size;
+    }
+
+    size_t full_size() const {
+        return current_size * item_size;
     }
 
     void reserve(int amount) {

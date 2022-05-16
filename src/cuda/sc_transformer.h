@@ -4,7 +4,6 @@
 #include <vector>
 #include <iostream>
 #include <map>
-#include <cfg/transformations/cfg_clone.h>
 #include <algorithm>
 #include <dynamic_array.h>
 #include <taint_analysis.h>
@@ -24,7 +23,7 @@ class ScCudaTransformer : public scBaseVisitor {
     std::vector<int>* taint_sources{};
     DynamicArray<Node>* nodes;
     int transfer_index = 0;
-    std::vector<cuda::Transfer> transfers{};
+    std::vector<Transfer> transfers{};
 
     int next_var_index = RETURN_VAR_INDEX+1;
     std::map<std::string, int> var_to_index{};
@@ -71,18 +70,18 @@ class ScCudaTransformer : public scBaseVisitor {
         }
     }
 
-    cuda::Transfer& add_transfer(Node& node, int lhs_index, BitVector expression) {
+    Transfer& add_transfer(Node& node, int lhs_index, BitVector expression) {
         return add_transfer(node, lhs_index, expression, nodes->size() - 1);
     }
 
-    cuda::Transfer& add_transfer(Node& node, int lhs_index, BitVector expression, int index){
+    Transfer& add_transfer(Node& node, int lhs_index, BitVector expression, int index){
         check_for_new_taint_source(expression, index);
 
         node.first_transfer_index = transfer_index++;
         return create_transfer(lhs_index, expression);
     }
 
-    cuda::Transfer& add_transfer(cuda::Transfer& transfer, int lhs_index, BitVector expression, int index){
+    Transfer& add_transfer(Transfer& transfer, int lhs_index, BitVector expression, int index){
         check_for_new_taint_source(expression, index);
         
         transfer.next_transfer_index = transfer_index++;
@@ -94,10 +93,10 @@ class ScCudaTransformer : public scBaseVisitor {
             taint_sources->push_back(index);
     }
 
-    cuda::Transfer& create_transfer(int lhs_index, BitVector expression) {
-        cuda::Transfer& new_transfer = transfers.emplace_back();
+    Transfer& create_transfer(int lhs_index, BitVector expression) {
+        Transfer& new_transfer = transfers.emplace_back();
         new_transfer.rhs = expression.bitfield;
-        new_transfer.x = lhs_index;
+        new_transfer.var_index = lhs_index;
         return new_transfer;
     }
 
@@ -146,7 +145,7 @@ class ScCudaTransformer : public scBaseVisitor {
         return *nodes;
     }
 
-    std::vector<cuda::Transfer>& get_transfers(){
+    std::vector<Transfer>& get_transfers(){
         return transfers;
     }
 
@@ -263,12 +262,19 @@ class ScCudaTransformer : public scBaseVisitor {
         //TODO: Check whether issues occur where last can contain dangling pointers after s->accept(this) call
 
         std::vector<int> endif;
-        for (auto& s : ctx->statements()){
-            last={if_node_index};
-            next_last={};
-            antlrcpp::Any statement = s->accept(this);
-            endif.insert(endif.end(), last.begin(), last.end());
-        }
+
+        auto branches = ctx->statements();
+
+        branches[0]->accept(this);
+        endif.insert(endif.end(), last.begin(), last.end());
+
+        last={if_node_index};
+        next_last={};
+        succ_pred_index = 1;
+
+        branches[1]->accept(this);
+        endif.insert(endif.end(), last.begin(), last.end());
+
         last=endif;
         next_last={};
         return nullptr;
@@ -331,7 +337,7 @@ class ScCudaTransformer : public scBaseVisitor {
 
         //Args might have to be reversed??
         if(args.size() > 0){
-            cuda::Transfer& transfer = add_transfer(entry_node, function.formal_parameters[0], args[0], entry_index);
+            Transfer& transfer = add_transfer(entry_node, function.formal_parameters[0], args[0], entry_index);
             
             for(int i = 1; i < args.size(); ++i){
                 transfer = add_transfer(transfer, function.formal_parameters[i], args[i], entry_index);
@@ -409,7 +415,7 @@ class ScCudaTransformer : public scBaseVisitor {
 
         Node& array_init_node = add_node();
         int var_index = get_var_index(ctx->ID()->getText());
-        array_init_node.join_mask ^= 1 << var_index;
+        array_init_node.join_mask.bitfield ^= 1 << var_index;
         add_transfer(array_init_node, var_index, arrayExpression);
         next_layer();
         

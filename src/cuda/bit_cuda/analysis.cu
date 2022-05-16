@@ -7,7 +7,7 @@
 #include "analysis.h"
 
 using namespace bit_cuda;
-using namespace cuda;
+using namespace taint;
 
 __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, int node_count){
     int node_index = threadIdx.x + blockDim.x * blockIdx.x;
@@ -19,23 +19,23 @@ __global__ void analyze(Node nodes[], Transfer transfers[], bool* has_changed, i
         BitVector last = current_node.data;
         
         BitVector joined_data = join(current_node.predecessor_index, nodes);
-        current |= joined_data & current_node.join_mask;
+        current.bitfield |= joined_data.bitfield & current_node.join_mask.bitfield;
 
         transfer_function(current_node.first_transfer_index, transfers, joined_data, current);
 
-        if(last != current){
+        if(last.bitfield != current.bitfield){
             current_node.data = current;
             *has_changed = true;
         }
     }
 }
 
-void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers, int transfer_count) {
+void bit_cuda::execute_analysis(DynamicArray<taint::Node>& nodes, std::vector<Transfer>& transfers) {
     Node* dev_nodes = nullptr;
     bool* dev_has_changed = nullptr;
     Transfer* dev_transfers = nullptr;
 
-    int block_count = node_count/128 + 1;
+    int block_count = nodes.size() / 128 + 1;
     dim3 threadsPerBlock(128);
     auto cudaStatus = cudaSetDevice(0);
     if (cudaStatus != cudaSuccess) {
@@ -44,13 +44,13 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
     }
 
     // Allocate GPU buffers for three vectors (two input, one output)
-    dev_nodes = cuda_allocate_memory<Node>(sizeof(Node)*node_count + 1);
-    cuda_copy_to_device(dev_nodes, nodes, sizeof(Node)*node_count);
+    dev_nodes = cuda_allocate_memory<Node>(nodes.full_size() + 1);
+    cuda_copy_to_device(dev_nodes, nodes.get_ptr(), nodes.full_size());
 
-    dev_transfers = cuda_allocate_memory<Transfer>(sizeof(Transfer)*transfer_count);
-    cuda_copy_to_device(dev_transfers, transfers, sizeof(Transfer)*transfer_count);
+    dev_transfers = cuda_allocate_memory<Transfer>(sizeof(Transfer)*transfers.size());
+    cuda_copy_to_device(dev_transfers, transfers.data(), sizeof(Transfer) * transfers.size());
     
-    dev_has_changed = (bool*) (dev_nodes + node_count);
+    dev_has_changed = (bool*) (dev_nodes + nodes.size());
 
     bool has_changed = true;
     while(has_changed){
@@ -58,7 +58,7 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
         cuda_copy_to_device(dev_has_changed, &has_changed, sizeof(bool));
 
         // Launch a kernel on the GPU with one thread for each element.
-        analyze<<<block_count, threadsPerBlock>>>(dev_nodes, dev_transfers, dev_has_changed, node_count);
+        analyze<<<block_count, threadsPerBlock>>>(dev_nodes, dev_transfers, dev_has_changed, nodes.size());
         
         // Check for any errors launching the kernel
         cudaStatus = cudaGetLastError();
@@ -87,7 +87,7 @@ void bit_cuda::execute_analysis(Node* nodes, int node_count, Transfer* transfers
     }
 
     // Copy output vector from GPU buffer to host memory.
-    cuda_copy_to_host(nodes, dev_nodes, sizeof(Node)*node_count);
+    cuda_copy_to_host(nodes.get_ptr(), dev_nodes, nodes.full_size());
 
     cuda_free(dev_nodes);
     cuda_free(dev_transfers);

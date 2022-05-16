@@ -1,6 +1,5 @@
 #pragma once
 #include <set>
-#include "../cuda_data.h"
 #include <iostream>
 #include <stdio.h>
 #include <vector>
@@ -8,8 +7,8 @@
 #include "../cuda_common.cuh"
 #include <type_traits>
 #include <timing.h>
+#include <base_analysis.h>
 
-using namespace cuda;
 namespace worklist{
     #define THREAD_COUNT (1024*2)
     #define EXTRA_WORKLISTS_CONSTANT 600
