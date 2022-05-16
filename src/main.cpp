@@ -70,7 +70,7 @@ DynamicArray<multi_taint::Node> cpu_multi_taint_analysis(antlr4::ANTLRInputStrea
     return DynamicArray<multi_taint::Node>();
 }
 
-DynamicArray<taint::Node> bit_cuda_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+ScCudaTransformer<taint::Node> bit_cuda_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
     auto transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
         parse_to_cuda_transformer<taint::Node>, program, call_counts);
         
@@ -80,10 +80,10 @@ DynamicArray<taint::Node> bit_cuda_analysis(antlr4::ANTLRInputStream& program, s
     if(!timing::should_benchmark)
         cuda::print_digraph(transformer.get_nodes());
 
-    return transformer.get_nodes();
+    return transformer;
 }
 
-DynamicArray<taint::Node> bit_cuda_worklist_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+ScCudaTransformer<taint::Node> bit_cuda_worklist_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
     auto transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
         parse_to_cuda_transformer<taint::Node>, program, call_counts);
 
@@ -93,7 +93,7 @@ DynamicArray<taint::Node> bit_cuda_worklist_analysis(antlr4::ANTLRInputStream& p
     if (!timing::should_benchmark)
         cuda::print_digraph(transformer.get_nodes());
 
-    return transformer.get_nodes();
+    return transformer;
 }
 
 DynamicArray<multi_taint::Node> multi_bit_cuda_worklist_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
@@ -265,19 +265,22 @@ int main(int argc, char *argv[]){
 
         std::cout << "\n⭐ bit-cuda analysis ⭐" << std::endl;
         Stopwatch bit_cuda_watch;
-        auto bit_cuda_nodes = bit_cuda_analysis(prog, call_counts);
+        auto bit_cuda = bit_cuda_analysis(prog, call_counts);
         bit_cuda_watch.save_time<Microseconds>();
 
-        if(!is_equal(cpu_transformer.get_nodes(), bit_cuda_nodes)) {
+        if(!is_equal(cpu_transformer.get_nodes(), bit_cuda.get_nodes())) {
             std::cout << "###### cpu != bit-cuda #####" << std::endl;
         }
 
         std::cout << "\n⭐ bit-cuda worklist analysis ⭐" << std::endl;
         Stopwatch cuda_worklist_watch;
-        auto cuda_worklist_nodes = bit_cuda_worklist_analysis(prog, call_counts);
+        auto cuda_worklist = bit_cuda_worklist_analysis(prog, call_counts);
         cuda_worklist_watch.save_time<Microseconds>();
 
-        if (!is_equal(bit_cuda_nodes, cuda_worklist_nodes)) {
+        if (!is_equal(bit_cuda.get_nodes(), cuda_worklist.get_nodes())) {
+            std::cout << "##### bit cuda != bit cuda worklist #####" << std::endl;
+        }
+        if (!is_equal(cpu_transformer.get_nodes(), cuda_worklist.get_nodes())) {
             std::cout << "##### bit cuda != bit cuda worklist #####" << std::endl;
         }
 

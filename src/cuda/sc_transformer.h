@@ -262,12 +262,19 @@ class ScCudaTransformer : public scBaseVisitor {
         //TODO: Check whether issues occur where last can contain dangling pointers after s->accept(this) call
 
         std::vector<int> endif;
-        for (auto& s : ctx->statements()){
-            last={if_node_index};
-            next_last={};
-            antlrcpp::Any statement = s->accept(this);
-            endif.insert(endif.end(), last.begin(), last.end());
-        }
+
+        auto branches = ctx->statements();
+
+        branches[0]->accept(this);
+        endif.insert(endif.end(), last.begin(), last.end());
+
+        last={if_node_index};
+        next_last={};
+        succ_pred_index = 1;
+
+        branches[1]->accept(this);
+        endif.insert(endif.end(), last.begin(), last.end());
+
         last=endif;
         next_last={};
         return nullptr;
