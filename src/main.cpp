@@ -17,13 +17,12 @@
 #include <cuda/cuda_worklist/analysis.h>
 
 
-template<typename Node>
-bool is_equal(DynamicArray<Node>& nodes, DynamicArray<Node>& other_nodes) {
-    if (nodes.size() != other_nodes.size())
+bool is_equal(std::vector<BitVector>& data, std::vector<BitVector>& other_data) {
+    if (data.size() != other_data.size())
         return false;
 
-    for (int i = 0; i < nodes.size(); ++i) {
-        if (!(nodes[i].data == other_nodes[i].data)) {
+    for (int i = 0; i < data.size(); ++i) {
+        if (!(data[i] == other_data[i])) {
             return false;
         }
     }
@@ -31,16 +30,16 @@ bool is_equal(DynamicArray<Node>& nodes, DynamicArray<Node>& other_nodes) {
     return true;
 }
 
-DynamicArray<taint::Node> run_cpu_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+std::vector<BitVector> run_cpu_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
     auto transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
         parse_to_cuda_transformer<taint::Node>, program, call_counts);
-    time_func("Analyzing: ", 
+    std::vector<BitVector> data = time_func<std::vector<BitVector>>("Analyzing: ", 
         cpu_analysis::worklist, transformer.get_nodes(), transformer.get_transfers(), std::move(transformer.get_sources()));
 
     if (!timing::should_benchmark)
-        cuda::print_digraph(transformer.get_nodes());
+        cuda::print_digraph(transformer.get_nodes(), data);
 
-    return transformer.get_nodes();
+    return data;
 }
 
 DynamicArray<multi_taint::Node> cpu_multi_taint_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
@@ -70,30 +69,30 @@ DynamicArray<multi_taint::Node> cpu_multi_taint_analysis(antlr4::ANTLRInputStrea
     return DynamicArray<multi_taint::Node>();
 }
 
-ScCudaTransformer<taint::Node> bit_cuda_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+std::vector<BitVector> bit_cuda_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
     auto transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
         parse_to_cuda_transformer<taint::Node>, program, call_counts);
         
-    time_func("Least fixed point algorithm: ",
+    std::vector<BitVector> data = time_func<std::vector<BitVector>>("Least fixed point algorithm: ",
             bit_cuda::execute_analysis, transformer.get_nodes(), transformer.get_transfers());
 
     if(!timing::should_benchmark)
-        cuda::print_digraph(transformer.get_nodes());
+        cuda::print_digraph(transformer.get_nodes(), data);
 
-    return transformer;
+    return data;
 }
 
-ScCudaTransformer<taint::Node> bit_cuda_worklist_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+std::vector<BitVector> bit_cuda_worklist_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
     auto transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
         parse_to_cuda_transformer<taint::Node>, program, call_counts);
 
-    time_func("Least fixed point algorithm: ",
+    std::vector<BitVector> data = time_func<std::vector<BitVector>>("Least fixed point algorithm: ",
             cuda_worklist::execute_analysis, transformer.get_nodes(), transformer.get_transfers(), transformer.get_sources());
 
     if (!timing::should_benchmark)
-        cuda::print_digraph(transformer.get_nodes());
+        cuda::print_digraph(transformer.get_nodes(), data);
 
-    return transformer;
+    return data;
 }
 
 DynamicArray<multi_taint::Node> multi_bit_cuda_worklist_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
@@ -259,29 +258,29 @@ int main(int argc, char *argv[]){
         Stopwatch cpu_watch;
         auto cpu_transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
             parse_to_cuda_transformer<taint::Node>, prog, call_counts);
-        time_func("Analyzing: ",
+        std::vector<BitVector> cpu_data = time_func<std::vector<BitVector>>("Analyzing: ",
             cpu_analysis::worklist, cpu_transformer.get_nodes(), cpu_transformer.get_transfers(), std::move(cpu_transformer.get_sources()));
         cpu_watch.save_time<Microseconds>();
 
         std::cout << "\n⭐ bit-cuda analysis ⭐" << std::endl;
         Stopwatch bit_cuda_watch;
-        auto bit_cuda = bit_cuda_analysis(prog, call_counts);
+        std::vector<BitVector> bit_cuda_data = bit_cuda_analysis(prog, call_counts);
         bit_cuda_watch.save_time<Microseconds>();
 
-        if(!is_equal(cpu_transformer.get_nodes(), bit_cuda.get_nodes())) {
+        if(!is_equal(cpu_data, bit_cuda_data)) {
             std::cout << "###### cpu != bit-cuda #####" << std::endl;
         }
 
         std::cout << "\n⭐ bit-cuda worklist analysis ⭐" << std::endl;
         Stopwatch cuda_worklist_watch;
-        auto cuda_worklist = bit_cuda_worklist_analysis(prog, call_counts);
+        auto cuda_worklist_data = bit_cuda_worklist_analysis(prog, call_counts);
         cuda_worklist_watch.save_time<Microseconds>();
 
-        if (!is_equal(bit_cuda.get_nodes(), cuda_worklist.get_nodes())) {
+        if (!is_equal(bit_cuda_data, cuda_worklist_data)) {
             std::cout << "##### bit cuda != bit cuda worklist #####" << std::endl;
         }
-        if (!is_equal(cpu_transformer.get_nodes(), cuda_worklist.get_nodes())) {
-            std::cout << "##### bit cuda != bit cuda worklist #####" << std::endl;
+        if (!is_equal(cpu_data, cuda_worklist_data)) {
+            std::cout << "##### cpu != bit cuda worklist #####" << std::endl;
         }
 
         Stopwatch::add_line();

@@ -18,13 +18,13 @@ ReturnType* cuda_allocate_memory(size_t size){
 void cuda_allocate_memory(void** devPtr, size_t size);
 
 template<typename NodeType>
-__device__ BitVector join(int predecessors[], NodeType nodes[]){
+__device__ BitVector join(int predecessors[], NodeType nodes[], BitVector data[]) {
         BitVector joined_data;
         joined_data.bitfield = 1;
 
         int pred_index = 0;
         while (pred_index < 5 && predecessors[pred_index] != -1){
-            joined_data.bitfield |= nodes[predecessors[pred_index]].data.bitfield;
+            joined_data.bitfield |= data[predecessors[pred_index]].bitfield;
             ++pred_index;
         }
         return joined_data;
@@ -33,6 +33,7 @@ __device__ BitVector join(int predecessors[], NodeType nodes[]){
 void cuda_copy_to_device(void *dst, const void *src, size_t size);
 void cuda_copy_to_host(void *dst, const void *src, size_t size);
 void cuda_free(void* devPtr);
+void cuda_memset(void* devPtr, int value, size_t size);
 
 template<typename BitVectorType>
 __device__ void transfer_function(int first_transfer_index, Transfer transfers[], BitVectorType& joined_data, BitVectorType& current){

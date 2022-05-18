@@ -9,5 +9,5 @@
 #include <dynamic_array.h>
 
 namespace cpu_analysis{
-void worklist(DynamicArray<taint::Node>& nodes, const std::vector<Transfer>& transfers, std::vector<int> worklist);
+std::vector<BitVector> worklist(DynamicArray<taint::Node>& nodes, const std::vector<Transfer>& transfers, std::vector<int> worklist);
 }
