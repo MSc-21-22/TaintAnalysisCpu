@@ -42,7 +42,6 @@ namespace worklist{
                     hash++;
                 }
             }
-        
             atomicMax(worklists_pending, amount_of_new_worklists);
         }
     }
@@ -57,7 +56,7 @@ namespace worklist{
 
         if(node_index < THREAD_COUNT && work_column[node_index] != -1){
             NodeType& current_node = nodes[work_column[node_index]];
-            bool add_successors = analyzer.analyze(current_node, data, node_index, nodes, transfers);
+            bool add_successors = analyzer.analyze(current_node, data, work_column[node_index], nodes, transfers);
 
             work_column[node_index] = -1;   
 

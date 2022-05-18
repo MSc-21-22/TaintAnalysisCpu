@@ -18,7 +18,6 @@ public:
 
         transfer_function(current_node.first_transfer_index, transfers, joined_data, current);
         data[node_index] = current;
-        printf("data[node_index] = %d\n", data[node_index]);
         return last.bitfield != current.bitfield;
     }
 };
