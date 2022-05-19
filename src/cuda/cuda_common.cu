@@ -44,11 +44,3 @@ void cuda_allocate_memory(void** devPtr, size_t size){
         exit(1);
     }
 }
-
-void cuda_memset(void* devPtr, int value, size_t size) {
-    auto cudaStatus = cudaMemset(devPtr, value, size);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemset failed: %s\n", cudaGetErrorString(cudaStatus));
-        exit(1);
-    }
-}
