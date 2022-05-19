@@ -47,3 +47,11 @@ do
         $analyzer -d f $j -ba sampleprograms/multiplefunc.sc
     done
 done
+
+for j in {20000..100000..10000}
+do
+    for i in {1..10}
+    do 
+        $analyzer -d f $j -ba sampleprograms/multiplefunc.sc
+    done
+done

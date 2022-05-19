@@ -34,3 +34,9 @@ for /l %%j in (2000, 1000, 10000) do (
          %~f1 -ba -d f %%j .\sampleprograms\multiplefunc.sc
     )
 )
+
+for /l %%j in (20000, 10000, 100000) do (
+    for /l %%i in (1, 1, 10) do (
+         %~f1 -ba -d f %%j .\sampleprograms\multiplefunc.sc
+    )
+)
