@@ -22,7 +22,7 @@ bool is_equal(std::vector<BitVector>& data, std::vector<BitVector>& other_data) 
         return false;
 
     for (int i = 0; i < data.size(); ++i) {
-        if (!(data[i] == other_data[i])) {
+        if (data[i] != other_data[i]) {
             return false;
         }
     }
