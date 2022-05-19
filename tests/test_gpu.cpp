@@ -25,10 +25,10 @@ TEST_CASE("bit cuda x=$ -> y=x") {
     node2.predecessor_index[0] = 0;
     nodes.emplace_back(node2);
 
-    bit_cuda::execute_analysis(nodes, transfer_functions);
+    auto data = bit_cuda::execute_analysis(nodes, transfer_functions);
 
-    CHECK_MESSAGE(nodes[0].data.bitfield == 3, "First node results doesnt match");
-    CHECK_MESSAGE(nodes[1].data.bitfield == 7, "Second node results doesnt match");
+    CHECK_MESSAGE(data[0].bitfield == 3, "First node results doesnt match");
+    CHECK_MESSAGE(data[1].bitfield == 7, "Second node results doesnt match");
 } 
 
 TEST_CASE("worklist cuda x=$ -> y=x") {
@@ -50,10 +50,10 @@ TEST_CASE("worklist cuda x=$ -> y=x") {
     node2.predecessor_index[0] = 0;
 
     std::vector<int> taint_sources = {0};
-    cuda_worklist::execute_analysis(nodes, transfer_functions, taint_sources);
+    auto data = cuda_worklist::execute_analysis(nodes, transfer_functions, taint_sources);
 
-    CHECK_MESSAGE(nodes[0].data.bitfield == 3, "First node results doesnt match");
-    CHECK_MESSAGE(nodes[1].data.bitfield == 7, "Second node results doesnt match");
+    CHECK_MESSAGE(data[0].bitfield == 3, "First node results doesnt match");
+    CHECK_MESSAGE(data[1].bitfield == 7, "Second node results doesnt match");
 } 
 
 
@@ -73,9 +73,9 @@ TEST_CASE("worklist cuda multi transforms") {
     transfer2.rhs |= 1;
 
     std::vector<int> taint_sources = {0};
-    cuda_worklist::execute_analysis(nodes, transfers, taint_sources);
+    auto data = cuda_worklist::execute_analysis(nodes, transfers, taint_sources);
 
-    CHECK_MESSAGE(nodes[0].data.bitfield == 7, "First node results doesnt match");
+    CHECK_MESSAGE(data[0].bitfield == 7, "First node results doesnt match");
 } 
 
 TEST_CASE("bit cuda multi transforms") {
@@ -93,7 +93,7 @@ TEST_CASE("bit cuda multi transforms") {
     transfer2.var_index = 2;
     transfer2.rhs |= 1;
 
-    bit_cuda::execute_analysis(nodes, transfers);
+    auto data = bit_cuda::execute_analysis(nodes, transfers);
 
-    CHECK_MESSAGE(nodes[0].data.bitfield == 7, "First node results doesnt match");
+    CHECK_MESSAGE(data[0].bitfield == 7, "First node results doesnt match");
 } 

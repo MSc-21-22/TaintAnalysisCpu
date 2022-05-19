@@ -10,7 +10,7 @@ void print_link(Node& from, Node& to) {
 }
 
 template<typename Node>
-void print_digraph(DynamicArray<Node> nodes) {
+void print_digraph(DynamicArray<Node>& nodes, std::vector<BitVector>& data) {
 	for (int i = 0; i < nodes.size(); ++i) {
 		Node& node = nodes[i];
 
@@ -19,7 +19,7 @@ void print_digraph(DynamicArray<Node> nodes) {
 			print_link(node, nodes[index]);
 		}
 
-		std::cout << (uintptr_t)&node << "[label = \"Index: " << i << "\\n" << node.data << "\"]\n";
+		std::cout << (uintptr_t)&node << "[label = \"Index: " << i << "\\n" << data[i] << "\"]\n";
 	}
 }
 

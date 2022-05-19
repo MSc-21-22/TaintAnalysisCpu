@@ -59,11 +59,11 @@ public:
 };
 
 void multi_cuda::execute_analysis(DynamicArray<Node>& nodes, std::vector<Transfer>& transfers, const std::set<int>& taint_sources, int source_count){
-    Analyzer analyzer(source_count);
+    //Analyzer analyzer(source_count);
 
-    worklist::NodeUploader<SizedArray<Node>> uploader;
-    uploader.container.item_size = nodes.get_item_size();
-    uploader.dev_nodes = (void**)&uploader.container.items;
+    //worklist::NodeUploader<SizedArray<Node>> uploader;
+    //uploader.container.item_size = nodes.get_item_size();
+    //uploader.dev_nodes = (void**)&uploader.container.items;
 
-    worklist::execute_some_analysis(analyzer, nodes, uploader, &transfers[0], transfers.size(), taint_sources);
+    //worklist::execute_some_analysis(analyzer, nodes, uploader, &transfers[0], transfers.size(), taint_sources);
 }

@@ -42,13 +42,12 @@ namespace worklist{
                     hash++;
                 }
             }
-        
             atomicMax(worklists_pending, amount_of_new_worklists);
         }
     }
     
     template<typename Analyzer, typename NodeContainer, typename NodeType = typename Analyzer::NodeType>
-    __global__ void analyze(Analyzer analyzer, NodeContainer nodes, int work_columns[][THREAD_COUNT], int work_column_count, Transfer transfers[], int node_count, int* worklists_pending, int current_work_column){
+    __global__ void analyze(Analyzer analyzer, NodeContainer nodes, BitVector data[], int work_columns[][THREAD_COUNT], int work_column_count, Transfer transfers[], int node_count, int* worklists_pending, int current_work_column){
         static_assert(std::is_same<NodeType, std::remove_reference_t<decltype(nodes[0])>>::value, "Node types must be identical");
         
 
@@ -57,7 +56,7 @@ namespace worklist{
 
         if(node_index < THREAD_COUNT && work_column[node_index] != -1){
             NodeType& current_node = nodes[work_column[node_index]];
-            bool add_successors = analyzer.analyze(current_node, nodes, transfers);
+            bool add_successors = analyzer.analyze(current_node, data, work_column[node_index], nodes, transfers);
 
             work_column[node_index] = -1;   
 
@@ -76,16 +75,17 @@ namespace worklist{
     };
 
     template<typename Analyzer, typename NodeContainer, typename NodeType = typename Analyzer::NodeType, typename SourceCollection>
-    void execute_some_analysis(Analyzer analyzer, DynamicArray<NodeType>& nodes, NodeUploader<NodeContainer>& uploadable_container, Transfer* transfers, int transfer_count, const SourceCollection& taint_sources){
+    std::vector<BitVector> execute_some_analysis(Analyzer analyzer, DynamicArray<NodeType>& nodes, NodeUploader<NodeContainer>& uploadable_container, Transfer* transfers, int transfer_count, const SourceCollection& taint_sources){
         static_assert(std::is_same<NodeType, typename NodeUploader<NodeContainer>::Item>::value, "Node uploader Item type must match NodeType");
         static_assert(std::is_same<typename Analyzer::NodeContainer, NodeContainer>::value, "Container types must match");
 
         int* dev_worklists_pending = nullptr;
         Transfer* dev_transfers = nullptr;
         int** dev_worklists = nullptr;
+        BitVector* dev_data = nullptr;
 
         int worklists_pending = ((taint_sources.size() + THREAD_COUNT - 1)/THREAD_COUNT);
-        int threadsPerBlock = 128;
+        int threadsPerBlock = 64;
         int block_count = THREAD_COUNT/threadsPerBlock;    
         int work_column_count = worklists_pending + (nodes.size()/EXTRA_WORKLISTS_CONSTANT);
 
@@ -107,7 +107,7 @@ namespace worklist{
         auto cudaStatus = cudaSetDevice(0);
         if (cudaStatus != cudaSuccess) {
             fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
-            return;
+            exit(1);
         }
         
         // Allocate work columns
@@ -125,6 +125,10 @@ namespace worklist{
     
         dev_worklists_pending = cuda_allocate_memory<int>(sizeof(int));
 
+        std::vector<BitVector> data(nodes.size(), 1);
+        dev_data = cuda_allocate_memory<BitVector>(sizeof(BitVector) * nodes.size());
+        cuda_copy_to_device(dev_data, data.data(), data.size()*sizeof(BitVector));
+
         Stopwatch lfp_watch;
         int current_worklist = 0;
         while(worklists_pending > 0){
@@ -132,7 +136,7 @@ namespace worklist{
             cuda_copy_to_device(dev_worklists_pending, &worklists_pending, sizeof(int));
 
             // Launch a kernel on the GPU with one thread for each element.
-            analyze<<<block_count, threadsPerBlock>>>(analyzer, uploadable_container.container, (int(*)[THREAD_COUNT])dev_worklists, work_column_count, dev_transfers, nodes.size(), dev_worklists_pending, current_worklist);
+            analyze<<<block_count, threadsPerBlock>>>(analyzer, uploadable_container.container, dev_data, (int(*)[THREAD_COUNT])dev_worklists, work_column_count, dev_transfers, nodes.size(), dev_worklists_pending, current_worklist);
             
             // Check for any errors launching the kernel
             cudaStatus = cudaGetLastError();
@@ -154,10 +158,13 @@ namespace worklist{
 
 
         // Copy output vector from GPU buffer to host memory.
-        cuda_copy_to_host(nodes.get_ptr(), *uploadable_container.dev_nodes, nodes.get_item_size()*nodes.size());
+        cuda_copy_to_host(data.data(), dev_data, sizeof(BitVector) * nodes.size());
 
         cuda_free(*uploadable_container.dev_nodes);
         cuda_free(dev_transfers);
         cuda_free(dev_worklists);
+        cuda_free(dev_data);
+
+        return data;
     }
 };

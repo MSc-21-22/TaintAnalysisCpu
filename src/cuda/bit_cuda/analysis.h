@@ -4,5 +4,5 @@
 #include <vector>
 
 namespace bit_cuda{
-    void execute_analysis(DynamicArray<taint::Node>& nodes, std::vector<Transfer>& transfers);
+    std::vector<BitVector> execute_analysis(DynamicArray<taint::Node>& nodes, std::vector<Transfer>& transfers);
 };
