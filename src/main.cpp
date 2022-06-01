@@ -69,10 +69,18 @@ DynamicArray<multi_taint::Node> cpu_multi_taint_analysis(antlr4::ANTLRInputStrea
     return DynamicArray<multi_taint::Node>();
 }
 
-std::vector<BitVector> bit_cuda_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+auto parallel_parse(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+    auto init_task = init_gpu_async();
     auto transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
         parse_to_cuda_transformer<taint::Node>, program, call_counts);
-        
+    init_task.wait();
+    return transformer;
+}
+
+std::vector<BitVector> bit_cuda_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+    auto transformer = time_func<ScCudaTransformer<taint::Node>>("GPU init and parsing: ", 
+        parallel_parse, program, call_counts);
+
     std::vector<BitVector> data = time_func<std::vector<BitVector>>("Least fixed point algorithm: ",
             bit_cuda::execute_analysis, transformer.get_nodes(), transformer.get_transfers());
 
@@ -83,8 +91,8 @@ std::vector<BitVector> bit_cuda_analysis(antlr4::ANTLRInputStream& program, std:
 }
 
 std::vector<BitVector> bit_cuda_worklist_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
-    auto transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
-        parse_to_cuda_transformer<taint::Node>, program, call_counts);
+    auto transformer = time_func<ScCudaTransformer<taint::Node>>("GPU init and parsing: ", 
+        parallel_parse, program, call_counts);
 
     std::vector<BitVector> data = time_func<std::vector<BitVector>>("Least fixed point algorithm: ",
             cuda_worklist::execute_analysis, transformer.get_nodes(), transformer.get_transfers(), transformer.get_sources());
@@ -222,10 +230,6 @@ int main(int argc, char *argv[]){
                 }
             }
         }
-    }
-
-    if (gpu_flag) {
-        init_gpu();
     }
 
     antlr4::ANTLRFileStream csfile;
