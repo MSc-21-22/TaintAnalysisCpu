@@ -78,7 +78,7 @@ auto parallel_parse(antlr4::ANTLRInputStream& program, std::map<std::string, int
 }
 
 std::vector<BitVector> bit_cuda_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
-    auto transformer = time_func<ScCudaTransformer<taint::Node>>("Total overhead: ", 
+    auto transformer = time_func<ScCudaTransformer<taint::Node>>("GPU init and parsing: ", 
         parallel_parse, program, call_counts);
 
     std::vector<BitVector> data = time_func<std::vector<BitVector>>("Least fixed point algorithm: ",
@@ -91,7 +91,7 @@ std::vector<BitVector> bit_cuda_analysis(antlr4::ANTLRInputStream& program, std:
 }
 
 std::vector<BitVector> bit_cuda_worklist_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
-    auto transformer = time_func<ScCudaTransformer<taint::Node>>("Total overhead: ", 
+    auto transformer = time_func<ScCudaTransformer<taint::Node>>("GPU init and parsing: ", 
         parallel_parse, program, call_counts);
 
     std::vector<BitVector> data = time_func<std::vector<BitVector>>("Least fixed point algorithm: ",
