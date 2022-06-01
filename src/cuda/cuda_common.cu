@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <cuda/cuda_common.cuh>
 #include <cuda/common.h>
+#include <timing.h>
 
 void cuda_copy_to_device(void *dst, const void *src, size_t size){
     auto cudaStatus = cudaMemcpy(dst, src, size, cudaMemcpyHostToDevice);
