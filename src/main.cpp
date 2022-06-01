@@ -70,9 +70,11 @@ DynamicArray<multi_taint::Node> cpu_multi_taint_analysis(antlr4::ANTLRInputStrea
 }
 
 std::vector<BitVector> bit_cuda_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+    auto init_task = init_gpu_async();
     auto transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
         parse_to_cuda_transformer<taint::Node>, program, call_counts);
-        
+    init_task.wait();
+
     std::vector<BitVector> data = time_func<std::vector<BitVector>>("Least fixed point algorithm: ",
             bit_cuda::execute_analysis, transformer.get_nodes(), transformer.get_transfers());
 
@@ -83,8 +85,10 @@ std::vector<BitVector> bit_cuda_analysis(antlr4::ANTLRInputStream& program, std:
 }
 
 std::vector<BitVector> bit_cuda_worklist_analysis(antlr4::ANTLRInputStream& program, std::map<std::string, int>& call_counts){
+    auto init_task = init_gpu_async();
     auto transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
         parse_to_cuda_transformer<taint::Node>, program, call_counts);
+    init_task.wait();
 
     std::vector<BitVector> data = time_func<std::vector<BitVector>>("Least fixed point algorithm: ",
             cuda_worklist::execute_analysis, transformer.get_nodes(), transformer.get_transfers(), transformer.get_sources());
@@ -224,10 +228,6 @@ int main(int argc, char *argv[]){
         }
     }
 
-    if (gpu_flag) {
-        init_gpu();
-    }
-
     antlr4::ANTLRFileStream csfile;
     const std::string& file_name = argv[argc-1];
     csfile.loadFromFile(file_name);
@@ -256,8 +256,10 @@ int main(int argc, char *argv[]){
 
         std::cout << "\n⭐ CPU analysis ⭐" << std::endl;
         Stopwatch cpu_watch;
+        auto init_task = init_gpu_async();
         auto cpu_transformer = time_func<ScCudaTransformer<taint::Node>>("Parsing: ",
             parse_to_cuda_transformer<taint::Node>, prog, call_counts);
+        init_task.wait();
         std::vector<BitVector> cpu_data = time_func<std::vector<BitVector>>("Analyzing: ",
             cpu_analysis::worklist, cpu_transformer.get_nodes(), cpu_transformer.get_transfers(), std::move(cpu_transformer.get_sources()));
         cpu_watch.save_time<Microseconds>();
