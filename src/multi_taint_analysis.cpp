@@ -1,13 +1,13 @@
 #include "multi_taint_analysis.h"
-#include <cfg/transformations/taint_locator.h>
 
 using namespace cpu_analysis;
+using namespace multi_taint;
 
-BitVector join(Node& node, std::map<Node*, std::vector<BitVector>*>& states, int source_index){
-    BitVector state = (*states[&node])[source_index];
+BitVector join(Node& node, DynamicArray<Node>& nodes, int source_index){
+    BitVector state = node.data[source_index];
     bool old_taint_constant = state[0];
-    for(const std::shared_ptr<Node>& pred : node.predecessors){
-        state |= (*states[pred.get()])[source_index];
+    for (int i = 0; i < 5 && node.predecessor_index[i] != -1; ++i) {
+        state |= nodes[node.predecessor_index[i]].data[source_index];
     }
 
     //Dont propagate taint sources
@@ -18,38 +18,49 @@ BitVector join(Node& node, std::map<Node*, std::vector<BitVector>*>& states, int
     return state;
 }
 
-void analyze(Node& node, std::map<Node*, std::vector<BitVector>*>& states, std::vector<Transfer>::const_iterator start_transfer, int source_count){
-    std::vector<BitVector>& state = *states[&node];
+void transfer(const std::vector<Transfer>& transfers, multi_taint::Node& node, BitVector& joined_state, int source_index)
+{
+    const Transfer* transfer = &transfers[node.first_transfer_index];
+    do {
+        if (transfer->rhs.has_overlap(joined_state)) {
+            node.data[source_index].set_bit(transfer->var_index);
+        }
+    } while (transfer++->next_transfer_index != -1);
+}
+
+void analyze(Node& node, DynamicArray<Node>& nodes, const std::vector<Transfer>& transfers, int source_count){
     for(int source_index = 0; source_index < source_count; ++source_index){
-        auto transfer = start_transfer;
-        BitVector joined_state = join(node, states, source_index);
+        BitVector joined_state = join(node, nodes, source_index);
 
         if(joined_state.bitfield == 0)
             continue;
 
-        state[source_index] |= joined_state & transfer->join_mask;
-        do{
-            if(transfer->transfer_mask.has_overlap(joined_state)){
-                state[source_index].set_bit(transfer->var_index);
-            }
-        }while(transfer++->uses_next);
+        node.data[source_index] |= joined_state & node.join_mask;
+
+        if (node.first_transfer_index != -1) {
+            transfer(transfers, node, joined_state, source_index);
+        }
     }
 }
 
-void cpu_multi::worklist(std::vector<StatefulNode<std::vector<BitVector>>>& nodes, const std::vector<int>& node_to_start_transfer, const std::vector<cpu_analysis::Transfer>& transfers, int source_count){
-    std::vector<int> worklist;
+bool is_source_node(const Node& node, const std::vector<Transfer>& transfers) {
+    const Transfer* transfer = &transfers[node.first_transfer_index];
+    do {
+        if (transfer->rhs[0]) {
+            return true;
+        }
+    } while (transfer++->next_transfer_index != -1);
+    return false;
+}
+
+void cpu_multi::worklist(DynamicArray<multi_taint::Node>& nodes, const std::vector<Transfer>& transfers, int source_count){
+    std::vector<int> worklist(source_count);
     std::map<Node*, int> node_to_index;
-    TaintSourceLocator locator;
 
     int taint_index = 0;
     for(int i = 0; i < nodes.size(); ++i){
-        node_to_index.insert(std::make_pair(nodes[i].node.get(), i));
-        
-        //Allocate and initialize bitvectors
-        nodes[i].get_state().resize(source_count);
-
-        if(locator.is_taintsource(*nodes[i].node)){
-            nodes[i].get_state(i)[taint_index++].set_bit(0);
+        if(is_source_node(nodes[i], transfers)) {
+            nodes[i].data[taint_index++].set_bit(0);
             worklist.push_back(i);
         }
     }
@@ -60,33 +71,17 @@ void cpu_multi::worklist(std::vector<StatefulNode<std::vector<BitVector>>>& node
         int index = worklist.back();
         worklist.pop_back();
         
-        StatefulNode<std::vector<BitVector>>& currentNode = nodes[index];
+        Node& currentNode = nodes[index];
+        
+        std::vector<BitVector> oldState(source_count);
+        std::copy(currentNode.data, currentNode.data + source_count, oldState.data());
 
-        std::vector<BitVector> oldState = currentNode.get_state();
-        int offset = node_to_start_transfer[index];
-        auto transfer = transfers.cbegin() + offset;
-        analyze(*currentNode.node, *currentNode.states, transfer, source_count);
+        analyze(currentNode, nodes, transfers, source_count);
 
-        if (currentNode.get_state() != oldState) {
-            for(StatefulNode<std::vector<BitVector>>& succ : currentNode.get_successors()){
-                int new_index = node_to_index.at(succ.node.get());
-                worklist.push_back(new_index);
+        if (memcmp(currentNode.data, oldState.data(), sizeof(BitVector) * source_count)) {
+            for (int i = 0; i < 5 && currentNode.successor_index[i] != -1; ++i) {
+                worklist.push_back(currentNode.successor_index[i]);
             }
         }
     }
-}
-
-void print_taint_source(SourcedTaintState& result, std::ostream& stream){
-    stream << "\\n{ ";
-    for (auto& variable_pair : result){
-        if(variable_pair.second.size() == 0)
-            continue;
-
-        std::cout << variable_pair.first << ":[";
-        for(auto& source : variable_pair.second){
-            std::cout << source << ", ";
-        }
-        std::cout << "]\\n";
-    }
-    stream << "}";
 }

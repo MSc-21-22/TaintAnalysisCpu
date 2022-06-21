@@ -2,7 +2,7 @@
 
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
-#include "cuda_data.h"
+#include <base_analysis.h>
 
 template<typename ReturnType>
 ReturnType* cuda_allocate_memory(size_t size){
@@ -18,11 +18,13 @@ ReturnType* cuda_allocate_memory(size_t size){
 void cuda_allocate_memory(void** devPtr, size_t size);
 
 template<typename NodeType>
-__device__ cuda::BitVector join(int predecessors[], NodeType nodes[]){
-        cuda::BitVector joined_data = 1;
+__device__ BitVector join(int predecessors[], NodeType nodes[], BitVector data[]) {
+        BitVector joined_data;
+        joined_data.bitfield = 1;
+
         int pred_index = 0;
         while (pred_index < 5 && predecessors[pred_index] != -1){
-            joined_data |= nodes[predecessors[pred_index]].data;
+            joined_data.bitfield |= data[predecessors[pred_index]].bitfield;
             ++pred_index;
         }
         return joined_data;
@@ -31,16 +33,17 @@ __device__ cuda::BitVector join(int predecessors[], NodeType nodes[]){
 void cuda_copy_to_device(void *dst, const void *src, size_t size);
 void cuda_copy_to_host(void *dst, const void *src, size_t size);
 void cuda_free(void* devPtr);
+void cuda_memset(void* devPtr, int value, size_t size);
 
 template<typename BitVectorType>
-__device__ void transfer_function(int first_transfer_index, cuda::Transfer transfers[], BitVectorType& joined_data, BitVectorType& current){
-    cuda::Transfer* transfer;
+__device__ void transfer_function(int first_transfer_index, Transfer transfers[], BitVectorType& joined_data, BitVectorType& current){
+    Transfer* transfer;
     int transfer_index = first_transfer_index;
 
     while(transfer_index != -1){
         transfer = &transfers[transfer_index];
-        if((joined_data & transfer->rhs) != 0){
-            current |= (1 << transfer->x);
+        if((joined_data.bitfield & transfer->rhs.bitfield) != 0){
+            current.bitfield |= (1 << transfer->var_index);
         }
         transfer_index = transfer->next_transfer_index;
     }

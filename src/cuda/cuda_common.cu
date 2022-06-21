@@ -37,6 +37,11 @@ void init_gpu(){
     cuda_free(x);
 }
 
+
+std::future<void> init_gpu_async(){
+    return std::async(std::launch::async, []{init_gpu();});
+}
+
 void cuda_allocate_memory(void** devPtr, size_t size){
     auto cudaStatus = cudaMalloc(devPtr, size);
     if (cudaStatus != cudaSuccess) {
